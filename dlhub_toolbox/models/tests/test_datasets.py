@@ -1,13 +1,12 @@
-from dlhub_toolbox.models import Dataset, TabularDataset
+from dlhub_toolbox.models.datasets import Dataset, TabularDataset
 
 import unittest
-import json
 import os
 
 
 class TestModels(unittest.TestCase):
 
-    maxDiff=None
+    maxDiff = None
 
     def test_dataset(self):
         m = Dataset().set_authors(["Ward, Logan"], ["University of Chicago"])\
@@ -30,7 +29,7 @@ class TestModels(unittest.TestCase):
         m.annotate_column('x', description='Input variable', units='cm')
         m.annotate_column('y', data_type='scalar')
         self.assertEqual(m.to_dict(), {"datacite": {"title": "Example dataset",
-            "creators": []}, "dataset": {"path": data_path, "columns": [
+            "creators": []}, "dataset": {"location": data_path, "columns": [
                 {"name": "x", "description": "Input variable", "units": "cm"},
                 {"name": "y", "data_type": "scalar"}],
                 "inputs": ["x"], "labels": ["y"],

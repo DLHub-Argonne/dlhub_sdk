@@ -1,65 +1,16 @@
-from itertools import zip_longest
-import pandas as pd
 import os
 
+import pandas as pd
 
-class Dataset:
+from dlhub_toolbox.models import BaseMetadataModel
+
+
+class Dataset(BaseMetadataModel):
     """Base class for describing a dataset
 
     The Dataset class and any of its subclasses contain opreations 
     for describing what a dataset is and how to use it. 
     """
-
-    def __init__(self):
-        """
-        Initialize a dataset record
-        """
-
-        self.authors = []
-        self.title = None
-
-    def set_authors(self, authors, affiliations=list()):
-        """Add authors to a dataset
-
-        Args:
-            authors ([string]): List of authors for the dataset.
-                In format: "<Family Name>, <Given Name>"
-            affiliations ([[string]]): List of affiliations for each author.
-        """
-        self.authors = []
-        for author, aff in zip_longest(authors, affiliations, fillvalue=[]):
-            # Get the authors
-            temp = author.split(",")
-            family = temp[0].strip()
-            given = temp[1].strip()
-
-            # Add them to the list
-            self.authors.append({
-                "givenName": given,
-                "familyName": family,
-                "affiliations": aff,
-            })
-        return self
-
-    def set_title(self, title):
-        """Add a title to the dataset"""
-        self.title = title
-        return self
-
-    def to_dict(self):
-        """Render the dataset to a JSON description
-        
-        Returns:
-            (dict) A description of the dataset in a form suitable for download"""
-        return {"datacite": {"creators": self.authors, "title": self.title}}
-
-    def list_files(self): 
-        """Provide a list of files associated with this dataset. This list
-        should contain all of the files necessary to recreate the dataset.
-
-        Returns:
-            ([string]) list of file paths"""
-        raise NotImplementedError()
 
 
 class TabularDataset(Dataset):
@@ -83,6 +34,12 @@ class TabularDataset(Dataset):
             read_kwargs (dict): Any keyword arguments for the pandas read command
         """
         super(TabularDataset, self).__init__()
+        self.path = None
+        self.format = None
+        self.read_kwargs = {}
+        self.columns = {}
+        self.inputs = []
+        self.labels = []
         self.load_dataset(path, format, **read_kwargs)
 
     def load_dataset(self, path, format, **kwargs):
@@ -159,7 +116,7 @@ class TabularDataset(Dataset):
     def to_dict(self):
         output = super(TabularDataset, self).to_dict()
 
-        dataset_block = {'path': os.path.abspath(self.path)}
+        dataset_block = {'location': os.path.abspath(self.path)}
         # Add the format description
         dataset_block['format'] = self.format
         dataset_block['read_options'] = self.read_kwargs
