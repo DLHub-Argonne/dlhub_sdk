@@ -3,10 +3,9 @@ python:
   - "3.6"
 install:
   - pip install --upgrade pip setuptools wheel
-  - pip install --only-binary=numpy,scipy numpy scipy
   - "pip install -e ."
   - pip install coveralls
-  - pip install -r requirements.txt
+  - pip install --only-binary=numpy,scipy -r requirements.txt
 script:
   - nosetests --with-coverage --cover-package=dlhub_toolbox
   - cd examples
