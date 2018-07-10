@@ -5,7 +5,7 @@ install:
     - "pip install -e ."
     - pip install coveralls
     - cd examples
-    - ./run-examples
+    - ./run_examples.sh
 script: nosetests --with-coverage --cover-package=dlhub_toolbox
 after_success:
   coveralls
