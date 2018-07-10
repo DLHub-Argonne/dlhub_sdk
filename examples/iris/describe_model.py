@@ -1,4 +1,4 @@
-from dlhub_toolbox.models import TabularDataset
+from dlhub_toolbox.models.datasets import TabularDataset
 import pandas as pd
 import json
 

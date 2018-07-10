@@ -30,7 +30,7 @@ Also, to make sure the authors of the data can be properly recognized, we need t
 `dlhub_toolbox` provides a simple tool for specifying this information: `TabularDataset`.
 
 ```python
-from dlhub_toolbox.models import TabularDataset
+from dlhub_toolbox.models.datasets import TabularDataset
 import pandas as pd
 import json
 
