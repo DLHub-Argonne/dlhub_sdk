@@ -1,4 +1,5 @@
 # DLHub Toolbox
+[![Build Status](https://travis-ci.org/DLHub-Argonne/dlhub_toolbox.svg?branch=master)](https://travis-ci.org/DLHub-Argonne/dlhub_toolbox)[![Coverage Status](https://coveralls.io/repos/github/DLHub-Argonne/dlhub_toolbox/badge.svg?branch=master)](https://coveralls.io/github/DLHub-Argonne/dlhub_toolbox?branch=master)
 
 DLHub Toolbox contains scripts designed to make it easier to submit datasets and machine learning models to the Data and Learning Hub for Science (DLHub). This package contains tools for formatting descriptions of datasets and machine learning models in the format required by DLHub, and a wrapper around the API for sending them to DLHub for publication.
 
