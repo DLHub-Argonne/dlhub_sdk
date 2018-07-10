@@ -5,8 +5,9 @@ from sklearn.externals import joblib
 import sklearn.base as sklbase
 
 
-# Scikit-learn stores the version of the
-# Some code to get the version number as a scikit-learn model is being unpickled
+# scikit-learn stores the version used to create a model in the pickle file,
+#  but deletes it before unpickling the object. This code intercepts the version
+#  number before it gets deleted
 _sklearn_version_global = None
 _original_set_state = sklbase.BaseEstimator.__setstate__
 
