@@ -18,7 +18,7 @@ class Dataset:
         self.authors = []
         self.title = None
 
-    def set_authors(self, authors, affiliations=[]):
+    def set_authors(self, authors, affiliations=list()):
         """Add authors to a dataset
 
         Args:
@@ -83,7 +83,7 @@ class TabularDataset(Dataset):
             read_kwargs (dict): Any keyword arguments for the pandas read command
         """
         super(TabularDataset, self).__init__()
-        self.data = self.load_dataset(path, format, **read_kwargs)
+        self.load_dataset(path, format, **read_kwargs)
 
     def load_dataset(self, path, format, **kwargs):
         """Load in a dataset to get some high-level descriptions of it
@@ -139,7 +139,7 @@ class TabularDataset(Dataset):
         """
         for c in column_names:
             self._check_column_name(c)
-        self.inputs = column_names
+        self.inputs = list(column_names)
         return self
  
     def mark_labels(self, column_names):
@@ -150,7 +150,7 @@ class TabularDataset(Dataset):
         """
         for c in column_names:
             self._check_column_name(c)
-        self.labels = column_names
+        self.labels = list(column_names)
         return self
 
     def list_files(self):
