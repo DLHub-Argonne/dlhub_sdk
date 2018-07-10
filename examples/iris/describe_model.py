@@ -1,12 +1,15 @@
+from dlhub_toolbox.models.servables.sklearn import ScikitLearnModel
 from dlhub_toolbox.models.datasets import TabularDataset
+import pickle as pkl
 import pandas as pd
 import json
 
-# Read in the dataset
-data = pd.read_csv('iris.csv', header=1)
 
 # Make the dataset information
 dataset_info = TabularDataset('iris.csv', read_kwargs=dict(header=1))
+
+#   Read in the dataset
+data = pd.read_csv('iris.csv', header=1)
 
 #   Describe the columns
 dataset_info.annotate_column("sepal_length", description="Length of sepal",
@@ -23,9 +26,15 @@ dataset_info.annotate_column("species", description="species", data_type="string
 dataset_info.mark_inputs(data.columns[:-1])
 dataset_info.mark_labels(data.columns[-1:])
 
-# Describe the data provenance
+#    Describe the data provenance
 dataset_info.set_title("Iris Dataset")
 dataset_info.set_authors(["Marshall, R.A."])
 
+# Make the model information
+model_info = ScikitLearnModel('model.pkl')
+
 # Print out the result
+print('--> Dataset Information <--')
 print(json.dumps(dataset_info.to_dict(), indent=2))
+print('\n--> Model Information <--')
+print(json.dumps(model_info.to_dict(), indent=2))
