@@ -46,7 +46,7 @@ dataset_info.annotate_column("sepal_width", description="Width of sepal",
                              units="cm", data_type="scalar")
 dataset_info.annotate_column("petal_length", description="Length of petal",
                              units="cm", data_type="scalar")
-dataset_info.annotate_column("petal_length", description="With of sepal",
+dataset_info.annotate_column("petal_length", description="Width of petal",
                              units="cm", data_type="scalar")
 dataset_info.annotate_column("species", description="species", data_type="string")
 
@@ -97,12 +97,15 @@ After running this script, the model produces a simple JSON description of the d
       },
       {
         "name": "petal_length",
-        "description": "With of sepal",
+        "description": "Length of petal",
         "data_type": "scalar",
         "units": "cm"
-      },
+      },  
       {
-        "name": "petal_width"
+        "name": "petal_width",
+        "description": "Width of petal",
+        "data_type": "scalar",
+        "units": "cm"
       },
       {
         "name": "species",
