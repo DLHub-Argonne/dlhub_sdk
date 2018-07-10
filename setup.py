@@ -10,8 +10,7 @@ setup(
         "This package contains tools for formatting descriptions of datasets and machine learning models "
         "in the format required by DLHub, and a wrapper around the API for sending them to DLHub for publication"),
     install_requires=[
-        "pandas==0.22.0",
-        "scikit-learn"
+        "pandas", "scikit-learn"
     ],
     python_requires=">=3.4",
     classifiers=[

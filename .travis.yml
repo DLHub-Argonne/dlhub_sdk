@@ -2,10 +2,11 @@ language: python
 python:
   - "3.6"
 install: 
-    - "pip install -e ."
-    - pip install coveralls
-    - cd examples
-    - ./run_examples.sh
-script: nosetests --with-coverage --cover-package=dlhub_toolbox
+  - "pip install -e ."
+  - pip install coveralls
+script:
+  - nosetests --with-coverage --cover-package=dlhub_toolbox
+  - cd examples
+  - ./run_examples.sh
 after_success:
   coveralls
