@@ -12,6 +12,15 @@ class Dataset(BaseMetadataModel):
     for describing what a dataset is and how to use it. 
     """
 
+    def to_dict(self):
+        # Get the metadata from the superclass
+        output = super(Dataset, self).to_dict()
+
+        # Add the datacite type as Dataset
+        output['datacite']['resourceType'] = 'Dataset'
+
+        return output
+
 
 class TabularDataset(Dataset):
     """Read a dataset stored as a single file in a tabular format.

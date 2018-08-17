@@ -1,4 +1,4 @@
-from dlhub_toolbox.models import BaseMetadataModel
+from dlhub_toolbox.models.servables import BaseServableModel
 import pickle as pkl
 from sklearn.externals import joblib
 
@@ -8,6 +8,7 @@ import sklearn.base as sklbase
 # scikit-learn stores the version used to create a model in the pickle file,
 #  but deletes it before unpickling the object. This code intercepts the version
 #  number before it gets deleted
+
 _sklearn_version_global = None
 _original_set_state = sklbase.BaseEstimator.__setstate__
 
@@ -20,7 +21,7 @@ def _hijack_baseestimator_setstate(self, state):
 sklbase.BaseEstimator.__setstate__ = _hijack_baseestimator_setstate
 
 
-class ScikitLearnModel(BaseMetadataModel):
+class ScikitLearnModel(BaseServableModel):
     """Metadata for a scikit-learn machine learning model"""
 
     def __init__(self, path, serialization_method="pickle"):

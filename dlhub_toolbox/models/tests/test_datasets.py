@@ -25,6 +25,7 @@ class TestModels(unittest.TestCase):
                                "titles": ["Example dataset"],
                                "publisher": 'DLHub',
                                "version": '1',
+                               "resourceType": "Dataset",
                                "descriptions": [{
                                    "description": "Abstract", "descriptionType": "Abstract"
                                }, {
@@ -69,7 +70,8 @@ class TestModels(unittest.TestCase):
         m.annotate_column('x', description='Input variable', units='cm')
         m.annotate_column('y', data_type='scalar')
         self.assertEqual(m.to_dict(), {"datacite": {"titles": ["Example dataset"],
-                                                    "creators": [], "publisher": "DLHub"},
+                                                    "creators": [], "publisher": "DLHub",
+                                                    "resourceType": "Dataset"},
                                        "dlhub": {"version": __dlhub_version__,
                                                  "visible_to": ["public"],
                                                  "domain": None},

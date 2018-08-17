@@ -13,7 +13,8 @@ class TestSklearn(unittest.TestCase):
         # Load the model
         model_info = ScikitLearnModel(model_path)
         self.assertEquals(model_info.to_dict(), {'datacite': {'creators': [], 'publisher': 'DLHub',
-                                                              'titles': [None]},
+                                                              'titles': [None],
+                                                              'resourceType': "InteractiveResource"},
                                                  "dlhub": {"version": __dlhub_version__,
                                                            "visible_to": ["public"],
                                                            "domain": None},
