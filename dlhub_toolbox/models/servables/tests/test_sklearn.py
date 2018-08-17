@@ -11,7 +11,8 @@ class TestSklearn(unittest.TestCase):
 
         # Load the model
         model_info = ScikitLearnModel(model_path)
-        self.assertEquals(model_info.to_dict(), {'datacite': {'creators': [], 'title': None},
+        self.assertEquals(model_info.to_dict(), {'datacite': {'creators': [], 'publisher': 'DLHub',
+                                                              'titles': [None]},
                                                  'servable': {'type': 'scikit-learn',
                                                               'version': '0.19.1',
                                                               'model_type': 'SVC'}})
