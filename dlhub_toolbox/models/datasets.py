@@ -22,7 +22,7 @@ class TabularDataset(Dataset):
     This class is compatible with any data format readable by the Pandas
     library. See the list of `read functions in Pandas<https://pandas.pydata.org/pandas-docs/stable/io.html>`_"""
 
-    def __init__(self, path, format="csv", read_kwargs={}):
+    def __init__(self, path, format="csv", read_kwargs=dict()):
         """Initialize the description of a tabular dataset
 
         Args:
