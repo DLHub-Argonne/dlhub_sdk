@@ -10,5 +10,6 @@ script:
   - nosetests --with-coverage --cover-package=dlhub_toolbox
   - cd examples
   - ./run_examples.sh
+  - cd .. # So that coveralls works
 after_success:
   coveralls
