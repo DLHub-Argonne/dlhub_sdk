@@ -17,6 +17,9 @@ class BaseMetadataModel:
         self.funders = []
         self.alternate_ident = []
         self.related_ident = []
+        self.rights = []
+        self.abstract = None
+        self.methods = None
 
     def set_authors(self, authors, affiliations=list()):
         """Add authors to a dataset
@@ -52,7 +55,50 @@ class BaseMetadataModel:
         Args:
             version (string): Version number
         """
-        self.version = version
+        self.version = str(version)
+        return self
+
+    def set_abstract(self, abstract):
+        """Define an abstract for this artifact. Use for a high-level summary
+
+        Args:
+            abstract (string): Description of this artifact
+        """
+        self.abstract = abstract
+        return self
+
+    def set_methods(self, methods):
+        """Define a methods section for this artifact. Use to describe any specific details
+        about how the dataset, model, etc was generated.
+
+        Args:
+            methods (str): Detailed method descriptions
+        """
+        self.methods = methods
+        return self
+
+    def add_rights(self, uri=None, rights=None):
+        """Any rights information for this resource. Provide a rights management statement for the
+        resource or reference a service providing such information. Include embargo information if
+        applicable. Use the complete title of a license and include version information if applicable.
+
+        Args:
+            uri (string): URI of the rights
+            rights (string): Description of the rights
+        """
+
+        if uri is None and rights is None:
+            raise ValueError('You must defined either a URI or the rights')
+
+        # Make the rights
+        new_rights = {}
+        if uri is not None:
+            new_rights['rightsURI'] = uri
+        if new_rights is not None:
+            new_rights['rights'] = rights
+
+        # Add it to the list
+        self.rights.append(new_rights)
         return self
 
     def add_funding_reference(self, name, identifier=None, identifier_type=None,
@@ -161,7 +207,17 @@ class BaseMetadataModel:
             out['datacite']['relatedIdentifiers'] = self.related_ident
         if len(self.alternate_ident):
             out['datacite']['alternateIdentifiers'] = self.alternate_ident
+        if len(self.rights) > 0:
+            out['datacite']['rightsList'] = self.rights
 
+        # Add in descriptions
+        desc = []
+        if self.abstract is not None:
+            desc.append({'description': self.abstract, 'descriptionType': 'Abstract'})
+        if self.methods is not None:
+            desc.append({'description': self.methods, 'descriptionType': 'Methods'})
+        if len(desc) > 0:
+            out['datacite']['descriptions'] = desc
         return out
 
     def list_files(self):

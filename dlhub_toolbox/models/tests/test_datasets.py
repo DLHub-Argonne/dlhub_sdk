@@ -12,13 +12,22 @@ class TestModels(unittest.TestCase):
         m = Dataset().set_authors(["Ward, Logan"], ["University of Chicago"])\
             .set_title("Example dataset").add_alternate_identifier("10.11", "DOI")\
             .add_related_identifier("10.11", "DOI", 'IsDescribedBy')\
-            .add_funding_reference("ANL LDRD", '1', 'ISNI', '201801', 'DLHub')
+            .add_funding_reference("ANL LDRD", '1', 'ISNI', '201801', 'DLHub')\
+            .set_version(1)\
+            .add_rights("https://www.gnu.org/licenses/gpl-3.0.en.html", "GPL v3.0")\
+            .set_abstract("Abstract").set_methods("Methods")
         self.assertEqual(m.to_dict(),
                          {"datacite":
                               {"creators": [{"givenName": "Logan", "familyName": "Ward",
                                              "affiliations": "University of Chicago"}],
                                "titles": ["Example dataset"],
                                "publisher": 'DLHub',
+                               "version": '1',
+                               "descriptions": [{
+                                   "description": "Abstract", "descriptionType": "Abstract"
+                               }, {
+                                   "description": "Methods", "descriptionType": "Methods"
+                               }],
                                "fundingReferences": [{
                                    "awardNumber": "201801",
                                    "awardTitle": "DLHub",
@@ -34,6 +43,10 @@ class TestModels(unittest.TestCase):
                                "alternateIdentifiers": [{
                                    "alternateIdentifier": "10.11",
                                    "alternateIdentifierType": "DOI"
+                               }],
+                               "rightsList": [{
+                                   "rightsURI": "https://www.gnu.org/licenses/gpl-3.0.en.html",
+                                   "rights": "GPL v3.0"
                                }]}
                          })
 
