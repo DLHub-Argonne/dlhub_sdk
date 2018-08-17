@@ -2,6 +2,7 @@ import unittest
 import os
 
 from dlhub_toolbox.models.servables.sklearn import ScikitLearnModel
+from dlhub_toolbox.models import __dlhub_version__
 
 
 class TestSklearn(unittest.TestCase):
@@ -13,6 +14,9 @@ class TestSklearn(unittest.TestCase):
         model_info = ScikitLearnModel(model_path)
         self.assertEquals(model_info.to_dict(), {'datacite': {'creators': [], 'publisher': 'DLHub',
                                                               'titles': [None]},
+                                                 "dlhub": {"version": __dlhub_version__,
+                                                           "visible_to": ["public"],
+                                                           "domain": None},
                                                  'servable': {'type': 'scikit-learn',
                                                               'version': '0.19.1',
                                                               'model_type': 'SVC'}})

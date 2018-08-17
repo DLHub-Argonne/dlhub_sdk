@@ -1,10 +1,13 @@
 from itertools import zip_longest
 
+__dlhub_version__ = '0.1'
+
 
 class BaseMetadataModel:
     """Base class for models describing objects published via DLHub
 
-    Covers information that goes in the :code:`datacite` block of the metadata file."""
+    Covers information that goes in the :code:`datacite` block of the metadata file and
+    some of the DLHub block."""
 
     def __init__(self):
         """
@@ -20,6 +23,8 @@ class BaseMetadataModel:
         self.rights = []
         self.abstract = None
         self.methods = None
+        self.domain = None
+        self.visible_to = ['public']
 
     def set_authors(self, authors, affiliations=list()):
         """Add authors to a dataset
@@ -75,6 +80,28 @@ class BaseMetadataModel:
             methods (str): Detailed method descriptions
         """
         self.methods = methods
+        return self
+
+    def set_domain(self, domain):
+        """Set the field of science that is associated with this artifcat
+
+        Args:
+            domain (string): Name of a field of science (e.g., "materials science")
+        """
+        self.domain = domain
+        return self
+
+    def set_visibility(self, visible_to):
+        """Set the list of people this artifact should be visible to.
+
+        By default, it will be visible to anyone (["public"])
+
+        TODO: Define what kind of arguments this should take (Group IDs?)
+
+        Args:
+            visible_to ([string]): List of allowed users
+        """
+        self.visible_to = visible_to
         return self
 
     def add_rights(self, uri=None, rights=None):
@@ -218,6 +245,13 @@ class BaseMetadataModel:
             desc.append({'description': self.methods, 'descriptionType': 'Methods'})
         if len(desc) > 0:
             out['datacite']['descriptions'] = desc
+
+        # Add in the DLHub block
+        out['dlhub'] = {
+            'version': __dlhub_version__,
+            'domain': self.domain,
+            'visible_to': self.visible_to
+        }
         return out
 
     def list_files(self):

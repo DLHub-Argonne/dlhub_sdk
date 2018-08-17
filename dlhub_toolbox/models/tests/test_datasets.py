@@ -1,4 +1,5 @@
 from dlhub_toolbox.models.datasets import Dataset, TabularDataset
+from dlhub_toolbox.models import __dlhub_version__
 
 import unittest
 import os
@@ -15,7 +16,8 @@ class TestModels(unittest.TestCase):
             .add_funding_reference("ANL LDRD", '1', 'ISNI', '201801', 'DLHub')\
             .set_version(1)\
             .add_rights("https://www.gnu.org/licenses/gpl-3.0.en.html", "GPL v3.0")\
-            .set_abstract("Abstract").set_methods("Methods")
+            .set_abstract("Abstract").set_methods("Methods")\
+            .set_visibility(['public']).set_domain("materials science")
         self.assertEqual(m.to_dict(),
                          {"datacite":
                               {"creators": [{"givenName": "Logan", "familyName": "Ward",
@@ -47,7 +49,12 @@ class TestModels(unittest.TestCase):
                                "rightsList": [{
                                    "rightsURI": "https://www.gnu.org/licenses/gpl-3.0.en.html",
                                    "rights": "GPL v3.0"
-                               }]}
+                               }]},
+                          "dlhub": {
+                              "version": __dlhub_version__,
+                              "visible_to": ["public"],
+                              "domain": "materials science"
+                          }
                          })
 
     def test_tabular_dataset(self):
@@ -63,6 +70,9 @@ class TestModels(unittest.TestCase):
         m.annotate_column('y', data_type='scalar')
         self.assertEqual(m.to_dict(), {"datacite": {"titles": ["Example dataset"],
                                                     "creators": [], "publisher": "DLHub"},
+                                       "dlhub": {"version": __dlhub_version__,
+                                                 "visible_to": ["public"],
+                                                 "domain": None},
                                        "dataset": {"location": data_path, "columns": [
                                            {"name": "x", "description": "Input variable", "units": "cm"},
                                            {"name": "y", "data_type": "scalar"}],
