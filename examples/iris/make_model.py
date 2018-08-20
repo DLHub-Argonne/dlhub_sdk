@@ -16,4 +16,3 @@ print('Trained a SVC model')
 with open('model.pkl', 'wb') as fp:
       pkl.dump(model, fp)
 print('Saved model to disk')
-

@@ -40,16 +40,21 @@ data = pd.read_csv('iris.csv', header=1)
 # Make the dataset information
 dataset_info = TabularDataset('iris.csv', read_kwargs=dict(header=1))
 
+#   Add link to where this data was downloaded from
+dataset_info.add_alternate_identifier("https://archive.ics.uci.edu/ml/datasets/Iris", "URL")
+
+#   Add link to paper describing the dataset
+dataset_info.add_related_identifier("10.1111/j.1469-1809.1936.tb02137.x", "DOI", "IsDescribedBy")
+
+#   Mark the domain of the dataset
+dataset_info.set_domain("biology")
+
 #   Describe the columns
-dataset_info.annotate_column("sepal_length", description="Length of sepal",
-                             units="cm", data_type="scalar")
-dataset_info.annotate_column("sepal_width", description="Width of sepal",
-                             units="cm", data_type="scalar")
-dataset_info.annotate_column("petal_length", description="Length of petal",
-                             units="cm", data_type="scalar")
-dataset_info.annotate_column("petal_length", description="Width of petal",
-                             units="cm", data_type="scalar")
-dataset_info.annotate_column("species", description="species", data_type="string")
+dataset_info.annotate_column("sepal_length", description="Length of sepal", data_type="scalar")
+dataset_info.annotate_column("sepal_width", description="Width of sepal", units="cm")
+dataset_info.annotate_column("petal_length", description="Length of petal", units="cm")
+dataset_info.annotate_column("petal_width", description="Width of petal", units="cm")
+dataset_info.annotate_column("species", description="Species", data_type='string')
 
 #   Mark which columns are inputs and outputs
 dataset_info.mark_inputs(data.columns[:-1])
@@ -75,7 +80,31 @@ After running this script, the model produces a simple JSON description of the d
         "affiliations": []
       }
     ],
-    "title": "Iris Dataset"
+    "titles": [
+      "Iris Dataset"
+    ],
+    "publisher": "DLHub",
+    "relatedIdentifiers": [
+      {
+        "relatedIdentifier": "10.1111/j.1469-1809.1936.tb02137.x",
+        "relatedIdentifierType": "DOI",
+        "relationType": "IsDescribedBy"
+      }
+    ],
+    "alternateIdentifiers": [
+      {
+        "alternateIdentifier": "https://archive.ics.uci.edu/ml/datasets/Iris",
+        "alternateIdentifierType": "URL"
+      }
+    ],
+    "resourceType": "Dataset"
+  },
+  "dlhub": {
+    "version": "0.1",
+    "domain": "biology",
+    "visible_to": [
+      "public"
+    ]
   },
   "dataset": {
     "path": "/home/ml_user/dlhub_toolbox/examples/iris/iris.csv",
@@ -86,32 +115,31 @@ After running this script, the model produces a simple JSON description of the d
     "columns": [
       {
         "name": "sepal_length",
-        "description": "Length of sepal",
-        "data_type": "scalar",
-        "units": "cm"
+        "type": "scalar",
+        "description": "Length of sepal"
       },
       {
         "name": "sepal_width",
+        "type": "float",
         "description": "Width of sepal",
-        "data_type": "scalar",
         "units": "cm"
       },
       {
         "name": "petal_length",
+        "type": "float",
         "description": "Length of petal",
-        "data_type": "scalar",
         "units": "cm"
-      },  
+      },
       {
         "name": "petal_width",
+        "type": "float",
         "description": "Width of petal",
-        "data_type": "scalar",
         "units": "cm"
       },
       {
         "name": "species",
-        "description": "species",
-        "data_type": "string"
+        "type": "string",
+        "description": "Species"
       }
     ],
     "inputs": [
@@ -126,3 +154,50 @@ After running this script, the model produces a simple JSON description of the d
   }
 }
 ```
+
+Note that the toolbox automatically put the metadata in DataCite format and includes data automatically pulled from the dataset (e.g., that the inputs are floats).
+
+## Describe the Model
+
+For brevity, we will upload much less metadata about a model created using Scikit-Learn.
+
+We simply load in a Scikit-Learn model from a pickle file, and then provide a minimal amount of information about it.
+
+```python
+from dlhub_toolbox.models.servables.sklearn import ScikitLearnModel
+
+model_info = ScikitLearnModel('model.pkl')
+
+#    Describe the model
+model_info.set_title("Example Scikit-Learn Model")
+model_info.set_domain("biology")
+```
+
+The toolbox will inspect the pickle file to determine the type of the model and the version of scikit-learn that was used to create it.
+
+```json
+{
+  "datacite": {
+    "creators": [],
+    "titles": [
+      "Example Scikit-Learn Model"
+    ],
+    "publisher": "DLHub",
+    "resourceType": "InteractiveResource"
+  },
+  "dlhub": {
+    "version": "0.1",
+    "domain": "biology",
+    "visible_to": [
+      "public"
+    ]
+  },
+  "servable": {
+    "type": "scikit-learn",
+    "version": "0.19.1",
+    "model_type": "SVC"
+  }
+}
+```
+
+At this point, we are ready to publish both the model and dataset on DLHub.
