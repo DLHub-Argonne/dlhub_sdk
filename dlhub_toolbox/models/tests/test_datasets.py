@@ -61,7 +61,8 @@ class TestModels(unittest.TestCase):
     def test_tabular_dataset(self):
         data_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'test.csv'))
         m = TabularDataset(data_path)
-        self.assertEqual({'x': {'name': 'x'}, 'y': {'name': 'y'}}, m.columns)
+        self.assertEqual({'x': {'name': 'x', 'type': 'integer'},
+                          'y': {'name': 'y', 'type': 'integer'}}, m.columns)
 
         # Add some nonsense
         m.set_title('Example dataset')
@@ -76,8 +77,9 @@ class TestModels(unittest.TestCase):
                                                  "visible_to": ["public"],
                                                  "domain": None},
                                        "dataset": {"location": data_path, "columns": [
-                                           {"name": "x", "description": "Input variable", "units": "cm"},
-                                           {"name": "y", "data_type": "scalar"}],
+                                           {"name": "x", "description": "Input variable",
+                                            "type": "integer", "units": "cm"},
+                                           {"name": "y", "type": "scalar"}],
                                                    "inputs": ["x"], "labels": ["y"],
                                                    "format": "csv", "read_options": {}}})
 

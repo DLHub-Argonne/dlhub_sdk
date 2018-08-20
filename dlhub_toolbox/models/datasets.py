@@ -3,6 +3,7 @@ import os
 import pandas as pd
 
 from dlhub_toolbox.models import BaseMetadataModel
+from dlhub_toolbox.utils.types import simplify_numpy_dtype
 
 
 class Dataset(BaseMetadataModel):
@@ -69,14 +70,17 @@ class TabularDataset(Dataset):
         # Read in the data
         read_fun = getattr(pd, 'read_{}'.format(format))
         data = read_fun(path, **kwargs)
-        self.columns = dict((c,{'name': c}) for c in data.columns)
+        self.columns = dict((c, {'name': c, 'type': simplify_numpy_dtype(d)})
+                            for c, d in zip(data.columns, data.dtypes))
 
         # Zero out the input and output columns
         self.inputs = []
         self.labels = []
 
     def annotate_column(self, column_name, description=None, data_type=None, units=None):
-        """Provide documentation about a certain column within a dataset
+        """Provide documentation about a certain column within a dataset.
+
+        Overwrites any type values inferred from reading the dataset
 
         Args:
             column_name (string): Name of a column
@@ -88,7 +92,7 @@ class TabularDataset(Dataset):
         if description is not None:
             self.columns[column_name]['description'] = description
         if data_type is not None:
-            self.columns[column_name]['data_type'] = data_type
+            self.columns[column_name]['type'] = data_type
         if units is not None:
             self.columns[column_name]['units'] = units
         return self
