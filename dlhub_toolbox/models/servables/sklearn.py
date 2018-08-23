@@ -1,4 +1,5 @@
 from sklearn.base import is_classifier
+from sklearn.pipeline import Pipeline
 
 from dlhub_toolbox.models.servables import BaseServableModel
 import pickle as pkl
@@ -51,6 +52,7 @@ class ScikitLearnModel(BaseServableModel):
         self.sklearn_version = None
         self.model_type = None
         self.classifier = None
+        self.model_summary = None
 
         # Store the model input/output information
         self.n_input_columns = n_input_columns
@@ -88,7 +90,11 @@ class ScikitLearnModel(BaseServableModel):
 
         # Get some basic information about the model
         self.sklearn_version = _sklearn_version_global  # Stolen during the unpickling process
-        self.model_type = type(model).__name__
+        self.model_type = type(model.steps[-1][-1]).__name__ \
+                if isinstance(model, Pipeline) else type(model).__name__
+
+        # Get a summary about the model
+        self.model_summary = str(model)  # sklearn prints out a text summary of the model
 
         # Determine whether the object is a classifier
         self.classifier = is_classifier(model)
@@ -105,7 +111,8 @@ class ScikitLearnModel(BaseServableModel):
             'version': self.sklearn_version,
             'location': self.path,
             'language': 'python',
-            'model_type': self.model_type
+            'model_type': self.model_type,
+            'model_summary': self.model_summary
         })
 
         return output

@@ -219,7 +219,11 @@ The toolbox will inspect the pickle file to determine the type of the model and 
     "version": "0.19.1",
     "location": "model.pkl",
     "language": "python",
-    "model_type": "SVC"
+    "model_type": "SVC",
+    "model_summary": "SVC(C=1, cache_size=200, class_weight=None, coef0=0.0,\n
+        decision_function_shape='ovr', degree=3, gamma='auto', kernel='linear',\n 
+         max_iter=-1, probability=False, random_state=None, shrinking=True,\n
+           tol=0.001, verbose=False)"
   }
 }
 ```
