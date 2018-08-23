@@ -166,7 +166,8 @@ We simply load in a Scikit-Learn model from a pickle file, and then provide a mi
 ```python
 from dlhub_toolbox.models.servables.sklearn import ScikitLearnModel
 
-model_info = ScikitLearnModel('model.pkl')
+model_info = ScikitLearnModel('model.pkl', n_input_columns=len(data.columns) - 1,
+                              classes=data['species'].unique())
 
 #    Describe the model
 model_info.set_title("Example Scikit-Learn Model")
@@ -193,8 +194,31 @@ The toolbox will inspect the pickle file to determine the type of the model and 
     ]
   },
   "servable": {
+    "run": {
+      "handler": "sklearn_shim.predict_on_batch",
+      "input": {
+        "type": "ndarray",
+        "shape": [
+          null,
+          4
+        ],
+        "description": "List of records to evaluate with model. Each record is a list of 4 variables.",
+        "items": "float"
+      },
+      "output": {
+        "type": "ndarray",
+        "shape": [
+          null,
+          3
+        ],
+        "description": "Predictions of the machine learning model.",
+        "items": "float"
+      }
+    },
     "type": "scikit-learn",
     "version": "0.19.1",
+    "location": "model.pkl",
+    "language": "python",
     "model_type": "SVC"
   }
 }

@@ -35,7 +35,8 @@ dataset_info.set_title("Iris Dataset")
 dataset_info.set_authors(["Marshall, R.A."])
 
 # Make the model information
-model_info = ScikitLearnModel('model.pkl')
+model_info = ScikitLearnModel('model.pkl', n_input_columns=len(data.columns) - 1,
+                              classes=data['species'].unique())
 
 #    Describe the model
 model_info.set_title("Example Scikit-Learn Model")

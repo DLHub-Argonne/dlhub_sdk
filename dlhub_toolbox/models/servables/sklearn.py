@@ -1,3 +1,5 @@
+from sklearn.base import is_classifier
+
 from dlhub_toolbox.models.servables import BaseServableModel
 import pickle as pkl
 from sklearn.externals import joblib
@@ -22,13 +24,22 @@ sklbase.BaseEstimator.__setstate__ = _hijack_baseestimator_setstate
 
 
 class ScikitLearnModel(BaseServableModel):
-    """Metadata for a scikit-learn machine learning model"""
+    """Metadata for a scikit-learn machine learning model
 
-    def __init__(self, path, serialization_method="pickle"):
+    This class is build assuming that the inputs to the model will be a list
+    of lists of fixed lengths. Models that take different kinds of inputs
+    (e.g., Pipelines that include text-processing steps, KernelRidge models
+    with custom kernel functions) will are not yet supported.
+    """
+
+    def __init__(self, path, n_input_columns, classes=None, serialization_method="pickle"):
         """Initialize a scikit-learn model
 
         Args:
             path (string): Path to model file
+            n_input_columns (int): Number of input columns for the model
+            classes (Union[int,tuple]): For classication models, number of output classes or a
+                list-like object with the namess of the classes
             serialization_method (string): Library used to serialize model
         """
         # Set attributes
@@ -39,6 +50,15 @@ class ScikitLearnModel(BaseServableModel):
         # Create the metadata variables
         self.sklearn_version = None
         self.model_type = None
+        self.classifier = None
+
+        # Store the model input/output information
+        self.n_input_columns = n_input_columns
+        self.classes = classes
+        if self.classes is not None:
+            # Expand an integer if needed
+            if isinstance(classes, int):
+                self.classes = ['Class {}'.format(i+1) for i in range(classes)]
 
         # Load other metadata
         self.load_model(path, serialization_method)
@@ -70,14 +90,46 @@ class ScikitLearnModel(BaseServableModel):
         self.sklearn_version = _sklearn_version_global  # Stolen during the unpickling process
         self.model_type = type(model).__name__
 
+        # Determine whether the object is a classifier
+        self.classifier = is_classifier(model)
+        if self.classes is None:
+            raise Exception('Classes (or at least number of classes) must be specified '
+                            'in initializer for classifiers.')
+
     def to_dict(self):
         output = super(ScikitLearnModel, self).to_dict()
 
         # Store the model information
-        output['servable'] = {
+        output['servable'].update({
             'type': 'scikit-learn',
             'version': self.sklearn_version,
+            'location': self.path,
+            'language': 'python',
             'model_type': self.model_type
-        }
+        })
 
         return output
+
+    def _get_handler(self):
+        return 'sklearn_shim.predict_on_batch'
+
+    def _get_input(self):
+        return {
+            'type': 'ndarray',
+            'shape': (None, self.n_input_columns),
+            'description': 'List of records to evaluate with model. Each record is '
+                           'a list of {} variables.'.format(self.n_input_columns),
+            'items': 'float'
+        }
+
+    def _get_output(self):
+        return {
+            'type': 'ndarray',
+            'shape': (None, 1 if self.classes is None else len(self.classes)),
+            'description': 'Predictions of the machine learning model.' if self.classifier else
+                    'Probabilities for membership in each of {} classes'.format(len(self.classes)),
+            'items': 'float'
+        }
+
+    def list_files(self):
+        return [self.path]
