@@ -5,31 +5,24 @@ import pkg_resources
 import requests
 
 
-class PickledClassServableModel(BaseServableModel):
-    """Model for describing servables where the function to be performed is a method of a class.
+class BasePythonServableModel(BaseServableModel):
+    """Describes a static python function to be run"""
 
-    To use this model, you must define the path to the pickled object and the function of that
-    object to be called. Any additional libraries (beyond the standard libraries) required
-    to run the library and their versions must also be specified. You may also specify
-    any arguments of the class that should be set as defaults."""
-
-    def __init__(self, path, method, function_kwargs=None):
+    def __init__(self, method, function_kwargs=None):
         """Initialize a model for a python object
 
         Args:
-            path (string): Path to a pickled Python file
             method (string): Name of the method for this class
             function_kwargs (dict): Names and values of any other argument of the function to set
                 the values must be JSON serializable.
         """
-        super(PickledClassServableModel, self).__init__()
+        super(BasePythonServableModel, self).__init__()
 
         # Get default values
         if function_kwargs is None:
             function_kwargs = dict()
 
         # Set values
-        self.path = path
         self.method = method
         self.function_kwargs = function_kwargs
         self.requirements = {}
@@ -37,10 +30,6 @@ class PickledClassServableModel(BaseServableModel):
         # Initialize holders for inputs and outputs
         self.input = {}
         self.output = {}
-
-        # Get the class name
-        with open(self.path, 'rb') as fp:
-            self.class_name = pkl.load(fp).__class__.__name__
 
     def add_requirement(self, library, version=None):
         """Add a required Python library.
@@ -66,7 +55,7 @@ class PickledClassServableModel(BaseServableModel):
         return self
 
     def add_requirements(self, requirements):
-        """Add a dictionairy of requirements
+        """Add a dictionary of requirements
 
         Utility wrapper for `add_requirement`
 
@@ -131,9 +120,6 @@ class PickledClassServableModel(BaseServableModel):
 
         return self
 
-    def _get_handler(self):
-        return 'python_shim.run_class_method'
-
     def _get_input(self):
         if len(self.input) == 0:
             raise ValueError('Inputs have not been defined')
@@ -146,15 +132,12 @@ class PickledClassServableModel(BaseServableModel):
 
     def to_dict(self):
         # Get the higher level
-        output = super(PickledClassServableModel, self).to_dict()
+        output = super(BasePythonServableModel, self).to_dict()
 
         # Add Python settings
         output['servable'].update({
             'langugage': 'python',
-            'type': 'pickled_class',
-            'location': self.path,
             'method_details': {
-                'class_name': self.class_name,
                 'method_name': self.method,
                 'default_args': self.function_kwargs
             },
@@ -163,5 +146,95 @@ class PickledClassServableModel(BaseServableModel):
 
         return output
 
+
+class PickledClassServableModelBase(BasePythonServableModel):
+    """Model for describing servables where the function to be performed is a method of a class.
+
+    To use this model, you must define the path to the pickled object and the function of that
+    object to be called. Any additional libraries (beyond the standard libraries) required
+    to run the library and their versions must also be specified. You may also specify
+    any arguments of the class that should be set as defaults."""
+
+    def __init__(self, path, method, function_kwargs=None):
+        """Initialize a model for a python object
+
+        Args:
+            path (string): Path to a pickled Python file
+            method (string): Name of the method for this class
+            function_kwargs (dict): Names and values of any other argument of the function to set
+                the values must be JSON serializable.
+        """
+        super(PickledClassServableModelBase, self).__init__(method, function_kwargs)
+
+        self.path = path
+
+        # Get the class name
+        with open(self.path, 'rb') as fp:
+            self.class_name = pkl.load(fp).__class__.__name__
+
+    def _get_handler(self):
+        return 'python_shim.run_class_method'
+
     def list_files(self):
         return [self.path]
+
+    def to_dict(self):
+        output = super(PickledClassServableModelBase, self).to_dict()
+
+        # Add pickle-specific options
+        output['servable']['type'] = 'pickled_class'
+        output['servable']['location'] = self.path
+        output['servable']['method_details']['class_name'] = self.class_name
+
+        return output
+
+
+class PythonStaticMethodModel(BasePythonServableModel):
+    """Model for a servable that calls a Python static method. Static methods can be called
+    without any other context, unlike the class methods in PickledClassServableModelBase.
+
+    An example static method is the sqrt operation from numpy, `numpy.sqrt`. You can make a model
+    of this function by calling :code:`PythonStaticMethodModel.from_function_pointer(numpy.sqrt)`.
+    """
+
+    def __init__(self, module, method, autobatch=False, function_kwargs=None):
+        """Initialize the method
+
+        Args:
+            module (string): Name of the module holding the function
+            method (string): Name of the method for this class
+            autobatch (bool): Whether to automatically run this function on a list of inputs.
+                Calls :code:`map(f, list)`
+            function_kwargs (dict): Names and values of any other argument of the function to set
+                the values must be JSON serializable.
+        """
+        super(PythonStaticMethodModel, self).__init__(method, function_kwargs)
+
+        self.module = module
+        self.autobatch = autobatch
+
+    @classmethod
+    def from_function_pointer(cls, f, autobatch=False, function_kwargs=None):
+        """Construct the module given a function pointer
+
+        Args:
+            f (object): A function pointer
+            autobatch (bool): Whether to run function on an interable of entries
+            function_kwargs (dict): Any default options for this function
+        """
+        return cls(f.__module__, f.__name__, autobatch, function_kwargs)
+
+    def _get_handler(self):
+        return 'python_shim.run_static_method'
+
+    def to_dict(self):
+        output = super(PythonStaticMethodModel, self).to_dict()
+
+        output['servable']['type'] = 'py_static_method'
+        output['servable']['method_details']['module'] = self.module
+        output['servable']['method_details']['autobatch'] = self.autobatch
+
+        return output
+
+    def list_files(self):
+        return []

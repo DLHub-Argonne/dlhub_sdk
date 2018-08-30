@@ -27,7 +27,6 @@ class TestSklearn(unittest.TestCase):
                         'model_type': 'SVC',
                         'run': {
                             'handler': 'sklearn_shim.predict_on_batch',
-                            "handler": "sklearn_shim.predict_on_batch",
                             "input": {
                                 "type": "ndarray",
                                 "shape": (None, 4),

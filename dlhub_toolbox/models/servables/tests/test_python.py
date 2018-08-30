@@ -1,18 +1,22 @@
 """Tests for models for generic Python functions"""
 
-from dlhub_toolbox.models.servables.python import PickledClassServableModel
+from dlhub_toolbox.models.servables.python import PickledClassServableModelBase, \
+    PythonStaticMethodModel
 from sklearn import __version__ as skl_version
 import unittest
+import math
 import os
 
 
 class TestPythonModels(unittest.TestCase):
 
+    maxDiff = 2048
+
     def test_pickle(self):
         pickle_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'model.pkl'))
 
         # Make the model
-        model = PickledClassServableModel(pickle_path, 'predict_proba')
+        model = PickledClassServableModelBase(pickle_path, 'predict_proba')
 
         # Make sure it throws value errors if inputs are not set
         with self.assertRaises(ValueError):
@@ -53,3 +57,33 @@ class TestPythonModels(unittest.TestCase):
                           })
         self.assertEqual([pickle_path], model.list_files())
 
+    def test_function(self):
+        f = math.sqrt
+
+        # Make the model
+        model = PythonStaticMethodModel.from_function_pointer(f, autobatch=False)
+
+        # Describe the inputs/outputs
+        model.set_inputs('float', 'Number')
+        model.set_outputs('float', 'Square root of the number')
+
+        # Generate the output
+        print(model.to_dict())
+        output = model.to_dict()
+        self.assertEqual(output,
+                         {'datacite':
+                              {'creators': [], 'titles': [None], 'publisher': 'DLHub',
+                               'resourceType': 'InteractiveResource'},
+                          'dlhub': {'version': '0.1', 'domain': None, 'visible_to': ['public']},
+                          'servable': {'langugage': 'python', 'type': 'py_static_method',
+                                       'run': {'handler': 'python_shim.run_static_method',
+                                               'input': {'type': 'float',
+                                                         'description': 'Number'},
+                                               'output': {'type': 'float',
+                                                          'description': 'Square root of the number'}},
+                                       'method_details': {'module': 'math',
+                                                          'method_name': 'sqrt',
+                                                          'default_args': {},
+                                                          'autobatch': False},
+                                       'requirements': {}}
+                          })
