@@ -6,7 +6,7 @@ from dlhub_toolbox.models import __dlhub_version__
 
 
 class TestSklearn(unittest.TestCase):
-    maxDiff = 2048
+    maxDiff = 4096
 
     def test_load_model(self):
         model_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'model.pkl'))
@@ -36,7 +36,7 @@ class TestSklearn(unittest.TestCase):
                             "output": {
                                 "type": "ndarray",
                                 "shape": (None, 3),
-                                "description": "Predictions of the machine learning model.",
+                                "description": "Probabilities for membership in each of 3 classes",
                                 "items": "float"
                             }
                         },
