@@ -98,7 +98,7 @@ class ScikitLearnModel(BaseServableModel):
 
         # Determine whether the object is a classifier
         self.classifier = is_classifier(model)
-        if self.classes is None:
+        if self.classes is None and self.classifier:
             raise Exception('Classes (or at least number of classes) must be specified '
                             'in initializer for classifiers.')
 
@@ -133,7 +133,7 @@ class ScikitLearnModel(BaseServableModel):
         return {
             'type': 'ndarray',
             'shape': (None, 1 if self.classes is None else len(self.classes)),
-            'description': 'Predictions of the machine learning model.' if self.classifier else
+            'description': 'Predictions of the machine learning model.' if not self.classifier else
                     'Probabilities for membership in each of {} classes'.format(len(self.classes)),
             'items': 'float'
         }
