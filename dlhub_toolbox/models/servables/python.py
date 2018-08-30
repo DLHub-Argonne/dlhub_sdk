@@ -147,7 +147,7 @@ class BasePythonServableModel(BaseServableModel):
         return output
 
 
-class PickledClassServableModelBase(BasePythonServableModel):
+class PickledClassServableModel(BasePythonServableModel):
     """Model for describing servables where the function to be performed is a method of a class.
 
     To use this model, you must define the path to the pickled object and the function of that
@@ -164,7 +164,7 @@ class PickledClassServableModelBase(BasePythonServableModel):
             function_kwargs (dict): Names and values of any other argument of the function to set
                 the values must be JSON serializable.
         """
-        super(PickledClassServableModelBase, self).__init__(method, function_kwargs)
+        super(PickledClassServableModel, self).__init__(method, function_kwargs)
 
         self.path = path
 
@@ -179,7 +179,7 @@ class PickledClassServableModelBase(BasePythonServableModel):
         return [self.path]
 
     def to_dict(self):
-        output = super(PickledClassServableModelBase, self).to_dict()
+        output = super(PickledClassServableModel, self).to_dict()
 
         # Add pickle-specific options
         output['servable']['type'] = 'pickled_class'

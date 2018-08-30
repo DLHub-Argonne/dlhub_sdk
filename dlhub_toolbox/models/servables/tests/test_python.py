@@ -1,6 +1,6 @@
 """Tests for models for generic Python functions"""
 
-from dlhub_toolbox.models.servables.python import PickledClassServableModelBase, \
+from dlhub_toolbox.models.servables.python import PickledClassServableModel, \
     PythonStaticMethodModel
 from sklearn import __version__ as skl_version
 import unittest
@@ -16,7 +16,7 @@ class TestPythonModels(unittest.TestCase):
         pickle_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'model.pkl'))
 
         # Make the model
-        model = PickledClassServableModelBase(pickle_path, 'predict_proba')
+        model = PickledClassServableModel(pickle_path, 'predict_proba')
 
         # Make sure it throws value errors if inputs are not set
         with self.assertRaises(ValueError):
