@@ -108,7 +108,9 @@ class ScikitLearnModel(BaseServableModel):
         # Store the model information
         output['servable'].update({
             'type': 'scikit-learn',
-            'version': self.sklearn_version,
+            'dependencies': {
+                'python': {'scikit-learn': self.sklearn_version}
+            },
             'location': self.path,
             'language': 'python',
             'model_type': self.model_type,

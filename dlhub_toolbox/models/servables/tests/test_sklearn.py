@@ -23,7 +23,9 @@ class TestSklearn(unittest.TestCase):
                         'language': 'python',
                         'type': 'scikit-learn',
                         'location': model_path,
-                        'version': '0.19.1',
+                        'dependencies': {
+                            'python': {'scikit-learn': '0.19.1'}
+                        },
                         'model_type': 'SVC',
                         'run': {
                             'handler': 'sklearn_shim.predict_on_batch',

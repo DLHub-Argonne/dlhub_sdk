@@ -50,11 +50,12 @@ class TestPythonModels(unittest.TestCase):
                                        'method_details': {'class_name': 'SVC',
                                                           'method_name': 'predict_proba',
                                                           'default_args': {}},
-                                       'requirements': {
-                                           'scikit-learn': skl_version,
-                                           'pytorch': '0.1.2'
-                                       }}
-                          })
+                                       'dependencies': {
+                                           'python': {
+                                               'scikit-learn': skl_version,
+                                               'pytorch': '0.1.2'
+                                           }}
+                          }})
         self.assertEqual([pickle_path], model.list_files())
 
     def test_function(self):
@@ -85,5 +86,5 @@ class TestPythonModels(unittest.TestCase):
                                                           'method_name': 'sqrt',
                                                           'default_args': {},
                                                           'autobatch': False},
-                                       'requirements': {}}
+                                       'dependencies': {'python': {}}}
                           })

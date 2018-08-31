@@ -1,7 +1,8 @@
 # DLHub Toolbox
 [![Build Status](https://travis-ci.org/DLHub-Argonne/dlhub_toolbox.svg?branch=master)](https://travis-ci.org/DLHub-Argonne/dlhub_toolbox)[![Coverage Status](https://coveralls.io/repos/github/DLHub-Argonne/dlhub_toolbox/badge.svg?branch=master)](https://coveralls.io/github/DLHub-Argonne/dlhub_toolbox?branch=master)
 
-DLHub Toolbox contains scripts designed to make it easier to submit datasets and machine learning models to the Data and Learning Hub for Science (DLHub). This package contains tools for formatting descriptions of datasets and machine learning models in the format required by DLHub, and a wrapper around the API for sending them to DLHub for publication.
+DLHub Toolbox contains scripts designed to make it easier to submit datasets and machine learning models to the Data and Learning Hub for Science (DLHub). 
+This package provides utility functions for building data in the correct schema for DLHub and tools that automatically extract metadata from common types of datasets and ML models.
 
 ## Installation
 
@@ -216,7 +217,11 @@ The toolbox will inspect the pickle file to determine the type of the model and 
       }
     },
     "type": "scikit-learn",
-    "version": "0.19.1",
+      "dependencies": {
+        "python": {
+          "scikit-learn": "0.19.1"
+      }
+    },
     "location": "model.pkl",
     "language": "python",
     "model_type": "SVC",

@@ -141,7 +141,7 @@ class BasePythonServableModel(BaseServableModel):
                 'method_name': self.method,
                 'default_args': self.function_kwargs
             },
-            'requirements': self.requirements
+            'dependencies': {'python': self.requirements}
         })
 
         return output
