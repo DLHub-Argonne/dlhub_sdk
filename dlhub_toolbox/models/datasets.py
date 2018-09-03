@@ -18,7 +18,7 @@ class Dataset(BaseMetadataModel):
         output = super(Dataset, self).to_dict()
 
         # Add the datacite type as Dataset
-        output['datacite']['resourceType'] = 'Dataset'
+        output['datacite']['resourceType'] = {'resourceTypeGeneral': 'Dataset'}
 
         return output
 

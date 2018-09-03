@@ -1,9 +1,13 @@
+from datetime import datetime
 import unittest
 import os
 
 from dlhub_toolbox.models.servables.sklearn import ScikitLearnModel
 from dlhub_toolbox.models import __dlhub_version__
 from dlhub_toolbox.utils.schemas import validate_against_dlhub_schema
+
+
+_year = str(datetime.now().year)
 
 
 class TestSklearn(unittest.TestCase):
@@ -14,12 +18,17 @@ class TestSklearn(unittest.TestCase):
 
         # Load the model
         model_info = ScikitLearnModel(model_path, n_input_columns=4, classes=3)
+        model_info.set_title('Sklearn example')
         expected = {'datacite': {'creators': [], 'publisher': 'DLHub',
-                                 'titles': [None],
-                                 'resourceType': "InteractiveResource"},
+                                 'titles': [{'title': 'Sklearn example'}],
+                                 'resourceType': {'resourceTypeGeneral': "InteractiveResource"},
+                                 'identifier': {'identifier': '10.YET/UNASSIGNED',
+                                                'identifierType': 'DOI'},
+                                 'publicationYear': _year,
+                                 },
                     "dlhub": {"version": __dlhub_version__,
                               "visible_to": ["public"],
-                              "domain": None},
+                              "domain": ""},
                     'servable': {
                         'language': 'python',
                         'type': 'scikit-learn',
@@ -32,13 +41,13 @@ class TestSklearn(unittest.TestCase):
                             'handler': 'sklearn_shim.predict_on_batch',
                             "input": {
                                 "type": "ndarray",
-                                "shape": (None, 4),
+                                "shape": [None, 4],
                                 "description": "List of records to evaluate with model. Each record is a list of 4 variables.",
                                 "items": "float"
                             },
                             "output": {
                                 "type": "ndarray",
-                                "shape": (None, 3),
+                                "shape": [None, 3],
                                 "description": "Probabilities for membership in each of 3 classes",
                                 "items": "float"
                             }

@@ -12,7 +12,7 @@ class BaseServableModel(BaseMetadataModel):
         #   web servies for interacting with these models ("query/response portals" are
         #   defined as "InteractiveResources") rather than downloading the source code
         #   (which would fit the definition of software)
-        output['datacite']['resourceType'] = 'InteractiveResource'
+        output['datacite']['resourceType'] = {'resourceTypeGeneral': 'InteractiveResource'}
 
         # Add the model running-information
         output['servable'] = {'run': {

@@ -26,4 +26,4 @@ def simplify_numpy_dtype(dtype):
     elif kind == "S" or kind == "U":
         return "string"
     else:
-        return "object"
+        return "python object"

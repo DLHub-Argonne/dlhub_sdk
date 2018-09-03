@@ -72,7 +72,7 @@ class BasePythonServableModel(BaseServableModel):
         Args:
             data_type (string): Type of the input data
             description (string): Human-friendly description of the data
-            shape (tuple): Required for data_type of list or ndarray. Use `None` for dimensions that
+            shape (list): Required for data_type of list or ndarray. Use `None` for dimensions that
                 can have any numbers of values
             kwargs (dict): Any other details particular to this kind of data
         """
@@ -86,7 +86,7 @@ class BasePythonServableModel(BaseServableModel):
         if data_type == "list" or data_type == "ndarray":
             if len(shape) == 0:
                 raise ValueError('Shape must be specified for list-like data_types')
-            self.input['shape'] = shape
+            self.input['shape'] = list(shape)
 
         # Add in any kwargs
         self.input.update(**kwargs)
@@ -99,7 +99,7 @@ class BasePythonServableModel(BaseServableModel):
         Args:
             data_type (string): Type of the output data
             description (string): Human-friendly description of the data
-            shape (tuple): Required for data_type of list or ndarray. Use `None` for dimensions that
+            shape (list): Required for data_type of list or ndarray. Use `None` for dimensions that
                 can have any numbers of values
             kwargs (dict): Any other details particular to this kind of data
         """
@@ -113,7 +113,7 @@ class BasePythonServableModel(BaseServableModel):
         if data_type == "list" or data_type == "ndarray":
             if len(shape) == 0:
                 raise ValueError('Shape must be specified for list-like data_types')
-            self.output['shape'] = shape
+            self.output['shape'] = list(shape)
 
         # Add in any kwargs
         self.output.update(**kwargs)

@@ -1,4 +1,5 @@
 from itertools import zip_longest
+from datetime import datetime
 
 __dlhub_version__ = '0.1'
 
@@ -23,8 +24,10 @@ class BaseMetadataModel:
         self.rights = []
         self.abstract = None
         self.methods = None
-        self.domain = None
+        self.domain = ''
         self.visible_to = ['public']
+        self.doi = None
+        self.publication_year = str(datetime.now().year)
 
     def set_authors(self, authors, affiliations=list()):
         """Add authors to a dataset
@@ -94,14 +97,36 @@ class BaseMetadataModel:
     def set_visibility(self, visible_to):
         """Set the list of people this artifact should be visible to.
 
-        By default, it will be visible to anyone (["public"])
-
-        TODO: Define what kind of arguments this should take (Group IDs?)
+        By default, it will be visible to anyone (["public"]).
 
         Args:
-            visible_to ([string]): List of allowed users
+            visible_to ([string]): List of allowed users and groups, listed by GlobusAuth UUID
         """
         self.visible_to = visible_to
+        return self
+
+    def set_doi(self, doi):
+        """Set the DOI of this object, if available
+
+        This function is only for advanced usage. Most users of the toolbox will not
+        know the DOI before sending the doi in to DLHub.
+
+        Args:
+            doi (string): DOI of the object
+        """
+        self.doi = doi
+        return self
+
+    def set_publication_year(self, year):
+        """Define the publication year
+
+        This function is only for advanced usage. Normally, this will be assigned automatically
+
+        Args:
+            year (string): Publication year
+        """
+
+        self.publication_year = str(year)
         return self
 
     def add_rights(self, uri=None, rights=None):
@@ -129,7 +154,7 @@ class BaseMetadataModel:
         return self
 
     def add_funding_reference(self, name, identifier=None, identifier_type=None,
-                              award_number=None, award_title=None):
+                              award_number=None, award_title=None, award_uri=None):
         """Add a funding source to the list of resources
 
         Args:
@@ -138,6 +163,7 @@ class BaseMetadataModel:
             identifier_type (string): Type of the identifier (ISNI, GRID, Crossref Funder ID, Other)
             award_number (string): Code assigned by the funder
             award_title (string): Title of the award
+            award_uri (string): URI of the award
         """
 
         # Error checking
@@ -152,7 +178,9 @@ class BaseMetadataModel:
             funder['funderIdentifier'] = {'funderIdentifier': identifier,
                                           'funderIdentifierType': identifier_type}
         if award_number is not None:
-            funder['awardNumber'] = award_number
+            funder['awardNumber'] = {'awardNumber': award_number}
+            if award_uri is not None:
+                funder['awardNumber']['awardURI'] = award_uri
         if award_title is not None:
             funder['awardTitle'] = award_title
 
@@ -219,10 +247,17 @@ class BaseMetadataModel:
 
         Returns:
             (dict) A description of the dataset in a form suitable for download"""
+
+        # Check for required fields
+        if self.title is None:
+            raise ValueError('Title must be specified. Use `set_title`')
+
+        # Populate initial fields
         out = {"datacite": {
             "creators": self.authors,
-            "titles": [self.title],
+            "titles": [{'title': self.title}],
             "publisher": "DLHub",
+            "publicationYear": self.publication_year
         }}
 
         # Add optional fields
@@ -236,6 +271,12 @@ class BaseMetadataModel:
             out['datacite']['alternateIdentifiers'] = self.alternate_ident
         if len(self.rights) > 0:
             out['datacite']['rightsList'] = self.rights
+
+        # Add in the DOI, if known. Use a fake DOI otherwise
+        doi = self.doi
+        if doi is None:
+            doi = '10.YET/UNASSIGNED'
+        out['datacite']['identifier'] = {'identifier': doi, 'identifierType': 'DOI'}
 
         # Add in descriptions
         desc = []

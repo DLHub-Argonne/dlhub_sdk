@@ -16,4 +16,4 @@ class TestTypes(unittest.TestCase):
         self.assertEqual(simplify_numpy_dtype(date.dtype), 'datetime')
         self.assertEqual(simplify_numpy_dtype((date - date).dtype), 'timedelta')
         self.assertEqual(simplify_numpy_dtype(np.dtype('str')), 'string')
-        self.assertEqual(simplify_numpy_dtype(np.dtype('object')), 'object')
+        self.assertEqual(simplify_numpy_dtype(np.dtype('object')), 'python object')

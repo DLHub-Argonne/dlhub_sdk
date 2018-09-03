@@ -125,7 +125,7 @@ class ScikitLearnModel(BaseServableModel):
     def _get_input(self):
         return {
             'type': 'ndarray',
-            'shape': (None, self.n_input_columns),
+            'shape': [None, self.n_input_columns],
             'description': 'List of records to evaluate with model. Each record is '
                            'a list of {} variables.'.format(self.n_input_columns),
             'items': 'float'
@@ -134,7 +134,7 @@ class ScikitLearnModel(BaseServableModel):
     def _get_output(self):
         return {
             'type': 'ndarray',
-            'shape': (None, 1 if self.classes is None else len(self.classes)),
+            'shape': [None, 1 if self.classes is None else len(self.classes)],
             'description': 'Predictions of the machine learning model.' if not self.classifier else
                     'Probabilities for membership in each of {} classes'.format(len(self.classes)),
             'items': 'float'
