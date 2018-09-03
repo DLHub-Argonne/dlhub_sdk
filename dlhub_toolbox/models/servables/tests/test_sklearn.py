@@ -3,6 +3,7 @@ import os
 
 from dlhub_toolbox.models.servables.sklearn import ScikitLearnModel
 from dlhub_toolbox.models import __dlhub_version__
+from dlhub_toolbox.utils.schemas import validate_against_dlhub_schema
 
 
 class TestSklearn(unittest.TestCase):
@@ -48,3 +49,4 @@ class TestSklearn(unittest.TestCase):
                                          "  tol=0.001, verbose=False)"
                     }}
         self.assertEquals(model_info.to_dict(), expected)
+        validate_against_dlhub_schema(model_info.to_dict(), 'servable')

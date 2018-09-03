@@ -2,3 +2,4 @@ pandas==0.22.0
 scikit-learn==0.19.1
 scipy==0.19.1
 requests==2.18.4
+jsonschema==2.6.0

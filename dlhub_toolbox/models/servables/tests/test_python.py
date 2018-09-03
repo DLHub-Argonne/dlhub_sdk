@@ -7,6 +7,8 @@ import unittest
 import math
 import os
 
+from dlhub_toolbox.utils.schemas import validate_against_dlhub_schema
+
 
 class TestPythonModels(unittest.TestCase):
 
@@ -57,6 +59,7 @@ class TestPythonModels(unittest.TestCase):
                                            }}
                           }})
         self.assertEqual([pickle_path], model.list_files())
+        validate_against_dlhub_schema(output, 'servable')
 
     def test_function(self):
         f = math.sqrt
@@ -88,3 +91,4 @@ class TestPythonModels(unittest.TestCase):
                                                           'autobatch': False},
                                        'dependencies': {'python': {}}}
                           })
+        validate_against_dlhub_schema(output, 'servable')
