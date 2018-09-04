@@ -124,7 +124,7 @@ class TabularDataset(Dataset):
         return self
 
     def list_files(self):
-        return [self.path]
+        return [self.path] + super(TabularDataset, self).list_files()
 
     def to_dict(self):
         output = super(TabularDataset, self).to_dict()

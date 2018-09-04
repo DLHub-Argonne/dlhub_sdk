@@ -1,5 +1,7 @@
 from itertools import zip_longest
 from datetime import datetime
+from zipfile import ZipFile
+import os
 
 __dlhub_version__ = '0.1'
 
@@ -28,6 +30,7 @@ class BaseMetadataModel:
         self.visible_to = ['public']
         self.doi = None
         self.publication_year = str(datetime.now().year)
+        self.files = []
 
     def set_authors(self, authors, affiliations=list()):
         """Add authors to a dataset
@@ -242,6 +245,20 @@ class BaseMetadataModel:
         })
         return self
 
+    def add_files(self, files):
+        """Add files that should be distributed with this artifact
+
+        Args:
+            files ([string]): Paths of files that should be published
+        """
+
+        # Type checking
+        if isinstance(files, str):
+            files = [files]
+
+        self.files.extend(files)
+        return self
+
     def to_dict(self):
         """Render the dataset to a JSON description
 
@@ -301,4 +318,40 @@ class BaseMetadataModel:
 
         Returns:
             ([string]) list of file paths"""
-        raise NotImplementedError()
+        return self.files
+
+    def get_zip_file(self, path):
+        """Write all the listed files to a ZIP object
+
+        Takes all of the files returned by `list_files`. First determines the largest common
+        path of all files, and preserves directory structure by using this common path as the
+        root directory. For example, if the files are "/home/a.pkl" and "/home/a/b.dat", the common
+        directory is "/home" and the files will be stored in the Zip as "a.pkl" and "a/b.dat"
+
+        Args:
+            path (string): Path for the ZIP File
+        Returns:
+            (string): Base path for the ZIP file (useful for adjusting the paths of the files
+                included in the metadata model)
+        """
+
+        # Open the zip file in "exclusively create" (x) mode
+        with ZipFile(path, 'x') as newzip:
+            # Get the files
+            files = self.list_files()
+
+            # Shortcut: if no files
+            if len(files) == 0:
+                return
+
+            # Get the directories for all the files
+            directories = [f if os.path.isdir(f) else os.path.dirname(f) for f in files]
+
+            # Get the largest common path
+            common_path = os.path.commonpath(os.path.abspath(d) for d in directories)
+
+            # Add each file to the directory
+            for file in files:
+                newzip.write(file, arcname=os.path.relpath(file, common_path))
+
+            return common_path

@@ -176,7 +176,7 @@ class PickledClassServableModel(BasePythonServableModel):
         return 'python_shim.run_class_method'
 
     def list_files(self):
-        return [self.path]
+        return [self.path] + super(PickledClassServableModel, self).list_files()
 
     def to_dict(self):
         output = super(PickledClassServableModel, self).to_dict()
@@ -236,5 +236,3 @@ class PythonStaticMethodModel(BasePythonServableModel):
 
         return output
 
-    def list_files(self):
-        return []

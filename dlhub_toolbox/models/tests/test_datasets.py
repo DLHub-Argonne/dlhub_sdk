@@ -2,6 +2,8 @@ from dlhub_toolbox.models.datasets import Dataset, TabularDataset
 from dlhub_toolbox.models import __dlhub_version__
 
 from datetime import datetime
+from tempfile import mkstemp
+from zipfile import ZipFile
 import unittest
 import os
 
@@ -100,6 +102,42 @@ class TestModels(unittest.TestCase):
                                                    "format": "csv", "read_options": {}}})
         validate_against_dlhub_schema(m.to_dict(), "dataset")
 
+    def test_zip(self):
+        """Test generating a zip file with the requested files"""
+
+        data_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'test.csv'))
+        m = TabularDataset(data_path)
+
+        # Create a temp file for the ZIP
+        fp, temp_path = mkstemp(".zip")
+        os.close(fp)
+        os.unlink(temp_path)
+
+        try:
+            # Test making the ZIP file with just the dataset
+            cp = m.get_zip_file(temp_path)
+            self.assertEqual(os.path.abspath(os.path.dirname(data_path)), cp)
+
+            # Make sure it has only one file ('test.csv')
+            with ZipFile(temp_path) as zf:
+                z_files = set(f.filename for f in zf.filelist)
+                self.assertEqual({'test.csv'}, z_files)
+
+            # Delete the ZIP file (we are in exclusive create mode)
+            os.unlink(temp_path)
+
+            # Add the `dataset.py` file in the directory below this one
+            m.add_files(os.path.join(os.path.dirname(data_path), '..', 'datasets.py'))
+
+            m.get_zip_file(temp_path)
+            with ZipFile(temp_path) as zf:
+                z_files = set(f.filename for f in zf.filelist)
+                self.assertEqual({'datasets.py', 'tests/test.csv'}, z_files)
+
+            self.assertEqual(os.path.abspath(os.path.dirname(data_path)), cp)
+
+        finally:
+            os.unlink(temp_path)
 
 if __name__ == "__main__":
     unittest.main()
