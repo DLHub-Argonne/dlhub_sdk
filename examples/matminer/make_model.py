@@ -19,6 +19,8 @@ data.sort_values('e_above_hull', ascending=True, inplace=True)
 data.drop_duplicates('integer_formula', keep='first', inplace=True)
 print('Reduced dataset to {} unique compositions.'.format(len(data)))
 
+data.reset_index(inplace=True, drop=True)
+
 # Create the featurizer, which will take the composition as input
 featurizer = MultipleFeaturizer([
       cf.Stoichiometry(),
