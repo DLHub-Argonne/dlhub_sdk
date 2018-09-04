@@ -136,6 +136,13 @@ class TestModels(unittest.TestCase):
 
             self.assertEqual(os.path.abspath(os.path.dirname(data_path)), cp)
 
+            # Test an empty ZIP file
+            os.unlink(temp_path)
+
+            Dataset().get_zip_file(temp_path)
+            with ZipFile(temp_path) as zf:
+                self.assertEqual(0, len(zf.filelist))
+
         finally:
             os.unlink(temp_path)
 
