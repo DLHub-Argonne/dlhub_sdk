@@ -139,7 +139,8 @@ class TestModels(unittest.TestCase):
             # Test an empty ZIP file
             os.unlink(temp_path)
 
-            Dataset().get_zip_file(temp_path)
+            cp = Dataset().get_zip_file(temp_path)
+            self.assertEqual(cp, '.')
             with ZipFile(temp_path) as zf:
                 self.assertEqual(0, len(zf.filelist))
 

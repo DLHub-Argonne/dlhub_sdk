@@ -342,7 +342,7 @@ class BaseMetadataModel:
 
             # Shortcut: if no files
             if len(files) == 0:
-                return
+                return '.'
 
             # Get the directories for all the files
             directories = [f if os.path.isdir(f) else os.path.dirname(f) for f in files]
