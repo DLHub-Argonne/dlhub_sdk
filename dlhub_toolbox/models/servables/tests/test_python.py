@@ -49,7 +49,8 @@ class TestPythonModels(unittest.TestCase):
                                               'identifierType': 'DOI'},
                                'publicationYear': _year
                                },
-                          'dlhub': {'version': '0.1', 'domain': "", 'visible_to': ['public']},
+                          'dlhub': {'version': '0.1', 'domain': "", 'visible_to': ['public'],
+                                    "id": None},
                           'servable': {'langugage': 'python', 'type': 'pickled_class',
                                        'location': pickle_path,
                                        'run': {'handler': 'python_shim.run_class_method',
@@ -94,7 +95,8 @@ class TestPythonModels(unittest.TestCase):
                                               'identifierType': 'DOI'},
                                'publicationYear': _year
                            },
-                          'dlhub': {'version': '0.1', 'domain': '', 'visible_to': ['public']},
+                          'dlhub': {'version': '0.1', 'domain': '', 'visible_to': ['public'],
+                                    "id": None},
                           'servable': {'langugage': 'python', 'type': 'py_static_method',
                                        'run': {'handler': 'python_shim.run_static_method',
                                                'input': {'type': 'float',

@@ -31,6 +31,7 @@ class BaseMetadataModel:
         self.doi = None
         self.publication_year = str(datetime.now().year)
         self.files = []
+        self.dlhub_id = None
 
     def set_authors(self, authors, affiliations=list()):
         """Add authors to a dataset
@@ -118,6 +119,17 @@ class BaseMetadataModel:
             doi (string): DOI of the object
         """
         self.doi = doi
+        return self
+
+    def set_dlhub_id(self, dlhub_id):
+        """Set the identifier of this object
+
+        This function is only for advanced users.
+
+        Args:
+            dlhub_id (string): UUID of artifact
+        """
+        self.dlhub_id = dlhub_id
         return self
 
     def set_publication_year(self, year):
@@ -308,7 +320,8 @@ class BaseMetadataModel:
         out['dlhub'] = {
             'version': __dlhub_version__,
             'domain': self.domain,
-            'visible_to': self.visible_to
+            'visible_to': self.visible_to,
+            'id': self.dlhub_id
         }
         return out
 

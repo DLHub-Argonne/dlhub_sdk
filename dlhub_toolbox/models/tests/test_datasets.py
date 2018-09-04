@@ -5,6 +5,7 @@ from datetime import datetime
 from tempfile import mkstemp
 from zipfile import ZipFile
 import unittest
+import uuid
 import os
 
 from dlhub_toolbox.utils.schemas import validate_against_dlhub_schema
@@ -18,6 +19,7 @@ class TestModels(unittest.TestCase):
     maxDiff = None
 
     def test_dataset(self):
+        my_uuid = str(uuid.uuid1())
         m = Dataset().set_authors(["Ward, Logan"], ["University of Chicago"])\
             .set_title("Example dataset").add_alternate_identifier("10.11", "DOI")\
             .add_related_identifier("10.11", "DOI", 'IsDescribedBy')\
@@ -25,7 +27,8 @@ class TestModels(unittest.TestCase):
             .set_version(1)\
             .add_rights("https://www.gnu.org/licenses/gpl-3.0.en.html", "GPL v3.0")\
             .set_abstract("Abstract").set_methods("Methods")\
-            .set_visibility(['public']).set_domain("materials science")
+            .set_visibility(['public']).set_domain("materials science")\
+            .set_dlhub_id(my_uuid)
         self.assertEqual(m.to_dict(),
                          {"datacite":
                               {"creators": [{"givenName": "Logan", "familyName": "Ward",
@@ -66,7 +69,8 @@ class TestModels(unittest.TestCase):
                           "dlhub": {
                               "version": __dlhub_version__,
                               "visible_to": ["public"],
-                              "domain": "materials science"
+                              "domain": "materials science",
+                              "id": my_uuid
                           }})
         validate_against_dlhub_schema(m.to_dict(), "dataset")
 
@@ -93,7 +97,8 @@ class TestModels(unittest.TestCase):
                                                     },
                                        "dlhub": {"version": __dlhub_version__,
                                                  "visible_to": ["public"],
-                                                 "domain": ""},
+                                                 "domain": "",
+                                                 "id": None},
                                        "dataset": {"location": data_path, "columns": [
                                            {"name": "x", "description": "Input variable",
                                             "type": "integer", "units": "cm"},

@@ -28,7 +28,7 @@ class TestSklearn(unittest.TestCase):
                                  },
                     "dlhub": {"version": __dlhub_version__,
                               "visible_to": ["public"],
-                              "domain": ""},
+                              "domain": "", "id": None},
                     'servable': {
                         'language': 'python',
                         'type': 'scikit-learn',
