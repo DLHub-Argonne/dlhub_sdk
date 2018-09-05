@@ -110,7 +110,7 @@ class ScikitLearnModel(BaseServableModel):
 
         # Store any special keyword arguments for the predict function
         model_obj = model.steps[-1][-1] if self.pipeline else model
-        predict_fun = model_obj.predict_proba if self.classifier else model_obj.predict_proba
+        predict_fun = model_obj.predict_proba if self.classifier else model_obj.predict
         spec = inspect.signature(predict_fun)
         self.predict_options = dict((k, v.default) for k, v in spec.parameters.items() if k != "X")
 
