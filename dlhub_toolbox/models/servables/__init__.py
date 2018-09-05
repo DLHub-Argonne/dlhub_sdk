@@ -18,7 +18,8 @@ class BaseServableModel(BaseMetadataModel):
         output['servable'] = {'run': {
             'handler': self._get_handler(),
             'input': self._get_input(),
-            'output': self._get_output()
+            'output': self._get_output(),
+            'parameters': self._get_parameters()
         }}
 
         return output
@@ -52,5 +53,13 @@ class BaseServableModel(BaseMetadataModel):
                 - description: Human-friendly descriptio of the model
                 - shape: Shape of the array, for list-like inputs
                 - items: Type of the items in the list
+        """
+        raise NotImplementedError()
+
+    def _get_parameters(self):
+        """Generate a dictionary of parameters of the function and their default values
+
+        Returns:
+            (dict) Default parameters for the servable
         """
         raise NotImplementedError()

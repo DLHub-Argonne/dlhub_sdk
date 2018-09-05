@@ -1,11 +1,10 @@
+from dlhub_toolbox.models.servables import BaseServableModel
 from sklearn.base import is_classifier
 from sklearn.pipeline import Pipeline
-
-from dlhub_toolbox.models.servables import BaseServableModel
-import pickle as pkl
 from sklearn.externals import joblib
-
 import sklearn.base as sklbase
+import pickle as pkl
+import inspect
 
 
 # scikit-learn stores the version used to create a model in the pickle file,
@@ -45,7 +44,7 @@ class ScikitLearnModel(BaseServableModel):
         """
         # Set attributes
         self.path = path
-        self.serialization_method = None
+        self.serialization_method = serialization_method
         super(ScikitLearnModel, self).__init__()
 
         # Create the metadata variables
@@ -53,6 +52,7 @@ class ScikitLearnModel(BaseServableModel):
         self.model_type = None
         self.classifier = None
         self.model_summary = None
+        self.predict_options = {}
 
         # Store the model input/output information
         self.n_input_columns = n_input_columns
@@ -63,35 +63,41 @@ class ScikitLearnModel(BaseServableModel):
                 self.classes = ['Class {}'.format(i+1) for i in range(classes)]
 
         # Load other metadata
-        self.load_model(path, serialization_method)
+        model = self._load_model()
+        self._inspect_model(model)
 
-    def load_model(self, path, serialization_method="pickle"):
-        """Load a scikit-learn model from disk and extract metadata
+    def _load_model(self):
+        """Load a scikit-learn model from disk and extract basic metadata
 
-        Args:
-            path (string): Path to model file
-            serialization_method (string): Library used to serialize model
+        Returns:
+            (BaseEstimator) A scikit-learn model object
         """
-
-        # Save the model and serialization method
-        self.path = path
-        self.serialization_method = serialization_method
 
         # Load in the model
         global _sklearn_version_global
         _sklearn_version_global = None  # Set a default value
-        if serialization_method == "pickle":
-            with open(path, 'rb') as fp:
+        if self.serialization_method == "pickle":
+            with open(self.path, 'rb') as fp:
                 model = pkl.load(fp)
-        elif serialization_method == "joblib":
-            model = joblib.load(path)
+        elif self.serialization_method == "joblib":
+            model = joblib.load(self.path)
         else:
-            raise Exception('Unknown serialization method: {}'.format(serialization_method))
+            raise Exception('Unknown serialization method: {}'.format(self.serialization_method))
 
         # Get some basic information about the model
         self.sklearn_version = _sklearn_version_global  # Stolen during the unpickling process
+
+        return model
+
+    def _inspect_model(self, model):
+        """Extract metadata that describes an ML model
+
+        Args:
+              model (BaseEstimator): Model to be inspected
+        """
+        self.pipeline = isinstance(model, Pipeline)
         self.model_type = type(model.steps[-1][-1]).__name__ \
-                if isinstance(model, Pipeline) else type(model).__name__
+            if self.pipeline else type(model).__name__
 
         # Get a summary about the model
         self.model_summary = str(model)  # sklearn prints out a text summary of the model
@@ -101,6 +107,12 @@ class ScikitLearnModel(BaseServableModel):
         if self.classes is None and self.classifier:
             raise Exception('Classes (or at least number of classes) must be specified '
                             'in initializer for classifiers.')
+
+        # Store any special keyword arguments for the predict function
+        model_obj = model.steps[-1][-1] if self.pipeline else model
+        predict_fun = model_obj.predict_proba if self.classifier else model_obj.predict_proba
+        spec = inspect.signature(predict_fun)
+        self.predict_options = dict((k, v.default) for k, v in spec.parameters.items() if k != "X")
 
     def to_dict(self):
         output = super(ScikitLearnModel, self).to_dict()
@@ -139,6 +151,9 @@ class ScikitLearnModel(BaseServableModel):
                     'Probabilities for membership in each of {} classes'.format(len(self.classes)),
             'items': 'float'
         }
+
+    def _get_parameters(self):
+        return self.predict_options
 
     def list_files(self):
         return [self.path]

@@ -50,11 +50,12 @@ class TestSklearn(unittest.TestCase):
                                 "shape": [None, 3],
                                 "description": "Probabilities for membership in each of 3 classes",
                                 "items": "float"
-                            }
+                            },
+                            "parameters": {}
                         },
                         'model_summary': "SVC(C=1, cache_size=200, class_weight=None, coef0=0.0,\n"
                                          "  decision_function_shape='ovr', degree=3, gamma='auto', kernel='linear',\n"
-                                         "  max_iter=-1, probability=False, random_state=None, shrinking=True,\n"
+                                         "  max_iter=-1, probability=True, random_state=None, shrinking=True,\n"
                                          "  tol=0.001, verbose=False)"
                     }}
         self.assertEquals(model_info.to_dict(), expected)

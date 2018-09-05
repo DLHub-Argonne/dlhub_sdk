@@ -8,7 +8,7 @@ print('Loaded {} rows with {} columns:'.format(len(data), len(data.columns)),
       data.columns.tolist())
 
 # Make the model
-model = SVC(kernel='linear', C=1)
+model = SVC(kernel='linear', C=1, probability=True)
 model.fit(data.values[:, :-1], data.values[:, -1])
 print('Trained a SVC model')
 

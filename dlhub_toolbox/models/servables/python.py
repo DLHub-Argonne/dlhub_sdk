@@ -130,6 +130,9 @@ class BasePythonServableModel(BaseServableModel):
             raise ValueError('Outputs have not been defined')
         return self.output
 
+    def _get_parameters(self):
+        return self.function_kwargs
+
     def to_dict(self):
         # Get the higher level
         output = super(BasePythonServableModel, self).to_dict()
@@ -139,7 +142,6 @@ class BasePythonServableModel(BaseServableModel):
             'langugage': 'python',
             'method_details': {
                 'method_name': self.method,
-                'default_args': self.function_kwargs
             },
             'dependencies': {'python': self.requirements}
         })

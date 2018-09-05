@@ -22,7 +22,7 @@ class TestPythonModels(unittest.TestCase):
         pickle_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'model.pkl'))
 
         # Make the model
-        model = PickledClassServableModel(pickle_path, 'predict_proba')
+        model = PickledClassServableModel(pickle_path, 'predict_proba', {'fake': 'kwarg'})
         model.set_title('Python example')
 
         # Make sure it throws value errors if inputs are not set
@@ -59,10 +59,10 @@ class TestPythonModels(unittest.TestCase):
                                                          'shape': [None, 4]},
                                                'output': {'type': 'ndarray',
                                                           'description': 'Predicted probabilities of being each iris species',
-                                                          'shape': [None, 3]}},
+                                                          'shape': [None, 3]},
+                                               'parameters': {'fake': 'kwarg'}},
                                        'method_details': {'class_name': 'SVC',
-                                                          'method_name': 'predict_proba',
-                                                          'default_args': {}},
+                                                          'method_name': 'predict_proba'},
                                        'dependencies': {
                                            'python': {
                                                'scikit-learn': skl_version,
@@ -102,10 +102,10 @@ class TestPythonModels(unittest.TestCase):
                                                'input': {'type': 'float',
                                                          'description': 'Number'},
                                                'output': {'type': 'float',
-                                                          'description': 'Square root of the number'}},
+                                                          'description': 'Square root of the number'},
+                                               'parameters': {}},
                                        'method_details': {'module': 'math',
                                                           'method_name': 'sqrt',
-                                                          'default_args': {},
                                                           'autobatch': False},
                                        'dependencies': {'python': {}}}
                           })
