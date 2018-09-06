@@ -1,9 +1,10 @@
 from itertools import zip_longest
 from datetime import datetime
 from zipfile import ZipFile
+import uuid
 import os
 
-__dlhub_version__ = '0.1'
+from dlhub_toolbox import __dlhub_version__
 
 
 class BaseMetadataModel:
@@ -131,6 +132,14 @@ class BaseMetadataModel:
         """
         self.dlhub_id = dlhub_id
         return self
+
+    def assign_dlhub_id(self):
+        """Assign the step a DLHub id
+
+        Generates a UUID, which is guaranteed to be unique
+        """
+
+        return self.set_dlhub_id(str(uuid.uuid1()))
 
     def set_publication_year(self, year):
         """Define the publication year

@@ -3,7 +3,7 @@ import unittest
 import os
 
 from dlhub_toolbox.models.servables.sklearn import ScikitLearnModel
-from dlhub_toolbox.models import __dlhub_version__
+from dlhub_toolbox import __dlhub_version__
 from dlhub_toolbox.utils.schemas import validate_against_dlhub_schema
 
 
