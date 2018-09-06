@@ -76,15 +76,14 @@ class TestPythonModels(unittest.TestCase):
         f = math.sqrt
 
         # Make the model
-        model = PythonStaticMethodModel.from_function_pointer(f, autobatch=False)
+        model = PythonStaticMethodModel.from_function_pointer(f, autobatch=True)
         model.set_title('Python example')
 
         # Describe the inputs/outputs
-        model.set_inputs('float', 'Number')
+        model.set_inputs('list', 'List of numbers', item_type='float')
         model.set_outputs('float', 'Square root of the number')
 
         # Generate the output
-        print(model.to_dict())
         output = model.to_dict()
         self.assertEqual(output,
                          {'datacite':
@@ -99,14 +98,15 @@ class TestPythonModels(unittest.TestCase):
                                     "id": None},
                           'servable': {'langugage': 'python', 'type': 'py_static_method',
                                        'run': {'handler': 'python_shim.run_static_method',
-                                               'input': {'type': 'float',
-                                                         'description': 'Number'},
+                                               'input': {'type': 'list',
+                                                         'description': 'List of numbers',
+                                                         'item_type': {'type': 'float'}},
                                                'output': {'type': 'float',
                                                           'description': 'Square root of the number'},
                                                'parameters': {}},
                                        'method_details': {'module': 'math',
                                                           'method_name': 'sqrt',
-                                                          'autobatch': False},
+                                                          'autobatch': True},
                                        'dependencies': {'python': {}}}
                           })
         validate_against_dlhub_schema(output, 'servable')

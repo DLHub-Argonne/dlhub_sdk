@@ -66,7 +66,43 @@ class BasePythonServableModel(BaseServableModel):
             self.add_requirement(p, v)
         return self
 
-    def set_inputs(self, data_type, description, shape=(), **kwargs):
+    @staticmethod
+    def _compile_argument_block(data_type, description, shape=(), item_type=None, **kwargs):
+        """Compile a list of argument descriptions into an argument_type block
+
+        Args:
+            Args:
+            data_type (string): Type of the input data
+            description (string): Human-friendly description of the data
+            shape (list): Required for data_type of list or ndarray. Use `None` for dimensions that
+                can have any numbers of values
+            item_type (string/dict): Description of the item type. Required for data_type = list
+            kwargs (dict): Any other details particular to this kind of data
+        Returns:
+            (dict) Description of method in a form compatible with DLHub
+        """
+        # Initialize the description
+        args = {
+            'type': data_type,
+            'description': description
+        }
+        # Check that shape is specified if need be
+        if data_type == "ndarray":
+            if len(shape) == 0:
+                raise ValueError('Shape must be specified for ndarrays')
+            args['shape'] = list(shape)
+
+        # Check if the item_type needs to be defined
+        if data_type == "list":
+            if item_type is None:
+                raise ValueError('Item type must be defined for lists')
+            args['item_type'] = {'type': item_type}
+
+        # Add in any kwargs
+        args.update(**kwargs)
+        return args
+
+    def set_inputs(self, data_type, description, shape=(), item_type=None, **kwargs):
         """Define the inputs to this function
 
         Args:
@@ -74,50 +110,29 @@ class BasePythonServableModel(BaseServableModel):
             description (string): Human-friendly description of the data
             shape (list): Required for data_type of list or ndarray. Use `None` for dimensions that
                 can have any numbers of values
+            item_type (string/dict): Description of the item type. Required for data_type = list
             kwargs (dict): Any other details particular to this kind of data
         """
-        # Initialize the description
-        self.input = {
-            'type': data_type,
-            'description': description
-        }
+        args = self._compile_argument_block(data_type, description, shape, item_type, **kwargs)
 
-        # Check that shape is specified if need be
-        if data_type == "list" or data_type == "ndarray":
-            if len(shape) == 0:
-                raise ValueError('Shape must be specified for list-like data_types')
-            self.input['shape'] = list(shape)
-
-        # Add in any kwargs
-        self.input.update(**kwargs)
-
+        # Set the inputs
+        self.input = args
         return self
 
-    def set_outputs(self, data_type, description, shape=(), **kwargs):
+    def set_outputs(self, data_type, description, shape=(), item_type=None, **kwargs):
         """Define the outputs to this function
 
         Args:
             data_type (string): Type of the output data
             description (string): Human-friendly description of the data
-            shape (list): Required for data_type of list or ndarray. Use `None` for dimensions that
+            shape (list): Required for data_type of ndarray. Use `None` for dimensions that
                 can have any numbers of values
+            item_type (string): Description of the type of item in a list
             kwargs (dict): Any other details particular to this kind of data
         """
-        # Initialize the description
-        self.output = {
-            'type': data_type,
-            'description': description
-        }
 
-        # Check that shape is specified if need be
-        if data_type == "list" or data_type == "ndarray":
-            if len(shape) == 0:
-                raise ValueError('Shape must be specified for list-like data_types')
-            self.output['shape'] = list(shape)
-
-        # Add in any kwargs
-        self.output.update(**kwargs)
-
+        args = self._compile_argument_block(data_type, description, shape, item_type, **kwargs)
+        self.output = args
         return self
 
     def _get_input(self):
