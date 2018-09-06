@@ -24,11 +24,16 @@ class PipelineModel(BaseMetadataModel):
         """Add a step to the pipeline
 
         Args:
-            identifier (string): The DLHub identifier of the step (a UUID)
+            identifier (string/BaseMetadataModel): The DLHub identifier of the step (a UUID)
             description (string): A short description of this step
             parameters (dict): Any options for the servable. See the list of parameters for a servable
         """
 
+        # Get the identifier if the user provides a metadata model, rather than a string
+        if isinstance(identifier, BaseMetadataModel):
+            identifier = identifier.dlhub_id
+
+        # Compose the block
         step = {
             'dlhub_id': identifier,
             'description': description,

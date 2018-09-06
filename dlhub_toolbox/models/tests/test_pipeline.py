@@ -21,7 +21,7 @@ class TestPipeline(unittest.TestCase):
         # Make the pipeline
         pipeline = PipelineModel().set_title('Average of Column Maximums')
         pipeline.add_step(step1.dlhub_id, 'Maximum of each column', {'axis': 0})
-        pipeline.add_step(step2.dlhub_id, 'Average of the maximums')
+        pipeline.add_step(step2, 'Average of the maximums')
 
         # Generate the pipeline metadata
         metadata = pipeline.to_dict()
