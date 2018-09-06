@@ -66,8 +66,9 @@ feat_info.add_related_identifier('10.1038/npjcompumats.2016.28', 'DOI', 'IsDescr
 feat_info.add_requirement('matminer', 'detect')
 
 #   Describe the inputs and outputs
-feat_info.set_inputs('ndarray', 'List of pymtagen Composition objects', shape=(None,))
-feat_info.set_outputs('ndarray', 'List of features', shape=(None, len(featurizer.feature_labels())))
+feat_info.set_inputs('list', 'List of pymtagen Composition objects',
+                     item_type={'type': 'python object', 'python_type': 'pymatgen.core.Composition'})
+feat_info.set_outputs('ndarray', 'List of features', shape=[None, len(featurizer.feature_labels())])
 
 # Make the model information
 model_info = ScikitLearnModel('model.pkl', n_input_columns=len(featurizer.feature_labels()))
@@ -83,3 +84,9 @@ print('\n--> Featurizer Information <--')
 print(json.dumps(feat_info.to_dict(), indent=2))
 print('\n--> Model Information <--')
 print(json.dumps(model_info.to_dict(), indent=2))
+
+# Save the models to disk for use when creating a pipeline
+with open('model_info.pkl', 'wb') as fp:
+    pkl.dump(model_info, fp)
+with open('featurize_info.pkl', 'wb') as fp:
+    pkl.dump(feat_info, fp)
