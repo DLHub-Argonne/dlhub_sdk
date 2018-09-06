@@ -1,5 +1,6 @@
 """Tools to annotate generic operations (e.g., class method calls) in Python"""
 from dlhub_toolbox.models.servables import BaseServableModel
+from dlhub_toolbox.utils.types import compose_argument_block
 import pickle as pkl
 import pkg_resources
 import requests
@@ -66,42 +67,6 @@ class BasePythonServableModel(BaseServableModel):
             self.add_requirement(p, v)
         return self
 
-    @staticmethod
-    def _compile_argument_block(data_type, description, shape=(), item_type=None, **kwargs):
-        """Compile a list of argument descriptions into an argument_type block
-
-        Args:
-            Args:
-            data_type (string): Type of the input data
-            description (string): Human-friendly description of the data
-            shape (list): Required for data_type of list or ndarray. Use `None` for dimensions that
-                can have any numbers of values
-            item_type (string/dict): Description of the item type. Required for data_type = list
-            kwargs (dict): Any other details particular to this kind of data
-        Returns:
-            (dict) Description of method in a form compatible with DLHub
-        """
-        # Initialize the description
-        args = {
-            'type': data_type,
-            'description': description
-        }
-        # Check that shape is specified if need be
-        if data_type == "ndarray":
-            if len(shape) == 0:
-                raise ValueError('Shape must be specified for ndarrays')
-            args['shape'] = list(shape)
-
-        # Check if the item_type needs to be defined
-        if data_type == "list":
-            if item_type is None:
-                raise ValueError('Item type must be defined for lists')
-            args['item_type'] = {'type': item_type}
-
-        # Add in any kwargs
-        args.update(**kwargs)
-        return args
-
     def set_inputs(self, data_type, description, shape=(), item_type=None, **kwargs):
         """Define the inputs to this function
 
@@ -113,7 +78,7 @@ class BasePythonServableModel(BaseServableModel):
             item_type (string/dict): Description of the item type. Required for data_type = list
             kwargs (dict): Any other details particular to this kind of data
         """
-        args = self._compile_argument_block(data_type, description, shape, item_type, **kwargs)
+        args = compose_argument_block(data_type, description, shape, item_type, **kwargs)
 
         # Set the inputs
         self.input = args
@@ -131,7 +96,7 @@ class BasePythonServableModel(BaseServableModel):
             kwargs (dict): Any other details particular to this kind of data
         """
 
-        args = self._compile_argument_block(data_type, description, shape, item_type, **kwargs)
+        args = compose_argument_block(data_type, description, shape, item_type, **kwargs)
         self.output = args
         return self
 
