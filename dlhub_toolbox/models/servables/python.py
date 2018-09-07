@@ -129,7 +129,7 @@ class BasePythonServableModel(BaseServableModel):
         return output
 
 
-class PickledClassServableModel(BasePythonServableModel):
+class PythonClassMethodModel(BasePythonServableModel):
     """Model for describing servables where the function to be performed is a method of a class.
 
     To use this model, you must define the path to the pickled object and the function of that
@@ -146,7 +146,7 @@ class PickledClassServableModel(BasePythonServableModel):
             function_kwargs (dict): Names and values of any other argument of the function to set
                 the values must be JSON serializable.
         """
-        super(PickledClassServableModel, self).__init__(method, function_kwargs)
+        super(PythonClassMethodModel, self).__init__(method, function_kwargs)
 
         self.path = path
 
@@ -155,16 +155,16 @@ class PickledClassServableModel(BasePythonServableModel):
             self.class_name = pkl.load(fp).__class__.__name__
 
     def _get_handler(self):
-        return 'python_shim.run_class_method'
+        return 'python.PythonClassMethodServable'
 
     def list_files(self):
-        return [self.path] + super(PickledClassServableModel, self).list_files()
+        return [self.path] + super(PythonClassMethodModel, self).list_files()
 
     def to_dict(self):
-        output = super(PickledClassServableModel, self).to_dict()
+        output = super(PythonClassMethodModel, self).to_dict()
 
         # Add pickle-specific options
-        output['servable']['type'] = 'pickled_class'
+        output['servable']['type'] = 'python class method'
         output['servable']['location'] = self.path
         output['servable']['method_details']['class_name'] = self.class_name
 
@@ -207,14 +207,13 @@ class PythonStaticMethodModel(BasePythonServableModel):
         return cls(f.__module__, f.__name__, autobatch, function_kwargs)
 
     def _get_handler(self):
-        return 'python_shim.run_static_method'
+        return 'python.PythonStaticMethodServable'
 
     def to_dict(self):
         output = super(PythonStaticMethodModel, self).to_dict()
 
-        output['servable']['type'] = 'py_static_method'
+        output['servable']['type'] = 'python static method'
         output['servable']['method_details']['module'] = self.module
         output['servable']['method_details']['autobatch'] = self.autobatch
 
         return output
-

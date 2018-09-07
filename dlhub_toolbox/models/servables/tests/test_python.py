@@ -1,6 +1,6 @@
 """Tests for models for generic Python functions"""
 
-from dlhub_toolbox.models.servables.python import PickledClassServableModel, \
+from dlhub_toolbox.models.servables.python import PythonClassMethodModel, \
     PythonStaticMethodModel
 from sklearn import __version__ as skl_version
 from datetime import datetime
@@ -22,7 +22,7 @@ class TestPythonModels(unittest.TestCase):
         pickle_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'model.pkl'))
 
         # Make the model
-        model = PickledClassServableModel(pickle_path, 'predict_proba', {'fake': 'kwarg'})
+        model = PythonClassMethodModel(pickle_path, 'predict_proba', {'fake': 'kwarg'})
         model.set_title('Python example')
 
         # Make sure it throws value errors if inputs are not set
@@ -51,10 +51,10 @@ class TestPythonModels(unittest.TestCase):
                                },
                           'dlhub': {'version': '0.1', 'domain': "", 'visible_to': ['public'],
                                     "id": None},
-                          'servable': {'langugage': 'python', 'type': 'pickled_class',
+                          'servable': {'langugage': 'python', 'type': 'python class method',
                                        'location': pickle_path,
-                                       'run': {'handler': 'python_shim.run_class_method',
-                                               'input': {'type': 'ndarray',
+                                       'shim': 'python.PythonClassMethodServable',
+                                       'run': {'input': {'type': 'ndarray',
                                                          'description': 'Features for each entry',
                                                          'shape': [None, 4]},
                                                'output': {'type': 'ndarray',
@@ -96,9 +96,9 @@ class TestPythonModels(unittest.TestCase):
                            },
                           'dlhub': {'version': '0.1', 'domain': '', 'visible_to': ['public'],
                                     "id": None},
-                          'servable': {'langugage': 'python', 'type': 'py_static_method',
-                                       'run': {'handler': 'python_shim.run_static_method',
-                                               'input': {'type': 'list',
+                          'servable': {'langugage': 'python', 'type': 'python static method',
+                                       'shim': 'python.PythonStaticMethodServable',
+                                       'run': {'input': {'type': 'list',
                                                          'description': 'List of numbers',
                                                          'item_type': {'type': 'float'}},
                                                'output': {'type': 'float',

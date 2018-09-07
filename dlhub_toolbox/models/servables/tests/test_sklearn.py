@@ -37,9 +37,8 @@ class TestSklearn(unittest.TestCase):
                             'python': {'scikit-learn': '0.19.1'}
                         },
                         'model_type': 'SVC',
-                        'run': {
-                            'handler': 'sklearn_shim.predict_on_batch',
-                            "input": {
+                        'shim': 'sklearn.ScikitLearnServable',
+                        'run': {"input": {
                                 "type": "ndarray",
                                 "shape": [None, 4],
                                 "description": "List of records to evaluate with model. Each record is a list of 4 variables.",

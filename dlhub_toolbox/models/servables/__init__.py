@@ -16,21 +16,27 @@ class BaseServableModel(BaseMetadataModel):
 
         # Add the model running-information
         output['servable'] = {'run': {
-            'handler': self._get_handler(),
             'input': self._get_input(),
             'output': self._get_output(),
             'parameters': self._get_parameters()
-        }}
+        }, "shim": self._get_handler()}
 
         return output
 
     def _get_handler(self):
-        """Generate the name of the function being executed to run the servable
+        """Generate the name of the servable class that DLHub will use to read this metadata
 
         Returns:
-            (string) path to the python function (e.g., "application.run")
+            (string) path to the python class (e.g., "python.PythonStaticMethod")
         """
         raise NotImplementedError()
+
+    def _get_type(self):
+        """Get a human-friendly name for this type of servable
+
+        Returns:
+            (string): Human-friendly name of an object
+        """
 
     def _get_input(self):
         """Generate a listing of the desired inputs to an ML model

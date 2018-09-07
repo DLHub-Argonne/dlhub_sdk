@@ -1,4 +1,4 @@
-from dlhub_toolbox.models.servables.python import PickledClassServableModel
+from dlhub_toolbox.models.servables.python import PythonClassMethodModel
 from dlhub_toolbox.models.servables.sklearn import ScikitLearnModel
 from dlhub_toolbox.models.datasets import TabularDataset
 import pickle as pkl
@@ -53,7 +53,7 @@ dataset_info.set_authors(["Faber, F.", "Lindmaa, A.", "von Lilienfled, O. A.", "
 # Describe the featurizer
 with open('featurizer.pkl', 'rb') as fp:
     featurizer = pkl.load(fp)
-feat_info = PickledClassServableModel('featurizer.pkl', 'featurize_many', {'ignore_errors': True})
+feat_info = PythonClassMethodModel('featurizer.pkl', 'featurize_many', {'ignore_errors': True})
 
 #   Add reference information
 feat_info.set_title('Composition featurizer of Ward et al. 2016')

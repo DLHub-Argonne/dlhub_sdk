@@ -132,7 +132,7 @@ class ScikitLearnModel(BaseServableModel):
         return output
 
     def _get_handler(self):
-        return 'sklearn_shim.predict_on_batch'
+        return 'sklearn.ScikitLearnServable'
 
     def _get_input(self):
         return {
