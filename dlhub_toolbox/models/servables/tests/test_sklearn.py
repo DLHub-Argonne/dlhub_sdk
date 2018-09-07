@@ -37,6 +37,7 @@ class TestSklearn(unittest.TestCase):
                             'python': {'scikit-learn': '0.19.1'}
                         },
                         'model_type': 'SVC',
+                        'is_classifier': True,
                         'shim': 'sklearn.ScikitLearnServable',
                         'run': {"input": {
                                 "type": "ndarray",

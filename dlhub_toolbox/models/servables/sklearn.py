@@ -126,7 +126,8 @@ class ScikitLearnModel(BaseServableModel):
             'location': self.path,
             'language': 'python',
             'model_type': self.model_type,
-            'model_summary': self.model_summary
+            'model_summary': self.model_summary,
+            'is_classifier': self.classifier
         })
 
         return output
