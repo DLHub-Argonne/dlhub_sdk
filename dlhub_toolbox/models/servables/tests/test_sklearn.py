@@ -39,6 +39,7 @@ class TestSklearn(unittest.TestCase):
                         'model_type': 'SVC',
                         'is_classifier': True,
                         'shim': 'sklearn.ScikitLearnServable',
+                        'serialization_method': 'pickle',
                         'run': {"input": {
                                 "type": "ndarray",
                                 "shape": [None, 4],

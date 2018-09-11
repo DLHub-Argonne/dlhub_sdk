@@ -127,6 +127,7 @@ class ScikitLearnModel(BaseServableModel):
             'language': 'python',
             'model_type': self.model_type,
             'model_summary': self.model_summary,
+            'serialization_method': self.serialization_method,
             'is_classifier': self.classifier
         })
 
