@@ -159,5 +159,8 @@ class ScikitLearnModel(BaseServableModel):
     def _get_parameters(self):
         return self.predict_options
 
+    def _get_method_details(self):
+        return {}
+
     def list_files(self):
         return [self.path]

@@ -16,7 +16,7 @@ _year = str(datetime.now().year)
 
 class TestPythonModels(unittest.TestCase):
 
-    maxDiff = 2048
+    maxDiff = 4096
 
     def test_pickle(self):
         pickle_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'model.pkl'))
@@ -51,18 +51,20 @@ class TestPythonModels(unittest.TestCase):
                                },
                           'dlhub': {'version': '0.1', 'domain': "", 'visible_to': ['public'],
                                     "id": None},
-                          'servable': {'langugage': 'python', 'type': 'python class method',
-                                       'location': pickle_path,
+                          'servable': {'language': 'python', 'type': 'Python class method',
+                                       'files': {'pickle': pickle_path},
                                        'shim': 'python.PythonClassMethodServable',
-                                       'run': {'input': {'type': 'ndarray',
-                                                         'description': 'Features for each entry',
-                                                         'shape': [None, 4]},
-                                               'output': {'type': 'ndarray',
-                                                          'description': 'Predicted probabilities of being each iris species',
-                                                          'shape': [None, 3]},
-                                               'parameters': {'fake': 'kwarg'}},
-                                       'method_details': {'class_name': 'SVC',
-                                                          'method_name': 'predict_proba'},
+                                       'methods': {'run': {'input': {'type': 'ndarray',
+                                                                     'description': 'Features for each entry',
+                                                                     'shape': [None, 4]},
+                                                           'output': {'type': 'ndarray',
+                                                                      'description': 'Predicted probabilities of being each iris species',
+                                                                      'shape': [None, 3]},
+                                                           'parameters': {'fake': 'kwarg'},
+                                                           'method_details': {
+                                                               'class_name': 'sklearn.svm.classes.SVC',
+                                                               'method_name': 'predict_proba'},
+                                                           }},
                                        'dependencies': {
                                            'python': {
                                                'scikit-learn': skl_version,
@@ -96,17 +98,19 @@ class TestPythonModels(unittest.TestCase):
                            },
                           'dlhub': {'version': '0.1', 'domain': '', 'visible_to': ['public'],
                                     "id": None},
-                          'servable': {'langugage': 'python', 'type': 'python static method',
+                          'servable': {'language': 'python', 'type': 'Python static method',
                                        'shim': 'python.PythonStaticMethodServable',
-                                       'run': {'input': {'type': 'list',
-                                                         'description': 'List of numbers',
-                                                         'item_type': {'type': 'float'}},
-                                               'output': {'type': 'float',
-                                                          'description': 'Square root of the number'},
-                                               'parameters': {}},
-                                       'method_details': {'module': 'math',
-                                                          'method_name': 'sqrt',
-                                                          'autobatch': True},
+                                       'methods': {'run': {'input': {'type': 'list',
+                                                                     'description': 'List of numbers',
+                                                                     'item_type': {
+                                                                         'type': 'float'}},
+                                                           'output': {'type': 'float',
+                                                                      'description': 'Square root of the number'},
+                                                           'parameters': {},
+                                                           'method_details': {'module': 'math',
+                                                                              'method_name': 'sqrt',
+                                                                              'autobatch': True}}
+                                                   },
                                        'dependencies': {'python': {}}}
                           })
         validate_against_dlhub_schema(output, 'servable')

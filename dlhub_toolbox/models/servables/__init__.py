@@ -19,7 +19,8 @@ class BaseServableModel(BaseMetadataModel):
             'methods': {'run': {
                 'input': self._get_input(),
                 'output': self._get_output(),
-                'parameters': self._get_parameters()
+                'parameters': self._get_parameters(),
+                'method_details': self._get_method_details()
             }},
             "shim": self._get_handler()}
 
@@ -69,5 +70,12 @@ class BaseServableModel(BaseMetadataModel):
 
         Returns:
             (dict) Default parameters for the servable
+        """
+        raise NotImplementedError()
+
+    def _get_method_details(self):
+        """Generate any special options used to construct the servable.
+        In contrast to the parameters, these options are only used when constructing the servable
+        and not on every invocation.
         """
         raise NotImplementedError()

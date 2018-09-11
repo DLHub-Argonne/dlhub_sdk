@@ -50,7 +50,8 @@ class TestSklearn(unittest.TestCase):
                                     "description": "Probabilities for membership in each of 3 classes",
                                     "items": "float"
                                 },
-                                "parameters": {}
+                                "parameters": {},
+                                "method_details": {}
                             }
                         },
                         'model_summary': "SVC(C=1, cache_size=200, class_weight=None, coef0=0.0,\n"
