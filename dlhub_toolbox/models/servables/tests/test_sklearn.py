@@ -31,33 +31,36 @@ class TestSklearn(unittest.TestCase):
                               "domain": "", "id": None},
                     'servable': {
                         'language': 'python',
-                        'type': 'scikit-learn',
-                        'location': model_path,
+                        'type': 'Scikit-learn estimator',
+                        'files': {'model': model_path},
                         'dependencies': {
                             'python': {'scikit-learn': '0.19.1'}
                         },
                         'model_type': 'SVC',
-                        'is_classifier': True,
                         'shim': 'sklearn.ScikitLearnServable',
-                        'serialization_method': 'pickle',
-                        'run': {"input": {
-                                "type": "ndarray",
-                                "shape": [None, 4],
-                                "description": "List of records to evaluate with model. Each record is a list of 4 variables.",
-                                "items": "float"
-                            },
-                            "output": {
-                                "type": "ndarray",
-                                "shape": [None, 3],
-                                "description": "Probabilities for membership in each of 3 classes",
-                                "items": "float"
-                            },
-                            "parameters": {}
+                        'methods': {
+                            'run': {"input": {
+                                    "type": "ndarray",
+                                    "shape": [None, 4],
+                                    "description": "List of records to evaluate with model. Each record is a list of 4 variables.",
+                                    "items": "float"
+                                }, "output": {
+                                    "type": "ndarray",
+                                    "shape": [None, 3],
+                                    "description": "Probabilities for membership in each of 3 classes",
+                                    "items": "float"
+                                },
+                                "parameters": {}
+                            }
                         },
                         'model_summary': "SVC(C=1, cache_size=200, class_weight=None, coef0=0.0,\n"
                                          "  decision_function_shape='ovr', degree=3, gamma='auto', kernel='linear',\n"
                                          "  max_iter=-1, probability=True, random_state=None, shrinking=True,\n"
-                                         "  tol=0.001, verbose=False)"
+                                         "  tol=0.001, verbose=False)",
+                        'options': {
+                            'is_classifier': True,
+                            'serialization_method': 'pickle',
+                        }
                     }}
         self.assertEquals(model_info.to_dict(), expected)
         validate_against_dlhub_schema(model_info.to_dict(), 'servable')

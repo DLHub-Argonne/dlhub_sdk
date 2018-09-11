@@ -15,11 +15,13 @@ class BaseServableModel(BaseMetadataModel):
         output['datacite']['resourceType'] = {'resourceTypeGeneral': 'InteractiveResource'}
 
         # Add the model running-information
-        output['servable'] = {'run': {
-            'input': self._get_input(),
-            'output': self._get_output(),
-            'parameters': self._get_parameters()
-        }, "shim": self._get_handler()}
+        output['servable'] = {
+            'methods': {'run': {
+                'input': self._get_input(),
+                'output': self._get_output(),
+                'parameters': self._get_parameters()
+            }},
+            "shim": self._get_handler()}
 
         return output
 

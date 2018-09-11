@@ -119,16 +119,18 @@ class ScikitLearnModel(BaseServableModel):
 
         # Store the model information
         output['servable'].update({
-            'type': 'scikit-learn',
+            'type': 'Scikit-learn estimator',
             'dependencies': {
                 'python': {'scikit-learn': self.sklearn_version}
             },
-            'location': self.path,
+            'files': {'model': self.path},
             'language': 'python',
             'model_type': self.model_type,
             'model_summary': self.model_summary,
-            'serialization_method': self.serialization_method,
-            'is_classifier': self.classifier
+            'options': {
+                'serialization_method': self.serialization_method,
+                'is_classifier': self.classifier
+            }
         })
 
         return output
