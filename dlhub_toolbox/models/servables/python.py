@@ -113,16 +113,16 @@ class BasePythonServableModel(BaseServableModel):
     def _get_parameters(self):
         return self.function_kwargs
 
+    def _get_method_details(self):
+        return {'method_name': self.method}
+
     def to_dict(self):
         # Get the higher level
         output = super(BasePythonServableModel, self).to_dict()
 
         # Add Python settings
         output['servable'].update({
-            'langugage': 'python',
-            'method_details': {
-                'method_name': self.method,
-            },
+            'language': 'python',
             'dependencies': {'python': self.requirements}
         })
 
@@ -152,7 +152,9 @@ class PythonClassMethodModel(BasePythonServableModel):
 
         # Get the class name
         with open(self.path, 'rb') as fp:
-            self.class_name = pkl.load(fp).__class__.__name__
+            obj = pkl.load(fp)
+            self.class_name = '{}.{}'.format(obj.__class__.__module__,
+                                             obj.__class__.__name__)
 
     def _get_handler(self):
         return 'python.PythonClassMethodServable'
@@ -160,13 +162,17 @@ class PythonClassMethodModel(BasePythonServableModel):
     def list_files(self):
         return [self.path] + super(PythonClassMethodModel, self).list_files()
 
+    def _get_method_details(self):
+        output = super(PythonClassMethodModel, self)._get_method_details()
+        output.update({'class_name': self.class_name})
+        return output
+
     def to_dict(self):
         output = super(PythonClassMethodModel, self).to_dict()
 
         # Add pickle-specific options
-        output['servable']['type'] = 'python class method'
-        output['servable']['location'] = self.path
-        output['servable']['method_details']['class_name'] = self.class_name
+        output['servable']['type'] = 'Python class method'
+        output['servable']['files'] = {'pickle': self.path}
 
         return output
 
@@ -209,11 +215,17 @@ class PythonStaticMethodModel(BasePythonServableModel):
     def _get_handler(self):
         return 'python.PythonStaticMethodServable'
 
+    def _get_method_details(self):
+        output = super(PythonStaticMethodModel, self)._get_method_details()
+        output.update({
+            'module': self.module,
+            'autobatch': self.autobatch
+        })
+        return output
+
     def to_dict(self):
         output = super(PythonStaticMethodModel, self).to_dict()
 
-        output['servable']['type'] = 'python static method'
-        output['servable']['method_details']['module'] = self.module
-        output['servable']['method_details']['autobatch'] = self.autobatch
+        output['servable']['type'] = 'Python static method'
 
         return output
