@@ -4,6 +4,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.externals import joblib
 import sklearn.base as sklbase
 import pickle as pkl
+import numpy as np
 import inspect
 
 
@@ -60,6 +61,8 @@ class ScikitLearnModel(BasePythonServableModel):
             # Expand an integer if needed
             if isinstance(classes, int):
                 self.classes = ['Class {}'.format(i+1) for i in range(classes)]
+            elif isinstance(classes, np.ndarray):
+                self.classes = list(self.classes)
 
         # Load other metadata
         model = self._load_model()
@@ -155,9 +158,6 @@ class ScikitLearnModel(BasePythonServableModel):
 
     def _get_handler(self):
         return 'sklearn.ScikitLearnServable'
-
-    def _get_method_details(self):
-        return {}
 
     def list_files(self):
         return [self.path]

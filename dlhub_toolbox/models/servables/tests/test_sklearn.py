@@ -51,7 +51,9 @@ class TestSklearn(unittest.TestCase):
                                     "item_type": {"type": "float"}
                                 },
                                 "parameters": {},
-                                "method_details": {}
+                                "method_details": {
+                                    "method_name": "_predict_proba"
+                                }
                             }
                         },
                         'model_summary': "SVC(C=1, cache_size=200, class_weight=None, coef0=0.0,\n"
