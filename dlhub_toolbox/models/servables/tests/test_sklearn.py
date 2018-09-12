@@ -43,12 +43,12 @@ class TestSklearn(unittest.TestCase):
                                     "type": "ndarray",
                                     "shape": [None, 4],
                                     "description": "List of records to evaluate with model. Each record is a list of 4 variables.",
-                                    "items": "float"
+                                    "item_type": {"type": "float"}
                                 }, "output": {
                                     "type": "ndarray",
                                     "shape": [None, 3],
                                     "description": "Probabilities for membership in each of 3 classes",
-                                    "items": "float"
+                                    "item_type": {"type": "float"}
                                 },
                                 "parameters": {},
                                 "method_details": {}
@@ -61,6 +61,7 @@ class TestSklearn(unittest.TestCase):
                         'options': {
                             'is_classifier': True,
                             'serialization_method': 'pickle',
+                            'classes': ['Class 1', 'Class 2', 'Class 3']
                         }
                     }}
         self.assertEquals(model_info.to_dict(), expected)

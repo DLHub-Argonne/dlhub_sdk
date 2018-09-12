@@ -60,6 +60,9 @@ def compose_argument_block(data_type, description, shape=(), item_type=None, **k
     if data_type == "list":
         if item_type is None:
             raise ValueError('Item type must be defined for lists')
+
+    # Define the item types
+    if item_type is not None:
         if isinstance(item_type, dict):
             args['item_type'] = item_type
         else:  # Is a string
