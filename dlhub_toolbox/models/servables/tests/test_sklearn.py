@@ -1,4 +1,5 @@
 from datetime import datetime
+import numpy as np
 import unittest
 import os
 
@@ -68,3 +69,17 @@ class TestSklearn(unittest.TestCase):
                     }}
         self.assertEquals(model_info.to_dict(), expected)
         validate_against_dlhub_schema(model_info.to_dict(), 'servable')
+
+    def test_regression(self):
+        """Test a regression model saved with joblib"""
+        model_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'model-lr.pkl'))
+
+        # Load the model
+        model_info = ScikitLearnModel(model_path, n_input_columns=2,
+                                      serialization_method='joblib', classes=np.array(['number']))
+
+        # Check that the metadata is as expected
+        self.assertEqual(model_info.method, "predict")
+        self.assertEqual([model_path], model_info.list_files())
+        self.assertEqual(['number'], model_info.classes)
+        self.assertEqual([None], model_info._get_output()['shape'])
