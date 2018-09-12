@@ -26,7 +26,7 @@ convert_info.assign_dlhub_id()
 model_info.assign_dlhub_id()
 
 # Compile them into a Pipeline
-pipeline_info = PipelineModel()
+pipeline_info = PipelineModel().set_name('delta_e-predictor')
 pipeline_info.set_title("Predict Formation Enthalpy from Composition")
 pipeline_info.add_step(convert_info.dlhub_id, "Convert strings to pymatgen objects")
 pipeline_info.add_step(feat_info.dlhub_id, "Compute features each object")
