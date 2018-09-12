@@ -51,7 +51,7 @@ dataset_info.add_related_identifier("10.1111/j.1469-1809.1936.tb02137.x", "DOI",
 dataset_info.set_domain("biology")
 
 #   Describe the columns
-dataset_info.annotate_column("sepal_length", description="Length of sepal", data_type="scalar")
+dataset_info.annotate_column("sepal_length", description="Length of sepal", units="cm")
 dataset_info.annotate_column("sepal_width", description="Width of sepal", units="cm")
 dataset_info.annotate_column("petal_length", description="Length of petal", units="cm")
 dataset_info.annotate_column("petal_width", description="Width of petal", units="cm")
@@ -63,6 +63,7 @@ dataset_info.mark_labels(data.columns[-1:])
 
 # Describe the data provenance
 dataset_info.set_title("Iris Dataset")
+dataset_info.set_name("iris_dataset")
 dataset_info.set_authors(["Marshall, R.A."])
 
 # Print out the result
@@ -82,9 +83,12 @@ After running this script, the model produces a simple JSON description of the d
       }
     ],
     "titles": [
-      "Iris Dataset"
+      {
+        "title": "Iris Dataset"
+      }
     ],
     "publisher": "DLHub",
+    "publicationYear": "2018",
     "relatedIdentifiers": [
       {
         "relatedIdentifier": "10.1111/j.1469-1809.1936.tb02137.x",
@@ -98,17 +102,25 @@ After running this script, the model produces a simple JSON description of the d
         "alternateIdentifierType": "URL"
       }
     ],
-    "resourceType": "Dataset"
+    "identifier": {
+      "identifier": "10.YET/UNASSIGNED",
+      "identifierType": "DOI"
+    },
+    "resourceType": {
+      "resourceTypeGeneral": "Dataset"
+    }
   },
   "dlhub": {
     "version": "0.1",
     "domain": "biology",
     "visible_to": [
       "public"
-    ]
+    ],
+    "id": null,
+    "name": "iris_dataset"
   },
   "dataset": {
-    "path": "/home/ml_user/dlhub_toolbox/examples/iris/iris.csv",
+    "location": "iris.csv",
     "format": "csv",
     "read_options": {
       "header": 1
@@ -116,7 +128,8 @@ After running this script, the model produces a simple JSON description of the d
     "columns": [
       {
         "name": "sepal_length",
-        "type": "scalar",
+        "type": "float",
+        "units": "cm",
         "description": "Length of sepal"
       },
       {
@@ -172,6 +185,7 @@ model_info = ScikitLearnModel('model.pkl', n_input_columns=len(data.columns) - 1
 
 #    Describe the model
 model_info.set_title("Example Scikit-Learn Model")
+model_info.set_name("iris_svm")
 model_info.set_domain("biology")
 ```
 
@@ -182,53 +196,82 @@ The toolbox will inspect the pickle file to determine the type of the model and 
   "datacite": {
     "creators": [],
     "titles": [
-      "Example Scikit-Learn Model"
+      {
+        "title": "Example Scikit-Learn Model"
+      }
     ],
     "publisher": "DLHub",
-    "resourceType": "InteractiveResource"
+    "publicationYear": "2018",
+    "identifier": {
+      "identifier": "10.YET/UNASSIGNED",
+      "identifierType": "DOI"
+    },
+    "resourceType": {
+      "resourceTypeGeneral": "InteractiveResource"
+    }
   },
   "dlhub": {
     "version": "0.1",
     "domain": "biology",
     "visible_to": [
       "public"
-    ]
+    ],
+    "id": null,
+    "name": "iris_svm"
   },
   "servable": {
-    "run": {
-      "handler": "sklearn_shim.predict_on_batch",
-      "input": {
-        "type": "ndarray",
-        "shape": [
-          null,
-          4
-        ],
-        "description": "List of records to evaluate with model. Each record is a list of 4 variables.",
-        "items": "float"
-      },
-      "output": {
-        "type": "ndarray",
-        "shape": [
-          null,
-          3
-        ],
-        "description": "Predictions of the machine learning model.",
-        "items": "float"
+    "methods": {
+      "run": {
+        "input": {
+          "type": "ndarray",
+          "description": "List of records to evaluate with model. Each record is a list of 4 variables.",
+          "shape": [
+            null,
+            4
+          ],
+          "item_type": {
+            "type": "float"
+          }
+        },
+        "output": {
+          "type": "ndarray",
+          "description": "Probabilities for membership in each of 3 classes",
+          "shape": [
+            null,
+            3
+          ],
+          "item_type": {
+            "type": "float"
+          }
+        },
+        "parameters": {},
+        "method_details": {
+          "method_name": "_predict_proba"
+        }
       }
     },
-    "type": "scikit-learn",
-      "dependencies": {
-        "python": {
-          "scikit-learn": "0.19.1"
-      }
-    },
-    "location": "model.pkl",
+    "shim": "sklearn.ScikitLearnServable",
     "language": "python",
+    "dependencies": {
+      "python": {
+        "scikit-learn": "0.19.1"
+      }
+    },
+    "type": "Scikit-learn estimator",
+    "files": {
+      "model": "model.pkl"
+    },
     "model_type": "SVC",
-    "model_summary": "SVC(C=1, cache_size=200, class_weight=None, coef0=0.0,\n
-        decision_function_shape='ovr', degree=3, gamma='auto', kernel='linear',\n 
-         max_iter=-1, probability=False, random_state=None, shrinking=True,\n
-           tol=0.001, verbose=False)"
+    "model_summary": "SVC(C=1, cache_size=200, class_weight=None, coef0=0.0,\n  decision_function_shape='ovr', degree=3, gamma='auto', kernel='linear',\n  max_iter=-1, probability=True, random_state=None, shrinking=True,\n  tol=0.001, verbose=False)",
+    "options": {
+      "serialization_method": "pickle",
+      "is_classifier": true,
+      "classes": [
+        "setosa",
+        "versicolor",
+        "virginica"
+      ]
+    }
   }
 }
 ```

@@ -3,8 +3,11 @@ from datetime import datetime
 from zipfile import ZipFile
 import uuid
 import os
+import re
 
 from dlhub_toolbox import __dlhub_version__
+
+name_re = re.compile(r'^\S+$')
 
 
 class BaseMetadataModel:
@@ -33,6 +36,7 @@ class BaseMetadataModel:
         self.publication_year = str(datetime.now().year)
         self.files = []
         self.dlhub_id = None
+        self.name = None
 
     def set_authors(self, authors, affiliations=list()):
         """Add authors to a dataset
@@ -140,6 +144,19 @@ class BaseMetadataModel:
         """
 
         return self.set_dlhub_id(str(uuid.uuid1()))
+
+    def set_name(self, name):
+        """Set the name of artifact.
+
+        Should be something short, descriptive, and memorable
+
+        Args:
+            name (string): Name of artifact
+        """
+        if name_re.match(name) is None:
+            raise ValueError('Name cannot contain any whitespace')
+        self.name = name
+        return self
 
     def set_publication_year(self, year):
         """Define the publication year
@@ -289,6 +306,8 @@ class BaseMetadataModel:
         # Check for required fields
         if self.title is None:
             raise ValueError('Title must be specified. Use `set_title`')
+        if self.name is None:
+            raise ValueError('Name must be specified. Use `set_name`')
 
         # Populate initial fields
         out = {"datacite": {
@@ -330,7 +349,8 @@ class BaseMetadataModel:
             'version': __dlhub_version__,
             'domain': self.domain,
             'visible_to': self.visible_to,
-            'id': self.dlhub_id
+            'id': self.dlhub_id,
+            'name': self.name
         }
         return out
 

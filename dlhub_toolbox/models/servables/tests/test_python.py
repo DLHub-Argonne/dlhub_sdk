@@ -2,6 +2,7 @@
 
 from dlhub_toolbox.models.servables.python import PythonClassMethodModel, \
     PythonStaticMethodModel
+from dlhub_toolbox import __dlhub_version__
 from sklearn import __version__ as skl_version
 from datetime import datetime
 import unittest
@@ -23,7 +24,7 @@ class TestPythonModels(unittest.TestCase):
 
         # Make the model
         model = PythonClassMethodModel(pickle_path, 'predict_proba', {'fake': 'kwarg'})
-        model.set_title('Python example')
+        model.set_title('Python example').set_name("class_method")
 
         # Make sure it throws value errors if inputs are not set
         with self.assertRaises(ValueError):
@@ -50,7 +51,7 @@ class TestPythonModels(unittest.TestCase):
                                'publicationYear': _year
                                },
                           'dlhub': {'version': '0.1', 'domain': "", 'visible_to': ['public'],
-                                    "id": None},
+                                    "id": None, "name": "class_method"},
                           'servable': {'language': 'python', 'type': 'Python class method',
                                        'files': {'pickle': pickle_path},
                                        'shim': 'python.PythonClassMethodServable',
@@ -79,7 +80,7 @@ class TestPythonModels(unittest.TestCase):
 
         # Make the model
         model = PythonStaticMethodModel.from_function_pointer(f, autobatch=True)
-        model.set_title('Python example')
+        model.set_name("static_method").set_title('Python example')
 
         # Describe the inputs/outputs
         model.set_inputs('list', 'List of numbers', item_type='float')
@@ -96,8 +97,8 @@ class TestPythonModels(unittest.TestCase):
                                               'identifierType': 'DOI'},
                                'publicationYear': _year
                            },
-                          'dlhub': {'version': '0.1', 'domain': '', 'visible_to': ['public'],
-                                    "id": None},
+                          'dlhub': {'version': __dlhub_version__, 'domain': '', 'visible_to': ['public'],
+                                    "id": None, "name": "static_method"},
                           'servable': {'language': 'python', 'type': 'Python static method',
                                        'shim': 'python.PythonStaticMethodServable',
                                        'methods': {'run': {'input': {'type': 'list',

@@ -19,7 +19,7 @@ class TestPipeline(unittest.TestCase):
         step2.assign_dlhub_id()
 
         # Make the pipeline
-        pipeline = PipelineModel().set_title('Average of Column Maximums')
+        pipeline = PipelineModel().set_title('Average of Column Maximums').set_name('numpy_test')
         pipeline.add_step(step1.dlhub_id, 'Maximum of each column', {'axis': 0})
         pipeline.add_step(step2, 'Average of the maximums')
 
@@ -31,7 +31,8 @@ class TestPipeline(unittest.TestCase):
                           'identifier': {'identifier': '10.YET/UNASSIGNED',
                                          'identifierType': 'DOI'},
                           'resourceType': {'resourceTypeGeneral': 'InteractiveResource'}},
-             'dlhub': {'version': '0.1', 'domain': '', 'visible_to': ['public'], 'id': None},
+             'dlhub': {'version': '0.1', 'domain': '', 'visible_to': ['public'],
+                       'id': None, 'name': 'numpy_test'},
              'pipeline': {'steps': [{'dlhub_id': step1.dlhub_id,
                            'description': 'Maximum of each column', 'parameters': {'axis': 0}},
                           {'dlhub_id': step2.dlhub_id,

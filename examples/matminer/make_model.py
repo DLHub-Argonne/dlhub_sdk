@@ -42,7 +42,7 @@ model.fit(X, data['formation_energy_per_atom'])
 print('Trained a RandomForest model')
 
 # Save the model, featurizer, and data using pickle
-with open('model.pkl', 'wb') as fp:
+with open('model-lr.pkl', 'wb') as fp:
     pkl.dump(model, fp)
 with open('featurizer.pkl', 'wb') as fp:
     pkl.dump(featurizer, fp)

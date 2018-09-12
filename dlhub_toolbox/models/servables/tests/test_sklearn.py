@@ -19,7 +19,7 @@ class TestSklearn(unittest.TestCase):
 
         # Load the model
         model_info = ScikitLearnModel(model_path, n_input_columns=4, classes=3)
-        model_info.set_title('Sklearn example')
+        model_info.set_title('Sklearn example').set_name('sklearn')
         expected = {'datacite': {'creators': [], 'publisher': 'DLHub',
                                  'titles': [{'title': 'Sklearn example'}],
                                  'resourceType': {'resourceTypeGeneral': "InteractiveResource"},
@@ -28,7 +28,7 @@ class TestSklearn(unittest.TestCase):
                                  'publicationYear': _year,
                                  },
                     "dlhub": {"version": __dlhub_version__,
-                              "visible_to": ["public"],
+                              "visible_to": ["public"], 'name': 'sklearn',
                               "domain": "", "id": None},
                     'servable': {
                         'language': 'python',

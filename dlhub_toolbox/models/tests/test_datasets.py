@@ -28,7 +28,7 @@ class TestModels(unittest.TestCase):
             .add_rights("https://www.gnu.org/licenses/gpl-3.0.en.html", "GPL v3.0")\
             .set_abstract("Abstract").set_methods("Methods")\
             .set_visibility(['public']).set_domain("materials science")\
-            .set_dlhub_id(my_uuid)
+            .set_dlhub_id(my_uuid).set_name("example_data")
         self.assertEqual(m.to_dict(),
                          {"datacite":
                               {"creators": [{"givenName": "Logan", "familyName": "Ward",
@@ -70,7 +70,8 @@ class TestModels(unittest.TestCase):
                               "version": __dlhub_version__,
                               "visible_to": ["public"],
                               "domain": "materials science",
-                              "id": my_uuid
+                              "id": my_uuid,
+                              "name": "example_data"
                           }})
         validate_against_dlhub_schema(m.to_dict(), "dataset")
 
@@ -82,6 +83,9 @@ class TestModels(unittest.TestCase):
 
         # Add some nonsense
         m.set_title('Example dataset')
+        m.set_name('example_dataset')
+        with self.assertRaises(ValueError):
+            m.set_name('has whitespace')
         m.mark_inputs(['x'])
         m.mark_labels(['y'])
         m.annotate_column('x', description='Input variable', units='cm')
@@ -98,7 +102,8 @@ class TestModels(unittest.TestCase):
                                        "dlhub": {"version": __dlhub_version__,
                                                  "visible_to": ["public"],
                                                  "domain": "",
-                                                 "id": None},
+                                                 "id": None,
+                                                 "name": "example_dataset"},
                                        "dataset": {"location": data_path, "columns": [
                                            {"name": "x", "description": "Input variable",
                                             "type": "integer", "units": "cm"},
