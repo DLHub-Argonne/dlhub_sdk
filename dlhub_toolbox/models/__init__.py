@@ -1,5 +1,6 @@
 from itertools import zip_longest
 from datetime import datetime
+from six import string_types
 from zipfile import ZipFile
 import uuid
 import os
@@ -34,7 +35,7 @@ class BaseMetadataModel:
         self.visible_to = ['public']
         self.doi = None
         self.publication_year = str(datetime.now().year)
-        self.files = []
+        self.files = {'other': []}
         self.dlhub_id = None
         self.name = None
 
@@ -283,8 +284,24 @@ class BaseMetadataModel:
         })
         return self
 
+    def add_file(self, file, name=None):
+        """Add a file to the list of files to be distributed with the artifact
+
+        Args:
+            file (string): Path to the file
+            name (string): Optional. Name of the file, if it is a file that serves a specific
+                purpose in software based on this artifact (e.g., if this is a pickle file
+                of a scikit-learn model)
+        """
+
+        if name is None or name == "other":
+            self.files['other'].append(file)
+        else:
+            self.files[name] = file
+        return self
+
     def add_files(self, files):
-        """Add files that should be distributed with this artifact
+        """Add files that should be distributed with this artifact.
 
         Args:
             files ([string]): Paths of files that should be published
@@ -294,7 +311,7 @@ class BaseMetadataModel:
         if isinstance(files, str):
             files = [files]
 
-        self.files.extend(files)
+        self.files['other'].extend(files)
         return self
 
     def to_dict(self):
@@ -355,12 +372,18 @@ class BaseMetadataModel:
         return out
 
     def list_files(self):
-        """Provide a list of files associated with this dataset. This list
-        should contain all of the files necessary to recreate the dataset.
+        """Provide a list of files associated with this artifact.
 
         Returns:
             ([string]) list of file paths"""
-        return self.files
+        # Gather a list of all the files
+        output = []
+        for k, v in self.files.items():
+            if isinstance(v, string_types):
+                output.append(v)
+            else:
+                output.extend(v)
+        return output
 
     def get_zip_file(self, path):
         """Write all the listed files to a ZIP object

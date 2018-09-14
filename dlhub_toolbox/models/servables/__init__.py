@@ -20,8 +20,9 @@ class BaseServableModel(BaseMetadataModel):
                 'input': self._get_input(),
                 'output': self._get_output(),
                 'parameters': self._get_parameters(),
-                'method_details': self._get_method_details()
+                'method_details': self._get_method_details(),
             }},
+            'files': self.files,
             "shim": self._get_handler()}
 
         return output

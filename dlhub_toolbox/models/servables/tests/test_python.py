@@ -53,7 +53,7 @@ class TestPythonModels(unittest.TestCase):
                           'dlhub': {'version': '0.1', 'domain': "", 'visible_to': ['public'],
                                     "id": None, "name": "class_method"},
                           'servable': {'language': 'python', 'type': 'Python class method',
-                                       'files': {'pickle': pickle_path},
+                                       'files': {'pickle': pickle_path, 'other': []},
                                        'shim': 'python.PythonClassMethodServable',
                                        'methods': {'run': {'input': {'type': 'ndarray',
                                                                      'description': 'Features for each entry',
@@ -112,6 +112,7 @@ class TestPythonModels(unittest.TestCase):
                                                                               'method_name': 'sqrt',
                                                                               'autobatch': True}}
                                                    },
+                                       'files': {'other': []},
                                        'dependencies': {'python': {}}}
                           })
         validate_against_dlhub_schema(output, 'servable')

@@ -20,6 +20,9 @@ class Dataset(BaseMetadataModel):
         # Add the datacite type as Dataset
         output['datacite']['resourceType'] = {'resourceTypeGeneral': 'Dataset'}
 
+        # Intiailize the dataset entries
+        output['dataset'] = {'files': self.files}
+
         return output
 
 
@@ -32,7 +35,7 @@ class TabularDataset(Dataset):
     This class is compatible with any data format readable by the Pandas
     library. See the list of `read functions in Pandas<https://pandas.pydata.org/pandas-docs/stable/io.html>`_"""
 
-    def __init__(self, path, format="csv", read_kwargs=dict()):
+    def __init__(self, path, format="csv", read_kwargs=None):
         """Initialize the description of a tabular dataset
 
         Args:
@@ -44,6 +47,8 @@ class TabularDataset(Dataset):
             read_kwargs (dict): Any keyword arguments for the pandas read command
         """
         super(TabularDataset, self).__init__()
+        if read_kwargs is None:
+            read_kwargs = dict()
         self.path = None
         self.format = None
         self.read_kwargs = {}
@@ -63,7 +68,7 @@ class TabularDataset(Dataset):
             "csv" for "read_csv").
         **kwargs (dict): arguments for the Pandas read function
         """
-        self.path = path
+        self.add_file(path, 'data')
         self.format = format
         self.read_kwargs = kwargs
 
@@ -123,13 +128,10 @@ class TabularDataset(Dataset):
         self.labels = list(column_names)
         return self
 
-    def list_files(self):
-        return [self.path] + super(TabularDataset, self).list_files()
-
     def to_dict(self):
         output = super(TabularDataset, self).to_dict()
 
-        dataset_block = {'location': os.path.abspath(self.path)}
+        dataset_block = output['dataset']
         # Add the format description
         dataset_block['format'] = self.format
         dataset_block['read_options'] = self.read_kwargs
@@ -138,8 +140,5 @@ class TabularDataset(Dataset):
         dataset_block['columns'] = list(self.columns.values())
         dataset_block['inputs'] = self.inputs
         dataset_block['labels'] = self.labels
-
-        # Add to the full dataset
-        output['dataset'] = dataset_block
 
         return output

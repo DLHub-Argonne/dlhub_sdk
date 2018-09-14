@@ -44,7 +44,8 @@ class TestModels(unittest.TestCase):
                                    "description": "Methods", "descriptionType": "Methods"
                                }],
                                "fundingReferences": [{
-                                   "awardNumber": {"awardNumber": "201801", "awardURI": "http://funding.uri"},
+                                   "awardNumber": {"awardNumber": "201801",
+                                                   "awardURI": "http://funding.uri"},
                                    "awardTitle": "DLHub",
                                    "funderIdentifier": {'funderIdentifier': '1',
                                                         'funderIdentifierType': 'ISNI'},
@@ -71,8 +72,8 @@ class TestModels(unittest.TestCase):
                               "visible_to": ["public"],
                               "domain": "materials science",
                               "id": my_uuid,
-                              "name": "example_data"
-                          }})
+                              "name": "example_data"},
+                          "dataset": {"files": {"other": []}}})
         validate_against_dlhub_schema(m.to_dict(), "dataset")
 
     def test_tabular_dataset(self):
@@ -104,10 +105,12 @@ class TestModels(unittest.TestCase):
                                                  "domain": "",
                                                  "id": None,
                                                  "name": "example_dataset"},
-                                       "dataset": {"location": data_path, "columns": [
-                                           {"name": "x", "description": "Input variable",
-                                            "type": "integer", "units": "cm"},
-                                           {"name": "y", "type": "scalar"}],
+                                       "dataset": {"files": {'data': data_path, 'other': []},
+                                                   "columns": [
+                                                       {"name": "x",
+                                                        "description": "Input variable",
+                                                        "type": "integer", "units": "cm"},
+                                                       {"name": "y", "type": "scalar"}],
                                                    "inputs": ["x"], "labels": ["y"],
                                                    "format": "csv", "read_options": {}}})
         validate_against_dlhub_schema(m.to_dict(), "dataset")

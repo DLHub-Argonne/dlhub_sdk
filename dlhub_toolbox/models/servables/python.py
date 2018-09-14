@@ -148,19 +148,16 @@ class PythonClassMethodModel(BasePythonServableModel):
         """
         super(PythonClassMethodModel, self).__init__(method, function_kwargs)
 
-        self.path = path
+        self.add_file(path, 'pickle')
 
         # Get the class name
-        with open(self.path, 'rb') as fp:
+        with open(path, 'rb') as fp:
             obj = pkl.load(fp)
             self.class_name = '{}.{}'.format(obj.__class__.__module__,
                                              obj.__class__.__name__)
 
     def _get_handler(self):
         return 'python.PythonClassMethodServable'
-
-    def list_files(self):
-        return [self.path] + super(PythonClassMethodModel, self).list_files()
 
     def _get_method_details(self):
         output = super(PythonClassMethodModel, self)._get_method_details()
@@ -172,7 +169,6 @@ class PythonClassMethodModel(BasePythonServableModel):
 
         # Add pickle-specific options
         output['servable']['type'] = 'Python class method'
-        output['servable']['files'] = {'pickle': self.path}
 
         return output
 

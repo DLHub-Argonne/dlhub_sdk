@@ -33,7 +33,7 @@ class TestSklearn(unittest.TestCase):
                     'servable': {
                         'language': 'python',
                         'type': 'Scikit-learn estimator',
-                        'files': {'model': model_path},
+                        'files': {'model': model_path, 'other': []},
                         'dependencies': {
                             'python': {'scikit-learn': '0.19.1'}
                         },

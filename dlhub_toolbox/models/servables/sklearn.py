@@ -44,8 +44,8 @@ class ScikitLearnModel(BasePythonServableModel):
             serialization_method (string): Library used to serialize model
         """
         # Set attributes
-        self.path = path
         self.serialization_method = serialization_method
+        self.path = path
 
         # Create the metadata variables
         self.sklearn_version = None
@@ -68,6 +68,9 @@ class ScikitLearnModel(BasePythonServableModel):
         model = self._load_model()
         method_name, method_kwargs = self._inspect_model(model)
         super(ScikitLearnModel, self).__init__(method_name, method_kwargs)
+
+        # Define the path to the pickle
+        self.add_file(path, 'model')
 
         # Add the sklearn requirement
         self.add_requirement("scikit-learn", self.sklearn_version)
@@ -143,7 +146,6 @@ class ScikitLearnModel(BasePythonServableModel):
         # Store the model information
         output['servable'].update({
             'type': 'Scikit-learn estimator',
-            'files': {'model': self.path},
             'language': 'python',
             'model_type': self.model_type,
             'model_summary': self.model_summary,
