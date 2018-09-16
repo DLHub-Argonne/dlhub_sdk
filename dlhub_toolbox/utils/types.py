@@ -29,7 +29,8 @@ def simplify_numpy_dtype(dtype):
         return "python object"
 
 
-def compose_argument_block(data_type, description, shape=(), item_type=None, **kwargs):
+def compose_argument_block(data_type, description, shape=(), item_type=None,
+                           python_type=None, properties=None, **kwargs):
     """Compile a list of argument descriptions into an argument_type block
 
     Args:
@@ -40,7 +41,9 @@ def compose_argument_block(data_type, description, shape=(), item_type=None, **k
             can have any numbers of values
         item_type (string/dict): Description of the item type. Required for data_type = list.
             Can either be a string type, or a dict that is a valid type for an argument type block
-        kwargs (dict): Any other details particular to this kind of data
+        python_type (string): Full path of a Python object type (e.g., :code:`pymatgen.core.Compostion`)
+        properties (dict): Descriptions of the types in a dictionary
+    Keyword Arguments: Any other details particular to this kind of data
     Returns:
         (dict) Description of method in a form compatible with DLHub
     """
@@ -60,6 +63,18 @@ def compose_argument_block(data_type, description, shape=(), item_type=None, **k
     if data_type == "list":
         if item_type is None:
             raise ValueError('Item type must be defined for lists')
+
+    # If the type is "python object", python_type must be specified
+    if data_type == "python object":
+        if python_type is None:
+            raise ValueError('Python type must be defined ')
+        args['python_type'] = python_type
+
+    # Check if the keys need to be defined
+    if data_type == "dict":
+        if properties is None:
+            raise ValueError('Properties must be defined for dict type')
+        args['properties'] = properties
 
     # Define the item types
     if item_type is not None:

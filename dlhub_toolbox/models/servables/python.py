@@ -76,7 +76,6 @@ class BasePythonServableModel(BaseServableModel):
             shape (list): Required for data_type of list or ndarray. Use `None` for dimensions that
                 can have any numbers of values
             item_type (string/dict): Description of the item type. Required for data_type = list
-            kwargs (dict): Any other details particular to this kind of data
         """
         args = compose_argument_block(data_type, description, shape, item_type, **kwargs)
 
@@ -93,7 +92,6 @@ class BasePythonServableModel(BaseServableModel):
             shape (list): Required for data_type of ndarray. Use `None` for dimensions that
                 can have any numbers of values
             item_type (string): Description of the type of item in a list
-            kwargs (dict): Any other details particular to this kind of data
         """
 
         args = compose_argument_block(data_type, description, shape, item_type, **kwargs)
