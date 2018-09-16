@@ -4,6 +4,7 @@ from dlhub_toolbox import __dlhub_version__
 from datetime import datetime
 from tempfile import mkstemp
 from zipfile import ZipFile
+from glob import glob
 import unittest
 import uuid
 import os
@@ -17,6 +18,16 @@ _year = str(datetime.now().year)
 class TestModels(unittest.TestCase):
 
     maxDiff = None
+
+    def test_add_directory(self):
+        # Get how many files in directory below this
+        my_dir = os.path.dirname(__file__)
+        my_count = sum([os.path.isfile(x) for x in glob(my_dir + '/*')])
+
+        # Test it out
+        self.assertEquals(my_count, len(Dataset().add_directory(my_dir).list_files()))
+        self.assertLessEqual(my_count,
+                             len(Dataset().add_directory(my_dir, recursive=True).list_files()))
 
     def test_dataset(self):
         my_uuid = str(uuid.uuid1())

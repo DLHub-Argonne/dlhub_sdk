@@ -2,7 +2,9 @@ from itertools import zip_longest
 from datetime import datetime
 from six import string_types
 from zipfile import ZipFile
+from glob import glob
 import uuid
+import sys
 import os
 import re
 
@@ -299,6 +301,26 @@ class BaseMetadataModel:
         else:
             self.files[name] = file
         return self
+
+    def add_directory(self, directory, recursive=False):
+        """Add all the files in a directory
+
+        Args:
+            directory (string): Path to a directory
+            recursive (bool): Whether to add all files in a directory
+        """
+
+        # Get potential files
+        if recursive:
+            if sys.version_info < (3, 5):
+                raise RuntimeError('You must use Python >= 3.5 to do recursive listing')
+            hits = glob('{}/**/*'.format(directory), recursive=True)
+        else:
+            hits = glob('{}/*'.format(directory))
+
+        # Get only the files
+        files = [x for x in hits if os.path.isfile(x)]
+        return self.add_files(files)
 
     def add_files(self, files):
         """Add files that should be distributed with this artifact.
