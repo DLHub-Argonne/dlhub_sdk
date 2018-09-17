@@ -16,8 +16,8 @@ class TestKeras(TestCase):
     def test_keras_single_input(self):
         # Make a Keras model
         model = Sequential()
-        model.add(Dense(16, input_shape=(1,), activation='relu'))
-        model.add(Dense(1))
+        model.add(Dense(16, input_shape=(1,), activation='relu', name='hidden'))
+        model.add(Dense(1, name='output'))
         model.compile(optimizer='rmsprop', loss='mse')
 
         # Save it to disk
@@ -44,7 +44,7 @@ class TestKeras(TestCase):
                     "input": {"type": "ndarray", "description": "Tensor",
                                   "shape": [None, 1]},
                     "output": {"type": "ndarray", "description": "Tensor",
-                                    "shape": [None, 16]}, "parameters": {},
+                               "shape": [None, 1]}, "parameters": {},
                     "method_details": {"method_name": "predict"}}},
                     "files": {"model": model_path, "other": []},
                     "type": "Keras Model",
@@ -54,9 +54,9 @@ class TestKeras(TestCase):
                     "model_summary": """_________________________________________________________________
 Layer (type)                 Output Shape              Param #   
 =================================================================
-dense_1 (Dense)              (None, 16)                32        
+hidden (Dense)               (None, 16)                32        
 _________________________________________________________________
-dense_2 (Dense)              (None, 1)                 17        
+output (Dense)               (None, 1)                 17        
 =================================================================
 Total params: 49
 Trainable params: 49
@@ -73,37 +73,36 @@ _________________________________________________________________
             shutil.rmtree(tempdir)
 
     def test_keras_multioutput(self):
-        def test_keras_single_input(self):
-            # Make a Keras model
-            input_layer = Input(shape=4)
-            dense = Dense(16, activation='relu')(input_layer)
-            output_1 = Dense(1, 'softmax')(dense)
-            output_2 = Dense(2, 'softmax')(dense)
-            model = Model([input_layer], [output_1, output_2])
-            model.compile(optimizer='rmsprop', loss='mse')
+        # Make a Keras model
+        input_layer = Input(shape=(4,))
+        dense = Dense(16, activation='relu')(input_layer)
+        output_1 = Dense(1, activation='softmax')(dense)
+        output_2 = Dense(2, activation='softmax')(dense)
+        model = Model([input_layer], [output_1, output_2])
+        model.compile(optimizer='rmsprop', loss='mse')
 
-            # Save it to disk
-            tempdir = mkdtemp()
-            try:
-                model_path = os.path.join(tempdir, 'model.hd5')
-                model.save(model_path)
+        # Save it to disk
+        tempdir = mkdtemp()
+        try:
+            model_path = os.path.join(tempdir, 'model.hd5')
+            model.save(model_path)
 
-                # Create a model
-                metadata = KerasModel(model_path)
-                metadata.set_title('Keras Test')
-                metadata.set_name('mlp')
+            # Create a model
+            metadata = KerasModel(model_path)
+            metadata.set_title('Keras Test')
+            metadata.set_name('mlp')
 
-                self.assertEqual(metadata._get_output(),
-                                 {'type': 'list',
-                                  'description': 'List of tensors',
-                                  'item_type': [
-                                      {'type': 'ndarray', 'description': 'Tensor', 'shape': [None, 1]},
-                                      {'type': 'ndarray', 'description': 'Tensor', 'shape': [None, 2]}
-                                  ]})
+            self.assertEqual(metadata._get_output(),
+                             {'type': 'list',
+                              'description': 'List of tensors',
+                              'item_type': [
+                                  {'type': 'ndarray', 'description': 'Tensor', 'shape': [None, 1]},
+                                  {'type': 'ndarray', 'description': 'Tensor', 'shape': [None, 2]}
+                              ]})
 
-                output = metadata.to_dict()
+            output = metadata.to_dict()
 
-                # Validate against schema
-                validate_against_dlhub_schema(output, 'servable')
-            finally:
-                shutil.rmtree(tempdir)
+            # Validate against schema
+            validate_against_dlhub_schema(output, 'servable')
+        finally:
+            shutil.rmtree(tempdir)

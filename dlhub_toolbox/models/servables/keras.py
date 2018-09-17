@@ -29,8 +29,8 @@ class KerasModel(BasePythonServableModel):
         model = load_model(self.model_path)
 
         # Get the inputs of the model
-        self.inputs = self.get_layer_shape(model.input_layers)
-        self.outputs = self.get_layer_shape(model.output_layers)
+        self.input = self.get_layer_shape(model.input_layers, True)
+        self.output = self.get_layer_shape(model.output_layers, False)
 
         # Get a full description of the model
         self.summary = ""
@@ -42,25 +42,23 @@ class KerasModel(BasePythonServableModel):
         # Add keras as a depedency
         self.add_requirement('keras', keras_version)
 
-    def get_layer_shape(self, layers):
+    def get_layer_shape(self, layers, get_input=True):
         """Get a description of a list of input or output layers
 
         Args:
             layers ([Layer]): Input or output layer(s) of a Keras model
+            get_input (bool): Whether to get input or output layers
         Return:
             (dict) Description of the inputs / outputs
         """
         if len(layers) == 1:
-            return compose_argument_block("ndarray", "Tensor", layers[0].input_shape)
+            return compose_argument_block("ndarray", "Tensor",
+                                          layers[0].input_shape if get_input else
+                                          layers[0].output_shape)
         else:
             return compose_argument_block("list", "List of tensors",
-                                          item_type=[self.get_layer_shape([i]) for i in layers])
-
-    def _get_input(self):
-        return self.inputs
-
-    def _get_output(self):
-        return self.outputs
+                                          item_type=[self.get_layer_shape([i], get_input)
+                                                     for i in layers])
 
     def _get_handler(self):
         return "keras.KerasServable"

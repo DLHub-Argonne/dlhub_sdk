@@ -39,6 +39,11 @@ class TestTypes(unittest.TestCase):
             compose_argument_block('list', 'Test')
         self.assertEquals({'type': 'list', 'description': 'Test', 'item_type': {'type': 'string'}},
                           compose_argument_block('list', 'Test', item_type='string'))
+        self.assertEquals({'type': 'list', 'description': 'Test', 'item_type':
+            [{'type': 'string', 'description': 'Item 1'}, {'type': 'string', 'description': 'Item 2'}]},
+                          compose_argument_block('list', 'Test', item_type=[
+                                                 compose_argument_block('string', 'Item 1'),
+                                                 compose_argument_block('string', 'Item 2')]))
 
         # Test Python object
         with self.assertRaises(ValueError):

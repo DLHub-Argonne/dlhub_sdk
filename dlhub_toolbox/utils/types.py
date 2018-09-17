@@ -1,5 +1,5 @@
 """Utilities for generating descriptions of data types"""
-
+from six import string_types
 
 def simplify_numpy_dtype(dtype):
     """Given a numpy dtype, write out the type as string
@@ -80,8 +80,10 @@ def compose_argument_block(data_type, description, shape=(), item_type=None,
     if item_type is not None:
         if isinstance(item_type, dict):
             args['item_type'] = item_type
-        else:  # Is a string
+        elif isinstance(item_type, string_types):  # Is a string
             args['item_type'] = {'type': item_type}
+        else:  # Third option is a list
+            args['item_type'] = list(item_type)
 
     # Add in any kwargs
     args.update(**kwargs)
