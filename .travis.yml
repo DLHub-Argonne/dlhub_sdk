@@ -3,14 +3,14 @@ python:
   - "3.6"
 env:
   - KERAS_VERSION=2.1.3
-  - KERAS_VERSION=2.2.3
+  - KERAS_VERSION=2.2.2
 install:
   - pip install --upgrade pip setuptools wheel
   - "pip install -e ."
   - pip install coveralls
   - pip install --only-binary=numpy,scipy -r requirements.txt
   - pip install -r example-requirements.txt
-  - pip install keras==$KERAS_VERSION
+  - pip install keras==$KERAS_VERSIONx
 script:
   - nosetests --with-coverage --cover-package=dlhub_toolbox
   - cd examples
