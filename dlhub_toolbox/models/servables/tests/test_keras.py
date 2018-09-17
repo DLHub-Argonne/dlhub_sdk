@@ -3,6 +3,7 @@ from dlhub_toolbox.models.servables.keras import KerasModel
 from keras import __version__ as keras_version
 from keras.models import Sequential, Model
 from keras.layers import Dense, Input
+from h5py import __version__ as h5py_version
 from unittest import TestCase
 from tempfile import mkdtemp
 import shutil
@@ -64,7 +65,8 @@ Non-trainable params: 0
 _________________________________________________________________
 """,
                     "dependencies": {"python": {
-                        'keras': keras_version
+                        'keras': keras_version,
+                        'h5py': h5py_version
                     }}}})
 
             # Validate against schema

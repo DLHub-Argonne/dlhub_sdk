@@ -41,6 +41,7 @@ class KerasModel(BasePythonServableModel):
 
         # Add keras as a depedency
         self.add_requirement('keras', keras_version)
+        self.add_requirement('h5py', 'detect')
 
     def get_layer_shape(self, layers, get_input=True):
         """Get a description of a list of input or output layers
