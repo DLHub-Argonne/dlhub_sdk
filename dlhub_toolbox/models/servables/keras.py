@@ -1,8 +1,11 @@
 from keras import __version__ as keras_version
-from keras.models import load_model
+from keras.models import load_model, Model
 
 from dlhub_toolbox.models.servables.python import BasePythonServableModel
 from dlhub_toolbox.utils.types import compose_argument_block
+
+
+_keras_version_tuple = tuple(int(i) for i in keras_version.split("."))
 
 
 class KerasModel(BasePythonServableModel):
@@ -29,8 +32,8 @@ class KerasModel(BasePythonServableModel):
         model = load_model(self.model_path)
 
         # Get the inputs of the model
-        self.input = self.get_layer_shape(model.input_layers, True)
-        self.output = self.get_layer_shape(model.output_layers, False)
+        self.input = self._format_layer_spec(model.input_shape)
+        self.output = self._format_layer_spec(model.output_shape)
 
         # Get a full description of the model
         self.summary = ""
@@ -43,23 +46,19 @@ class KerasModel(BasePythonServableModel):
         self.add_requirement('keras', keras_version)
         self.add_requirement('h5py', 'detect')
 
-    def get_layer_shape(self, layers, get_input=True):
-        """Get a description of a list of input or output layers
+    def _format_layer_spec(self, layers):
+        """Make a description of a list of input or output layers
 
         Args:
-            layers ([Layer]): Input or output layer(s) of a Keras model
-            get_input (bool): Whether to get input or output layers
+            layers (tuple or [tuple]): Shape of the layers
         Return:
             (dict) Description of the inputs / outputs
         """
-        if len(layers) == 1:
-            return compose_argument_block("ndarray", "Tensor",
-                                          layers[0].input_shape if get_input else
-                                          layers[0].output_shape)
+        if isinstance(layers, tuple):
+            return compose_argument_block("ndarray", "Tensor", shape=layers)
         else:
             return compose_argument_block("list", "List of tensors",
-                                          item_type=[self.get_layer_shape([i], get_input)
-                                                     for i in layers])
+                                          item_type=[self._format_layer_spec(i) for i in layers])
 
     def _get_handler(self):
         return "keras.KerasServable"

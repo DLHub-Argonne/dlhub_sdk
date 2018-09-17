@@ -78,8 +78,8 @@ _________________________________________________________________
         # Make a Keras model
         input_layer = Input(shape=(4,))
         dense = Dense(16, activation='relu')(input_layer)
-        output_1 = Dense(1, activation='softmax')(dense)
-        output_2 = Dense(2, activation='softmax')(dense)
+        output_1 = Dense(1, activation='relu')(dense)
+        output_2 = Dense(2, activation='relu')(dense)
         model = Model([input_layer], [output_1, output_2])
         model.compile(optimizer='rmsprop', loss='mse')
 
