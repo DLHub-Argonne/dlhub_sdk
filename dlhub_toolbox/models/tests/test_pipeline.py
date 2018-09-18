@@ -31,7 +31,7 @@ class TestPipeline(unittest.TestCase):
                           'identifier': {'identifier': '10.YET/UNASSIGNED',
                                          'identifierType': 'DOI'},
                           'resourceType': {'resourceTypeGeneral': 'InteractiveResource'}},
-             'dlhub': {'version': '0.1', 'domain': '', 'visible_to': ['public'],
+             'dlhub': {'version': '0.1', 'domains': [], 'visible_to': ['public'],
                        'id': None, 'name': 'numpy_test',
                        'files': {'other': []}},
              'pipeline': {'steps': [{'dlhub_id': step1.dlhub_id,

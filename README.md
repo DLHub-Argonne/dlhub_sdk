@@ -48,7 +48,7 @@ dataset_info.add_alternate_identifier("https://archive.ics.uci.edu/ml/datasets/I
 dataset_info.add_related_identifier("10.1111/j.1469-1809.1936.tb02137.x", "DOI", "IsDescribedBy")
 
 #   Mark the domain of the dataset
-dataset_info.set_domain("biology")
+dataset_info.set_domains(["biology"])
 
 #   Describe the columns
 dataset_info.annotate_column("sepal_length", description="Length of sepal", units="cm")
@@ -112,15 +112,18 @@ After running this script, the model produces a simple JSON description of the d
   },
   "dlhub": {
     "version": "0.1",
-    "domain": "biology",
+    "domains": ["biology"],
     "visible_to": [
       "public"
     ],
     "id": null,
-    "name": "iris_dataset"
+    "name": "iris_dataset",
+    "files": {
+        "data": "iris.csv",
+        "other": []
+    }
   },
   "dataset": {
-    "location": "iris.csv",
     "format": "csv",
     "read_options": {
       "header": 1
@@ -212,12 +215,16 @@ The toolbox will inspect the pickle file to determine the type of the model and 
   },
   "dlhub": {
     "version": "0.1",
-    "domain": "biology",
+    "domains": ["biology"],
     "visible_to": [
       "public"
     ],
     "id": null,
-    "name": "iris_svm"
+    "name": "iris_svm",
+    "files": {
+        "model": "model.pkl",
+        "other": []
+    }
   },
   "servable": {
     "methods": {
@@ -258,9 +265,6 @@ The toolbox will inspect the pickle file to determine the type of the model and 
       }
     },
     "type": "Scikit-learn estimator",
-    "files": {
-      "model": "model.pkl"
-    },
     "model_type": "SVC",
     "model_summary": "SVC(C=1, cache_size=200, class_weight=None, coef0=0.0,\n  decision_function_shape='ovr', degree=3, gamma='auto', kernel='linear',\n  max_iter=-1, probability=True, random_state=None, shrinking=True,\n  tol=0.001, verbose=False)",
     "options": {

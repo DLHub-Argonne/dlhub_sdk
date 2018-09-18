@@ -38,7 +38,7 @@ class TestModels(unittest.TestCase):
             .set_version(1)\
             .add_rights("https://www.gnu.org/licenses/gpl-3.0.en.html", "GPL v3.0")\
             .set_abstract("Abstract").set_methods("Methods")\
-            .set_visibility(['public']).set_domain("materials science")\
+            .set_visibility(['public']).set_domains(["materials science"])\
             .set_dlhub_id(my_uuid).set_name("example_data")
         self.assertEqual(m.to_dict(),
                          {"datacite":
@@ -81,7 +81,7 @@ class TestModels(unittest.TestCase):
                           "dlhub": {
                               "version": __dlhub_version__,
                               "visible_to": ["public"],
-                              "domain": "materials science",
+                              "domains": ["materials science"],
                               "id": my_uuid,
                               "name": "example_data",
                               "files": {"other": []}},
@@ -114,7 +114,7 @@ class TestModels(unittest.TestCase):
                                                     },
                                        "dlhub": {"version": __dlhub_version__,
                                                  "visible_to": ["public"],
-                                                 "domain": "",
+                                                 "domains": [],
                                                  "id": None,
                                                  "name": "example_dataset",
                                                  "files": {'data': data_path, 'other': []}},

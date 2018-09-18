@@ -17,7 +17,7 @@ dataset_info.add_alternate_identifier("https://archive.ics.uci.edu/ml/datasets/I
 dataset_info.add_related_identifier("10.1111/j.1469-1809.1936.tb02137.x", "DOI", "IsDescribedBy")
 
 #   Mark the domain of the dataset
-dataset_info.set_domain("biology")
+dataset_info.set_domains(["biology"])
 
 #   Describe the columns
 dataset_info.annotate_column("sepal_length", description="Length of sepal", units="cm")

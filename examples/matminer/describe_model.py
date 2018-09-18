@@ -20,7 +20,7 @@ dataset_info.add_related_identifier("10.1002/qua.24917.", "DOI", "IsDescribedBy"
 dataset_info.add_related_identifier("http://materialsproject.org", "URL", "IsDerivedFrom")
 
 #   Mark the domain of the dataset
-dataset_info.set_domain("materials science")
+dataset_info.set_domains(["materials science"])
 
 #   Describe the columns
 dataset_info.annotate_column("material_id", description="Materials Project ID number", data_type='string')

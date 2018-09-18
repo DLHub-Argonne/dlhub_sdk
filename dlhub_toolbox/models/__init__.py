@@ -33,7 +33,7 @@ class BaseMetadataModel:
         self.rights = []
         self.abstract = None
         self.methods = None
-        self.domain = ''
+        self.domains = []
         self.visible_to = ['public']
         self.doi = None
         self.publication_year = str(datetime.now().year)
@@ -97,13 +97,13 @@ class BaseMetadataModel:
         self.methods = methods
         return self
 
-    def set_domain(self, domain):
+    def set_domains(self, domains):
         """Set the field of science that is associated with this artifcat
 
         Args:
-            domain (string): Name of a field of science (e.g., "materials science")
+            domains ([string]): Name of a fields of science (e.g., "materials science")
         """
-        self.domain = domain
+        self.domains = domains
         return self
 
     def set_visibility(self, visible_to):
@@ -404,7 +404,7 @@ class BaseMetadataModel:
         # Add in the DLHub block
         out['dlhub'] = {
             'version': __dlhub_version__,
-            'domain': self.domain,
+            'domains': self.domains,
             'visible_to': self.visible_to,
             'id': self.dlhub_id,
             'name': self.name,

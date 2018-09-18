@@ -29,7 +29,7 @@ class TestSklearn(unittest.TestCase):
                                  },
                     "dlhub": {"version": __dlhub_version__,
                               "visible_to": ["public"], 'name': 'sklearn',
-                              "domain": "", "id": None,
+                              "domains": [], "id": None,
                               'files': {'model': model_path, 'other': []}},
                     'servable': {
                         'language': 'python',

@@ -39,7 +39,7 @@ class TestKeras(TestCase):
                              "identifier": {"identifier": "10.YET/UNASSIGNED",
                                             "identifierType": "DOI"},
                              "resourceType": {"resourceTypeGeneral": "InteractiveResource"}},
-                "dlhub": {"version": "0.1", "domain": "", "visible_to": ["public"], "id": None,
+                "dlhub": {"version": "0.1", "domains": [], "visible_to": ["public"], "id": None,
                           "name": "mlp", "files": {"model": model_path, "other": []}},
                 "servable": {"methods": {"run": {
                     "input": {"type": "ndarray", "description": "Tensor",

@@ -50,7 +50,7 @@ class TestPythonModels(unittest.TestCase):
                                               'identifierType': 'DOI'},
                                'publicationYear': _year
                                },
-                          'dlhub': {'version': '0.1', 'domain': "", 'visible_to': ['public'],
+                          'dlhub': {'version': '0.1', 'domains': [], 'visible_to': ['public'],
                                     "id": None, "name": "class_method",
                                     'files': {'pickle': pickle_path, 'other': []}},
                           'servable': {'language': 'python', 'type': 'Python class method',
@@ -97,7 +97,7 @@ class TestPythonModels(unittest.TestCase):
                                               'identifierType': 'DOI'},
                                'publicationYear': _year
                            },
-                          'dlhub': {'version': __dlhub_version__, 'domain': '', 'visible_to': ['public'],
+                          'dlhub': {'version': __dlhub_version__, 'domains': [], 'visible_to': ['public'],
                                     "id": None, "name": "static_method",
                                     'files': {'other': []}},
                           'servable': {'language': 'python', 'type': 'Python static method',
