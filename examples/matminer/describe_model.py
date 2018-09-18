@@ -78,7 +78,7 @@ model_info = ScikitLearnModel('model.pkl', n_input_columns=len(featurizer.featur
 #    Describe the model
 model_info.set_title("Formation enthalpy predictor")
 model_info.set_name("delta-e_icsd-subset_model")
-model_info.set_domain("materials science")
+model_info.set_domains(["materials science"])
 
 # Print out the result
 print('--> Dataset Information <--')
