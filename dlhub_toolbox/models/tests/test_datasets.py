@@ -127,6 +127,10 @@ class TestModels(unittest.TestCase):
                                                    "format": "csv", "read_options": {}}})
         validate_against_dlhub_schema(m.to_dict(), "dataset")
 
+        # Test the simplification of files
+        metadata = m.to_dict(simplify_paths=True)
+        self.assertEqual({'data': 'test.csv', 'other': []}, metadata['dlhub']['files'])
+
     def test_zip(self):
         """Test generating a zip file with the requested files"""
 

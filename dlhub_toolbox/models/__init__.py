@@ -336,7 +336,7 @@ class BaseMetadataModel:
         self.files['other'].extend(files)
         return self
 
-    def to_dict(self, simplify_paths):
+    def to_dict(self, simplify_paths=False):
         """Render the dataset to a JSON description
 
         Args:
@@ -392,7 +392,7 @@ class BaseMetadataModel:
             common_path = self._get_common_path()
 
             files = {}
-            for k, v in self.files:
+            for k, v in self.files.items():
                 if k == "other":
                     files[k] = [os.path.relpath(f, common_path) for f in v]
                 else:
