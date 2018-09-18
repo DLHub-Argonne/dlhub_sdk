@@ -114,9 +114,9 @@ class BasePythonServableModel(BaseServableModel):
     def _get_method_details(self):
         return {'method_name': self.method}
 
-    def to_dict(self):
+    def to_dict(self, simplify_paths=False):
         # Get the higher level
-        output = super(BasePythonServableModel, self).to_dict()
+        output = super(BasePythonServableModel, self).to_dict(simplify_paths)
 
         # Add Python settings
         output['servable'].update({
@@ -162,8 +162,8 @@ class PythonClassMethodModel(BasePythonServableModel):
         output.update({'class_name': self.class_name})
         return output
 
-    def to_dict(self):
-        output = super(PythonClassMethodModel, self).to_dict()
+    def to_dict(self, simplify_paths=False):
+        output = super(PythonClassMethodModel, self).to_dict(simplify_paths)
 
         # Add pickle-specific options
         output['servable']['type'] = 'Python class method'
@@ -217,8 +217,8 @@ class PythonStaticMethodModel(BasePythonServableModel):
         })
         return output
 
-    def to_dict(self):
-        output = super(PythonStaticMethodModel, self).to_dict()
+    def to_dict(self, simplify_paths=False):
+        output = super(PythonStaticMethodModel, self).to_dict(simplify_paths)
 
         output['servable']['type'] = 'Python static method'
 

@@ -13,15 +13,15 @@ class Dataset(BaseMetadataModel):
     for describing what a dataset is and how to use it. 
     """
 
-    def to_dict(self):
+    def to_dict(self, simplify_paths=False):
         # Get the metadata from the superclass
-        output = super(Dataset, self).to_dict()
+        output = super(Dataset, self).to_dict(simplify_paths)
 
         # Add the datacite type as Dataset
         output['datacite']['resourceType'] = {'resourceTypeGeneral': 'Dataset'}
 
-        # Intiailize the dataset entries
-        output['dataset'] = {'files': self.files}
+        # Initialize the dataset block
+        output['dataset'] = {}
 
         return output
 
@@ -128,8 +128,8 @@ class TabularDataset(Dataset):
         self.labels = list(column_names)
         return self
 
-    def to_dict(self):
-        output = super(TabularDataset, self).to_dict()
+    def to_dict(self, simplify_paths=False):
+        output = super(TabularDataset, self).to_dict(simplify_paths)
 
         dataset_block = output['dataset']
         # Add the format description

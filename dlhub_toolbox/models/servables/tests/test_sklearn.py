@@ -29,11 +29,11 @@ class TestSklearn(unittest.TestCase):
                                  },
                     "dlhub": {"version": __dlhub_version__,
                               "visible_to": ["public"], 'name': 'sklearn',
-                              "domain": "", "id": None},
+                              "domain": "", "id": None,
+                              'files': {'model': model_path, 'other': []}},
                     'servable': {
                         'language': 'python',
                         'type': 'Scikit-learn estimator',
-                        'files': {'model': model_path, 'other': []},
                         'dependencies': {
                             'python': {'scikit-learn': '0.19.1'}
                         },

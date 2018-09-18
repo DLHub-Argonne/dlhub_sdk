@@ -336,11 +336,14 @@ class BaseMetadataModel:
         self.files['other'].extend(files)
         return self
 
-    def to_dict(self):
+    def to_dict(self, simplify_paths):
         """Render the dataset to a JSON description
 
+        Args:
+            simplify_paths (bool): Whether to simplify the paths of each file
         Returns:
-            (dict) A description of the dataset in a form suitable for download"""
+            (dict) A description of the dataset in a form suitable for download
+        """
 
         # Check for required fields
         if self.title is None:
@@ -383,13 +386,29 @@ class BaseMetadataModel:
         if len(desc) > 0:
             out['datacite']['descriptions'] = desc
 
+        # Prepare the files
+        if simplify_paths:
+            # Get the common path
+            common_path = self._get_common_path()
+
+            files = {}
+            for k, v in self.files:
+                if k == "other":
+                    files[k] = [os.path.relpath(f, common_path) for f in v]
+                else:
+                    files[k] = os.path.relpath(v, common_path)
+
+        else:
+            files = self.files
+
         # Add in the DLHub block
         out['dlhub'] = {
             'version': __dlhub_version__,
             'domain': self.domain,
             'visible_to': self.visible_to,
             'id': self.dlhub_id,
-            'name': self.name
+            'name': self.name,
+            'files': files
         }
         return out
 
@@ -424,21 +443,33 @@ class BaseMetadataModel:
 
         # Open the zip file in "exclusively create" (x) mode
         with ZipFile(path, 'x') as newzip:
-            # Get the files
-            files = self.list_files()
+            if len(self.list_files()) == 0:
+                return "."
 
-            # Shortcut: if no files
-            if len(files) == 0:
-                return '.'
-
-            # Get the directories for all the files
-            directories = [f if os.path.isdir(f) else os.path.dirname(f) for f in files]
-
-            # Get the largest common path
-            common_path = os.path.commonpath(os.path.abspath(d) for d in directories)
+            # Get the common path of all files
+            root_path = self._get_common_path()
 
             # Add each file to the directory
-            for file in files:
-                newzip.write(file, arcname=os.path.relpath(file, common_path))
+            for file in self.list_files():
+                newzip.write(file, arcname=os.path.relpath(file, root_path))
 
-            return common_path
+            return root_path
+
+    def _get_common_path(self):
+        """Determine the common path of all files
+
+        Returns:
+            (string) Common path
+        """
+        # Get the files
+        files = self.list_files()
+
+        # Shortcut: if no files
+        if len(files) == 0:
+            return '.'
+
+        # Get the directories for all the files
+        directories = [f if os.path.isdir(f) else os.path.dirname(f) for f in files]
+
+        # Get the largest common path
+        return os.path.commonpath(os.path.abspath(d) for d in directories)

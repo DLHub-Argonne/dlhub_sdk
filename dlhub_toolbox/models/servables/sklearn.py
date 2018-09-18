@@ -140,8 +140,8 @@ class ScikitLearnModel(BasePythonServableModel):
         predict_options = dict((k, v.default) for k, v in spec.parameters.items() if k != "X")
         return predict_fun.__name__, predict_options
 
-    def to_dict(self):
-        output = super(ScikitLearnModel, self).to_dict()
+    def to_dict(self, simplify_paths=False):
+        output = super(ScikitLearnModel, self).to_dict(simplify_paths)
 
         # Store the model information
         output['servable'].update({

@@ -51,9 +51,9 @@ class TestPythonModels(unittest.TestCase):
                                'publicationYear': _year
                                },
                           'dlhub': {'version': '0.1', 'domain': "", 'visible_to': ['public'],
-                                    "id": None, "name": "class_method"},
+                                    "id": None, "name": "class_method",
+                                    'files': {'pickle': pickle_path, 'other': []}},
                           'servable': {'language': 'python', 'type': 'Python class method',
-                                       'files': {'pickle': pickle_path, 'other': []},
                                        'shim': 'python.PythonClassMethodServable',
                                        'methods': {'run': {'input': {'type': 'ndarray',
                                                                      'description': 'Features for each entry',
@@ -98,7 +98,8 @@ class TestPythonModels(unittest.TestCase):
                                'publicationYear': _year
                            },
                           'dlhub': {'version': __dlhub_version__, 'domain': '', 'visible_to': ['public'],
-                                    "id": None, "name": "static_method"},
+                                    "id": None, "name": "static_method",
+                                    'files': {'other': []}},
                           'servable': {'language': 'python', 'type': 'Python static method',
                                        'shim': 'python.PythonStaticMethodServable',
                                        'methods': {'run': {'input': {'type': 'list',
@@ -112,7 +113,6 @@ class TestPythonModels(unittest.TestCase):
                                                                               'method_name': 'sqrt',
                                                                               'autobatch': True}}
                                                    },
-                                       'files': {'other': []},
                                        'dependencies': {'python': {}}}
                           })
         validate_against_dlhub_schema(output, 'servable')

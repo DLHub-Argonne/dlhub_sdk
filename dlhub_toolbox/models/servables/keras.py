@@ -63,8 +63,8 @@ class KerasModel(BasePythonServableModel):
     def _get_handler(self):
         return "keras.KerasServable"
 
-    def to_dict(self):
-        output = super(KerasModel, self).to_dict()
+    def to_dict(self, simplify_paths=False):
+        output = super(KerasModel, self).to_dict(simplify_paths)
 
         # Add in some general metadata
         output['servable']['type'] = 'Keras Model'

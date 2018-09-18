@@ -4,8 +4,8 @@ from dlhub_toolbox.models import BaseMetadataModel
 class BaseServableModel(BaseMetadataModel):
     """Base class for servables"""
 
-    def to_dict(self):
-        output = super(BaseServableModel, self).to_dict()
+    def to_dict(self, simplify_paths=False):
+        output = super(BaseServableModel, self).to_dict(simplify_paths)
 
         # Add the resource type
         #  I chose "InteractiveResource" as the point of DLHub is to provide
@@ -22,7 +22,6 @@ class BaseServableModel(BaseMetadataModel):
                 'parameters': self._get_parameters(),
                 'method_details': self._get_method_details(),
             }},
-            'files': self.files,
             "shim": self._get_handler()}
 
         return output

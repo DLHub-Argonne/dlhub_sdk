@@ -83,8 +83,9 @@ class TestModels(unittest.TestCase):
                               "visible_to": ["public"],
                               "domain": "materials science",
                               "id": my_uuid,
-                              "name": "example_data"},
-                          "dataset": {"files": {"other": []}}})
+                              "name": "example_data",
+                              "files": {"other": []}},
+                          "dataset": {}})
         validate_against_dlhub_schema(m.to_dict(), "dataset")
 
     def test_tabular_dataset(self):
@@ -115,9 +116,9 @@ class TestModels(unittest.TestCase):
                                                  "visible_to": ["public"],
                                                  "domain": "",
                                                  "id": None,
-                                                 "name": "example_dataset"},
-                                       "dataset": {"files": {'data': data_path, 'other': []},
-                                                   "columns": [
+                                                 "name": "example_dataset",
+                                                 "files": {'data': data_path, 'other': []}},
+                                       "dataset": {"columns": [
                                                        {"name": "x",
                                                         "description": "Input variable",
                                                         "type": "integer", "units": "cm"},

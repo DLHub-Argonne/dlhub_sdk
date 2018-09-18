@@ -42,8 +42,8 @@ class PipelineModel(BaseMetadataModel):
             step['parameters'] = parameters
         self.steps.append(step)
 
-    def to_dict(self):
-        output = super(PipelineModel, self).to_dict()
+    def to_dict(self, simplify_paths=False):
+        output = super(PipelineModel, self).to_dict(simplify_paths)
 
         # Make as a "InteractiveResource"
         output['datacite']['resourceType'] = {'resourceTypeGeneral': 'InteractiveResource'}
