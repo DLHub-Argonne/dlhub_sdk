@@ -42,7 +42,7 @@ model_info = ScikitLearnModel('model.pkl', n_input_columns=len(data.columns) - 1
 #    Describe the model
 model_info.set_title("Example Scikit-Learn Model")
 model_info.set_name("iris_svm")
-model_info.set_domain("biology")
+model_info.set_domains(["biology"])
 
 # Print out the result
 print('--> Dataset Information <--')
