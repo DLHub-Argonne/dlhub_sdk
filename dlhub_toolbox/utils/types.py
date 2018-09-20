@@ -34,7 +34,6 @@ def compose_argument_block(data_type, description, shape=(), item_type=None,
     """Compile a list of argument descriptions into an argument_type block
 
     Args:
-        Args:
         data_type (string): Type of the input data
         description (string): Human-friendly description of the data
         shape (list): Required for data_type of list or ndarray. Use `None` for dimensions that

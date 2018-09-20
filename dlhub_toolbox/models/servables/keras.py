@@ -1,5 +1,5 @@
 from keras import __version__ as keras_version
-from keras.models import load_model, Model
+from keras.models import load_model
 
 from dlhub_toolbox.models.servables.python import BasePythonServableModel
 from dlhub_toolbox.utils.types import compose_argument_block
@@ -13,17 +13,20 @@ class KerasModel(BasePythonServableModel):
 
     Assumes that the model has been saved to an hdf5 file"""
 
-    def __init__(self, model_path):
+    def __init__(self, model_path, output_names):
         """Initialize a Keras model.
 
         Args:
             model_path (string): Path to the hd5 file that describes a model and the weights
+            output_names ([string] or [[string]]): Names of output classes. If applicable, one list for
+                each output layer
         """
 
         super(KerasModel, self).__init__('predict')
 
-        # Load in the model information
+        # Save model information
         self.model_path = model_path
+        self.output_names = output_names
 
         # Add model as a file to be sent
         self.add_file(self.model_path, 'model')
@@ -42,7 +45,7 @@ class KerasModel(BasePythonServableModel):
             self.summary += x + "\n"
         model.summary(print_fn=capture_summary)
 
-        # Add keras as a depedency
+        # Add keras as a dependency
         self.add_requirement('keras', keras_version)
         self.add_requirement('h5py', 'detect')
 
@@ -59,6 +62,11 @@ class KerasModel(BasePythonServableModel):
         else:
             return compose_argument_block("list", "List of tensors",
                                           item_type=[self._format_layer_spec(i) for i in layers])
+
+    def _get_method_details(self):
+        output = super(KerasModel, self)._get_method_details()
+        output['classes'] = self.output_names
+        return output
 
     def _get_handler(self):
         return "keras.KerasServable"

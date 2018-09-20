@@ -28,7 +28,7 @@ class TestKeras(TestCase):
             model.save(model_path)
 
             # Create a model
-            metadata = KerasModel(model_path)
+            metadata = KerasModel(model_path, ["y"])
             metadata.set_title('Keras Test')
             metadata.set_name('mlp')
 
@@ -42,11 +42,13 @@ class TestKeras(TestCase):
                 "dlhub": {"version": "0.1", "domains": [], "visible_to": ["public"], "id": None,
                           "name": "mlp", "files": {"model": model_path, "other": []}},
                 "servable": {"methods": {"run": {
-                    "input": {"type": "ndarray", "description": "Tensor",
-                                  "shape": [None, 1]},
+                    "input": {"type": "ndarray", "description": "Tensor", "shape": [None, 1]},
                     "output": {"type": "ndarray", "description": "Tensor",
                                "shape": [None, 1]}, "parameters": {},
-                    "method_details": {"method_name": "predict"}}},
+                    "method_details": {
+                        "method_name": "predict",
+                        "classes": ["y"]
+                    }}},
                     "type": "Keras Model",
                     "shim": "keras.KerasServable",
                     "language": "python",
@@ -78,7 +80,7 @@ _________________________________________________________________
         input_layer = Input(shape=(4,))
         dense = Dense(16, activation='relu')(input_layer)
         output_1 = Dense(1, activation='relu')(dense)
-        output_2 = Dense(2, activation='relu')(dense)
+        output_2 = Dense(2, activation='softmax')(dense)
         model = Model([input_layer], [output_1, output_2])
         model.compile(optimizer='rmsprop', loss='mse')
 
@@ -89,7 +91,7 @@ _________________________________________________________________
             model.save(model_path)
 
             # Create a model
-            metadata = KerasModel(model_path)
+            metadata = KerasModel(model_path, [['y'], ['yes', 'no']])
             metadata.set_title('Keras Test')
             metadata.set_name('mlp')
 
