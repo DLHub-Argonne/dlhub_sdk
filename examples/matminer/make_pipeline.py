@@ -19,6 +19,7 @@ convert_info.set_inputs("list", "List of strings", item_type="string")
 convert_info.set_outputs("list", "List of pymatgen composition objects",
                          item_type={'type': 'python object',
                                     'python_type': 'pymatgen.core.Composition'})
+convert_info.add_requirement('pymatgen', 'latest')
 
 # Assign each step a DLHub ID
 feat_info.assign_dlhub_id()
