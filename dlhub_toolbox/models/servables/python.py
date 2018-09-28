@@ -3,6 +3,7 @@ from dlhub_toolbox.models.servables import BaseServableModel
 from dlhub_toolbox.utils.types import compose_argument_block
 import pickle as pkl
 import pkg_resources
+import importlib
 import requests
 
 
@@ -46,7 +47,11 @@ class BasePythonServableModel(BaseServableModel):
 
         # Attempt to determine the version automatically
         if version == "detect":
-            version = pkg_resources.get_distribution(library).version
+            try:
+                module = importlib.import_module(library)
+                version = module.__version__
+            except:
+                version = pkg_resources.get_distribution(library).version
         elif version == "latest":
             pypi_req = requests.get('https://pypi.org/pypi/{}/json'.format(library))
             version = pypi_req.json()['info']['version']

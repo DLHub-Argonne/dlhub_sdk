@@ -4,6 +4,7 @@ from dlhub_toolbox.models.servables.python import PythonClassMethodModel, \
     PythonStaticMethodModel
 from dlhub_toolbox import __dlhub_version__
 from sklearn import __version__ as skl_version
+from numpy import __version__ as numpy_version
 from datetime import datetime
 import unittest
 import math
@@ -37,7 +38,8 @@ class TestPythonModels(unittest.TestCase):
 
         # Add some requirements
         model.add_requirement('scikit-learn', 'detect')
-        model.add_requirement('pytorch', 'latest')  # Deprecated project, version should stay same
+        model.add_requirement('numpy', 'detect')
+        model.add_requirement('theano', 'latest')  # Deprecated project, version should stay same
 
         # Check the model output
         output = model.to_dict()
@@ -69,7 +71,8 @@ class TestPythonModels(unittest.TestCase):
                                        'dependencies': {
                                            'python': {
                                                'scikit-learn': skl_version,
-                                               'pytorch': '0.1.2'
+                                               'numpy': numpy_version,
+                                               'theano': '1.0.3'
                                            }}
                           }})
         self.assertEqual([pickle_path], model.list_files())
