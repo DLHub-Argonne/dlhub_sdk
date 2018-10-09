@@ -6,6 +6,12 @@ This package provides utility functions for building data in the correct schema 
 
 ## Installation
 
+```
+git clone https://github.com/DLHub-Argonne/dlhub_toolbox.git
+cd dlhub_toolbox
+pip install -e .
+```
+
 `dlhub_toolbox` is not yet on PyPi. So, you have to install it by first cloning the repository and then calling `pip install -e .`
 
 ## Example Usage
