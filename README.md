@@ -195,7 +195,7 @@ model_info = ScikitLearnModel('model.pkl', n_input_columns=len(data.columns) - 1
 #    Describe the model
 model_info.set_title("Example Scikit-Learn Model")
 model_info.set_name("iris_svm")
-model_info.set_domain("biology")
+model_info.set_domains(["biology"])
 ```
 
 The toolbox will inspect the pickle file to determine the type of the model and the version of scikit-learn that was used to create it.
