@@ -9,7 +9,7 @@ model_info = KerasModel('model.hd5', list(map(str, range(10))))
 #    Describe the model
 model_info.set_title("MNIST Digit Classifier")
 model_info.set_name("mnist_tiny_example")
-model_info.set_domains(["digit recognition"])
+model_info.set_domains(["general","digit recognition"])
 
 #    Describe the outputs in more detail
 model_info.output['description'] = 'Probabilities of being 0-9'
