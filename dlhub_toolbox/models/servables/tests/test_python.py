@@ -24,7 +24,7 @@ class TestPythonModels(unittest.TestCase):
         pickle_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'model.pkl'))
 
         # Make the model
-        model = PythonClassMethodModel(pickle_path, 'predict_proba', {'fake': 'kwarg'})
+        model = PythonClassMethodModel.create_model(pickle_path, 'predict_proba', {'fake': 'kwarg'})
         model.set_title('Python example').set_name("class_method")
 
         # Make sure it throws value errors if inputs are not set

@@ -39,7 +39,7 @@ import json
 data = pd.read_csv('iris.csv', header=1)
 
 # Make the dataset information
-dataset_info = TabularDataset('iris.csv', read_kwargs=dict(header=1))
+dataset_info = TabularDataset.create_model('iris.csv', read_kwargs=dict(header=1))
 
 #   Add link to where this data was downloaded from
 dataset_info.add_alternate_identifier("https://archive.ics.uci.edu/ml/datasets/Iris", "URL")
@@ -183,8 +183,8 @@ We simply load in a Scikit-Learn model from a pickle file, and then provide a mi
 ```python
 from dlhub_toolbox.models.servables.sklearn import ScikitLearnModel
 
-model_info = ScikitLearnModel('model.pkl', n_input_columns=len(data.columns) - 1,
-                              classes=data['species'].unique())
+model_info = ScikitLearnModel.create_model('model.pkl', n_input_columns=len(data.columns) - 1,
+                                           classes=data['species'].unique())
 
 #    Describe the model
 model_info.set_title("Example Scikit-Learn Model")

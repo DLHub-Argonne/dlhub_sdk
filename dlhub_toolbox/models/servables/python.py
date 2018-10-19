@@ -10,7 +10,18 @@ import requests
 class BasePythonServableModel(BaseServableModel):
     """Describes a static python function to be run"""
 
-    def __init__(self, method, function_kwargs=None):
+    def __init__(self):
+        super(BasePythonServableModel, self).__init__()
+        self.method = None
+        self.function_kwargs = {}
+        self.requirements = {}
+
+        # Initialize holders for inputs and outputs
+        self.input = {}
+        self.output = {}
+
+    @classmethod
+    def create_model(cls, method, function_kwargs=None):
         """Initialize a model for a python object
 
         Args:
@@ -18,20 +29,16 @@ class BasePythonServableModel(BaseServableModel):
             function_kwargs (dict): Names and values of any other argument of the function to set
                 the values must be JSON serializable.
         """
-        super(BasePythonServableModel, self).__init__()
+        output = cls()
 
         # Get default values
         if function_kwargs is None:
             function_kwargs = dict()
 
         # Set values
-        self.method = method
-        self.function_kwargs = function_kwargs
-        self.requirements = {}
-
-        # Initialize holders for inputs and outputs
-        self.input = {}
-        self.output = {}
+        output.method = method
+        output.function_kwargs = function_kwargs
+        return output
 
     def add_requirement(self, library, version=None):
         """Add a required Python library.
@@ -140,7 +147,12 @@ class PythonClassMethodModel(BasePythonServableModel):
     to run the library and their versions must also be specified. You may also specify
     any arguments of the class that should be set as defaults."""
 
-    def __init__(self, path, method, function_kwargs=None):
+    def __init__(self):
+        super(PythonClassMethodModel, self).__init__()
+        self.class_name = None
+
+    @classmethod
+    def create_model(cls, path, method, function_kwargs=None):
         """Initialize a model for a python object
 
         Args:
@@ -149,15 +161,17 @@ class PythonClassMethodModel(BasePythonServableModel):
             function_kwargs (dict): Names and values of any other argument of the function to set
                 the values must be JSON serializable.
         """
-        super(PythonClassMethodModel, self).__init__(method, function_kwargs)
+        output = super(PythonClassMethodModel, cls).create_model(method, function_kwargs)
 
-        self.add_file(path, 'pickle')
+        output.add_file(path, 'pickle')
 
         # Get the class name
         with open(path, 'rb') as fp:
             obj = pkl.load(fp)
-            self.class_name = '{}.{}'.format(obj.__class__.__module__,
-                                             obj.__class__.__name__)
+            output.class_name = '{}.{}'.format(obj.__class__.__module__,
+                                               obj.__class__.__name__)
+
+        return output
 
     def _get_handler(self):
         return 'python.PythonClassMethodServable'
@@ -184,7 +198,13 @@ class PythonStaticMethodModel(BasePythonServableModel):
     of this function by calling :code:`PythonStaticMethodModel.from_function_pointer(numpy.sqrt)`.
     """
 
-    def __init__(self, module, method, autobatch=False, function_kwargs=None):
+    def __init__(self):
+        super(PythonStaticMethodModel, self).__init__()
+        self.module = None
+        self.autobatch = False
+
+    @classmethod
+    def create_model(cls, module, method, autobatch=False, function_kwargs=None):
         """Initialize the method
 
         Args:
@@ -195,10 +215,11 @@ class PythonStaticMethodModel(BasePythonServableModel):
             function_kwargs (dict): Names and values of any other argument of the function to set
                 the values must be JSON serializable.
         """
-        super(PythonStaticMethodModel, self).__init__(method, function_kwargs)
+        output = super(PythonStaticMethodModel, cls).create_model(method, function_kwargs)
 
-        self.module = module
-        self.autobatch = autobatch
+        output.module = module
+        output.autobatch = autobatch
+        return output
 
     @classmethod
     def from_function_pointer(cls, f, autobatch=False, function_kwargs=None):
@@ -209,7 +230,7 @@ class PythonStaticMethodModel(BasePythonServableModel):
             autobatch (bool): Whether to run function on an interable of entries
             function_kwargs (dict): Any default options for this function
         """
-        return cls(f.__module__, f.__name__, autobatch, function_kwargs)
+        return cls.create_model(f.__module__, f.__name__, autobatch, function_kwargs)
 
     def _get_handler(self):
         return 'python.PythonStaticMethodServable'

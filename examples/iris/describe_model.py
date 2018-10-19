@@ -5,7 +5,7 @@ import json
 
 
 # Make the dataset information
-dataset_info = TabularDataset('iris.csv', read_kwargs=dict(header=1))
+dataset_info = TabularDataset.create_model('iris.csv', read_kwargs=dict(header=1))
 
 #   Read in the dataset
 data = pd.read_csv('iris.csv', header=1)
@@ -36,8 +36,8 @@ dataset_info.set_name("iris_dataset")
 dataset_info.set_authors(["Marshall, R.A."])
 
 # Make the model information
-model_info = ScikitLearnModel('model.pkl', n_input_columns=len(data.columns) - 1,
-                              classes=data['species'].unique())
+model_info = ScikitLearnModel.create_model('model.pkl', n_input_columns=len(data.columns) - 1,
+                                           classes=data['species'].unique())
 
 #    Describe the model
 model_info.set_title("Example Scikit-Learn Model")

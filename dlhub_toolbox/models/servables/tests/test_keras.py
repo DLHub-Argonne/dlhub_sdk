@@ -28,7 +28,7 @@ class TestKeras(TestCase):
             model.save(model_path)
 
             # Create a model
-            metadata = KerasModel(model_path, ["y"])
+            metadata = KerasModel.create_model(model_path, ["y"])
             metadata.set_title('Keras Test')
             metadata.set_name('mlp')
 
@@ -91,7 +91,7 @@ _________________________________________________________________
             model.save(model_path)
 
             # Create a model
-            metadata = KerasModel(model_path, [['y'], ['yes', 'no']])
+            metadata = KerasModel.create_model(model_path, [['y'], ['yes', 'no']])
             metadata.set_title('Keras Test')
             metadata.set_name('mlp')
 

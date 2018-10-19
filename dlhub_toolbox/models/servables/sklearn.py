@@ -33,7 +33,20 @@ class ScikitLearnModel(BasePythonServableModel):
     with custom kernel functions) will are not yet supported.
     """
 
-    def __init__(self, path, n_input_columns, classes=None, serialization_method="pickle"):
+    def __init__(self):
+        super(ScikitLearnModel, self).__init__()
+
+        # Create the metadata variables
+        self.sklearn_version = None
+        self.model_type = None
+        self.classifier = None
+        self.model_summary = None
+        self.path = None
+        self.serialization_method = "pickle"
+        self.predict_options = {}
+
+    @classmethod
+    def create_model(cls, path, n_input_columns, classes=None, serialization_method="pickle"):
         """Initialize a scikit-learn model
 
         Args:
@@ -43,73 +56,91 @@ class ScikitLearnModel(BasePythonServableModel):
                 list-like object with the names of the classes
             serialization_method (string): Library used to serialize model
         """
-        # Set attributes
-        self.serialization_method = serialization_method
-        self.path = path
+        # Load the model and get the method name, needed for instantiating the model type
+        skl_version, model = ScikitLearnModel._load_model(path, serialization_method)
+        method_name, method_kwargs = ScikitLearnModel._get_predict_method(model)
+        output = super(ScikitLearnModel, cls).create_model(method_name, method_kwargs)
 
-        # Create the metadata variables
-        self.sklearn_version = None
-        self.model_type = None
-        self.classifier = None
-        self.model_summary = None
-        self.predict_options = {}
+        # Set attributes
+        output.serialization_method = serialization_method
+        output.path = path
+        output.sklearn_version = skl_version
 
         # Store the model input/output information
-        self.n_input_columns = n_input_columns
-        self.classes = classes
-        if self.classes is not None:
+        output.n_input_columns = n_input_columns
+        output.classes = classes
+        if output.classes is not None:
             # Expand an integer if needed
             if isinstance(classes, int):
-                self.classes = ['Class {}'.format(i+1) for i in range(classes)]
+                output.classes = ['Class {}'.format(i+1) for i in range(classes)]
             elif isinstance(classes, np.ndarray):
-                self.classes = list(self.classes)
+                output.classes = list(output.classes)
 
         # Load other metadata
-        model = self._load_model()
-        method_name, method_kwargs = self._inspect_model(model)
-        super(ScikitLearnModel, self).__init__(method_name, method_kwargs)
+        output._inspect_model(model)
 
         # Define the path to the pickle
-        self.add_file(path, 'model')
+        output.add_file(path, 'model')
 
         # Add the sklearn requirement
-        self.add_requirement("scikit-learn", self.sklearn_version)
+        output.add_requirement("scikit-learn", output.sklearn_version)
 
         # Set default values for the run operation
-        self.set_inputs("ndarray", 'List of records to evaluate with model. '
-                                   'Each record is a list '
-                                   'of {} variables.'.format(self.n_input_columns),
-                        item_type='float', shape=[None, self.n_input_columns])
+        output.set_inputs("ndarray", 'List of records to evaluate with model. Each record is a list'
+                                     ' of {} variables.'.format(output.n_input_columns),
+                          item_type='float', shape=[None, output.n_input_columns])
         if "proba" in method_name:
-            self.set_outputs("ndarray", 'Probabilities for membership '
-                                        'in each of {} classes'.format(len(self.classes)),
-                             shape=[None, len(self.classes)], item_type="float")
+            output.set_outputs("ndarray", 'Probabilities for membership '
+                                          'in each of {} classes'.format(len(output.classes)),
+                               shape=[None, len(output.classes)], item_type="float")
         else:
-            self.set_outputs("ndarray", 'Predictions of the machine learning model.', shape=[None],
-                             item_type="float")
+            output.set_outputs("ndarray", 'Predictions of the machine learning model.',
+                               shape=[None],
+                               item_type="float")
 
-    def _load_model(self):
-        """Load a scikit-learn model from disk and extract basic metadata
+        return output
+
+    @staticmethod
+    def _load_model(path, serialization_method):
+        """Load a scikit-learn model from disk to get basic metadata about
 
         Returns:
-            (BaseEstimator) A scikit-learn model object
+            - (string): Scikit-learn version
+            - (BaseEstimator) A scikit-learn model object
         """
 
         # Load in the model
         global _sklearn_version_global
         _sklearn_version_global = None  # Set a default value
-        if self.serialization_method == "pickle":
-            with open(self.path, 'rb') as fp:
+        if serialization_method == "pickle":
+            with open(path, 'rb') as fp:
                 model = pkl.load(fp)
-        elif self.serialization_method == "joblib":
-            model = joblib.load(self.path)
+        elif serialization_method == "joblib":
+            model = joblib.load(path)
         else:
             raise Exception('Unknown serialization method: {}'.format(self.serialization_method))
 
-        # Get some basic information about the model
-        self.sklearn_version = _sklearn_version_global  # Stolen during the unpickling process
+        return _sklearn_version_global, model
 
-        return model
+    @staticmethod
+    def _get_predict_method(model):
+        """Get the name of the predict method for this model.
+
+        The method name varies if the model is a classifier or not, and some scikit-learn models
+        have arguments for the prediction function
+
+        Args:
+            model (BaseEstimator): Model to be inspected
+        Returns:
+            - (string) Name of the predict method
+            - (dict) Any options for the predict method and their default values
+        """
+        # Store any special keyword arguments for the predict function
+        model_obj = model.steps[-1][-1] if isinstance(model, Pipeline) else model
+        predict_fun = model_obj.predict_proba if is_classifier(model) else model_obj.predict
+        spec = inspect.signature(predict_fun)
+        predict_options = dict((k, v.default) for k, v in spec.parameters.items() if k != "X")
+        return predict_fun.__name__, predict_options
 
     def _inspect_model(self, model):
         """Extract metadata that describes an ML model
@@ -133,12 +164,7 @@ class ScikitLearnModel(BasePythonServableModel):
             raise Exception('Classes (or at least number of classes) must be specified '
                             'in initializer for classifiers.')
 
-        # Store any special keyword arguments for the predict function
-        model_obj = model.steps[-1][-1] if self.pipeline else model
-        predict_fun = model_obj.predict_proba if self.classifier else model_obj.predict
-        spec = inspect.signature(predict_fun)
-        predict_options = dict((k, v.default) for k, v in spec.parameters.items() if k != "X")
-        return predict_fun.__name__, predict_options
+
 
     def to_dict(self, simplify_paths=False):
         output = super(ScikitLearnModel, self).to_dict(simplify_paths)

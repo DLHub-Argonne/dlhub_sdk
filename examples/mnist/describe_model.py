@@ -4,7 +4,7 @@ import json
 
 
 # Describe the keras model
-model_info = KerasModel('model.hd5', list(map(str, range(10))))
+model_info = KerasModel.create_model('model.hd5', list(map(str, range(10))))
 
 #    Describe the model
 model_info.set_title("MNIST Digit Classifier")
