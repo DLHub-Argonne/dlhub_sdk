@@ -35,27 +35,33 @@ class TabularDataset(Dataset):
     This class is compatible with any data format readable by the Pandas
     library. See the list of `read functions in Pandas<https://pandas.pydata.org/pandas-docs/stable/io.html>`_"""
 
-    def __init__(self, path, format="csv", read_kwargs=None):
-        """Initialize the description of a tabular dataset
-
-        Args:
-            path (string): Path to dataset
-            format (string): Format of the dataset. We support all of the 
-                read operations of Pandas (e.g., read_csv). Provide the format
-                of your dataset as the suffix for the Pandas read command (e.g.,
-                "csv" for "read_csv").
-            read_kwargs (dict): Any keyword arguments for the pandas read command
-        """
+    def __init__(self):
         super(TabularDataset, self).__init__()
-        if read_kwargs is None:
-            read_kwargs = dict()
+        self.read_kwargs = dict()
         self.path = None
         self.format = None
         self.read_kwargs = {}
         self.columns = {}
         self.inputs = []
         self.labels = []
-        self.load_dataset(path, format, **read_kwargs)
+
+    @classmethod
+    def create_model(cls, path, format="csv", read_kwargs=None):
+        """Initialize the description of a tabular dataset
+
+        Args:
+            path (string): Path to dataset
+            format (string): Format of the dataset. We support all of the
+                read operations of Pandas (e.g., read_csv). Provide the format
+                of your dataset as the suffix for the Pandas read command (e.g.,
+                "csv" for "read_csv").
+            read_kwargs (dict): Any keyword arguments for the pandas read command
+        """
+        output = cls()
+        if read_kwargs is None:
+            read_kwargs = {}
+        output.load_dataset(path, format, **read_kwargs)
+        return output
 
     def load_dataset(self, path, format, **kwargs):
         """Load in a dataset to get some high-level descriptions of it

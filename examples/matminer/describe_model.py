@@ -7,7 +7,7 @@ import json
 
 
 # Make the dataset information
-dataset_info = TabularDataset('data.pkl', format='pickle')
+dataset_info = TabularDataset.create_model('data.pkl', format='pickle')
 
 #   Read in the dataset
 data = pd.read_pickle('data.pkl')
@@ -54,7 +54,8 @@ dataset_info.set_authors(["Faber, F.", "Lindmaa, A.", "von Lilienfled, O. A.", "
 # Describe the featurizer
 with open('featurizer.pkl', 'rb') as fp:
     featurizer = pkl.load(fp)
-feat_info = PythonClassMethodModel('featurizer.pkl', 'featurize_many', {'ignore_errors': True})
+feat_info = PythonClassMethodModel.create_model('featurizer.pkl',
+                                                'featurize_many', {'ignore_errors': True})
 
 #   Add reference information
 feat_info.set_title('Composition featurizer of Ward et al. 2016')
@@ -73,7 +74,8 @@ feat_info.set_inputs('list', 'List of pymtagen Composition objects',
 feat_info.set_outputs('ndarray', 'List of features', shape=[None, len(featurizer.feature_labels())])
 
 # Make the model information
-model_info = ScikitLearnModel('model.pkl', n_input_columns=len(featurizer.feature_labels()))
+model_info = ScikitLearnModel.create_model('model.pkl',
+                                           n_input_columns=len(featurizer.feature_labels()))
 
 #    Describe the model
 model_info.set_title("Formation enthalpy predictor")

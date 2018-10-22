@@ -18,7 +18,7 @@ class TestSklearn(unittest.TestCase):
         model_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'model.pkl'))
 
         # Load the model
-        model_info = ScikitLearnModel(model_path, n_input_columns=4, classes=3)
+        model_info = ScikitLearnModel.create_model(model_path, n_input_columns=4, classes=3)
         model_info.set_title('Sklearn example').set_name('sklearn')
         expected = {'datacite': {'creators': [], 'publisher': 'DLHub',
                                  'titles': [{'title': 'Sklearn example'}],
@@ -75,8 +75,9 @@ class TestSklearn(unittest.TestCase):
         model_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'model-lr.pkl'))
 
         # Load the model
-        model_info = ScikitLearnModel(model_path, n_input_columns=2,
-                                      serialization_method='joblib', classes=np.array(['number']))
+        model_info = ScikitLearnModel.create_model(model_path, n_input_columns=2,
+                                                   serialization_method='joblib',
+                                                   classes=np.array(['number']))
 
         # Check that the metadata is as expected
         self.assertEqual(model_info.method, "predict")

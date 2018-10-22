@@ -11,8 +11,8 @@ class TestPipeline(unittest.TestCase):
         """Make a pipeline composed of two numpy steps"""
 
         # Generate the two steps
-        step1 = PythonStaticMethodModel('numpy', 'max', function_kwargs={'axis': 1})
-        step2 = PythonStaticMethodModel('numpy', 'mean')
+        step1 = PythonStaticMethodModel.create_model('numpy', 'max', function_kwargs={'axis': 1})
+        step2 = PythonStaticMethodModel.create_model('numpy', 'mean')
 
         # Assign them dlhub IDs
         step1.assign_dlhub_id()
