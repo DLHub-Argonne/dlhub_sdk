@@ -12,13 +12,12 @@ class BasePythonServableModel(BaseServableModel):
 
     def __init__(self):
         super(BasePythonServableModel, self).__init__()
-        self.method = None
-        self.function_kwargs = {}
-        self.requirements = {}
 
-        # Initialize holders for inputs and outputs
-        self.input = {}
-        self.output = {}
+        # Update some information about the servable
+        self._output['servable'].update({
+            'language': 'python',
+            'dependencies': {'python': {}}
+        })
 
     @classmethod
     def create_model(cls, method, function_kwargs=None):
@@ -36,8 +35,7 @@ class BasePythonServableModel(BaseServableModel):
             function_kwargs = dict()
 
         # Set values
-        output.method = method
-        output.function_kwargs = function_kwargs
+        output.register_function("run", {}, {}, function_kwargs, {'method_name': method})
         return output
 
     def add_requirement(self, library, version=None):
@@ -64,7 +62,7 @@ class BasePythonServableModel(BaseServableModel):
             version = pypi_req.json()['info']['version']
 
         # Set the requirements
-        self.requirements[library] = version
+        self._output["servable"]["dependencies"]["python"][library] = version
         return self
 
     def add_requirements(self, requirements):
@@ -80,7 +78,7 @@ class BasePythonServableModel(BaseServableModel):
         return self
 
     def set_inputs(self, data_type, description, shape=(), item_type=None, **kwargs):
-        """Define the inputs to this function
+        """Define the inputs to the default ("run") function
 
         Args:
             data_type (string): Type of the input data
@@ -92,11 +90,11 @@ class BasePythonServableModel(BaseServableModel):
         args = compose_argument_block(data_type, description, shape, item_type, **kwargs)
 
         # Set the inputs
-        self.input = args
+        self._output["servable"]["methods"]["run"]["input"] = args
         return self
 
     def set_outputs(self, data_type, description, shape=(), item_type=None, **kwargs):
-        """Define the outputs to this function
+        """Define the outputs to the default ("run") function
 
         Args:
             data_type (string): Type of the output data
@@ -107,36 +105,8 @@ class BasePythonServableModel(BaseServableModel):
         """
 
         args = compose_argument_block(data_type, description, shape, item_type, **kwargs)
-        self.output = args
+        self._output["servable"]["methods"]["run"]["output"] = args
         return self
-
-    def _get_input(self):
-        if len(self.input) == 0:
-            raise ValueError('Inputs have not been defined')
-        return self.input
-
-    def _get_output(self):
-        if len(self.output) == 0:
-            raise ValueError('Outputs have not been defined')
-        return self.output
-
-    def _get_parameters(self):
-        return self.function_kwargs
-
-    def _get_method_details(self):
-        return {'method_name': self.method}
-
-    def to_dict(self, simplify_paths=False):
-        # Get the higher level
-        output = super(BasePythonServableModel, self).to_dict(simplify_paths)
-
-        # Add Python settings
-        output['servable'].update({
-            'language': 'python',
-            'dependencies': {'python': self.requirements}
-        })
-
-        return output
 
 
 class PythonClassMethodModel(BasePythonServableModel):
@@ -168,26 +138,20 @@ class PythonClassMethodModel(BasePythonServableModel):
         # Get the class name
         with open(path, 'rb') as fp:
             obj = pkl.load(fp)
-            output.class_name = '{}.{}'.format(obj.__class__.__module__,
+            class_name = '{}.{}'.format(obj.__class__.__module__,
                                                obj.__class__.__name__)
+
+        output._output["servable"]["methods"]["run"]["method_details"].update({
+            'class_name': class_name
+        })
 
         return output
 
     def _get_handler(self):
         return 'python.PythonClassMethodServable'
 
-    def _get_method_details(self):
-        output = super(PythonClassMethodModel, self)._get_method_details()
-        output.update({'class_name': self.class_name})
-        return output
-
-    def to_dict(self, simplify_paths=False):
-        output = super(PythonClassMethodModel, self).to_dict(simplify_paths)
-
-        # Add pickle-specific options
-        output['servable']['type'] = 'Python class method'
-
-        return output
+    def _get_type(self):
+        return 'Python class method'
 
 
 class PythonStaticMethodModel(BasePythonServableModel):
@@ -217,8 +181,10 @@ class PythonStaticMethodModel(BasePythonServableModel):
         """
         output = super(PythonStaticMethodModel, cls).create_model(method, function_kwargs)
 
-        output.module = module
-        output.autobatch = autobatch
+        output._output["servable"]["methods"]["run"]["method_details"].update({
+            'module': module,
+            'autobatch': autobatch
+        })
         return output
 
     @classmethod
@@ -235,17 +201,5 @@ class PythonStaticMethodModel(BasePythonServableModel):
     def _get_handler(self):
         return 'python.PythonStaticMethodServable'
 
-    def _get_method_details(self):
-        output = super(PythonStaticMethodModel, self)._get_method_details()
-        output.update({
-            'module': self.module,
-            'autobatch': self.autobatch
-        })
-        return output
-
-    def to_dict(self, simplify_paths=False):
-        output = super(PythonStaticMethodModel, self).to_dict(simplify_paths)
-
-        output['servable']['type'] = 'Python static method'
-
-        return output
+    def _get_type(self):
+        return 'Python static method'

@@ -26,11 +26,15 @@ class TestSklearn(unittest.TestCase):
                                  'identifier': {'identifier': '10.YET/UNASSIGNED',
                                                 'identifierType': 'DOI'},
                                  'publicationYear': _year,
-                                 },
+                                 "descriptions": [],
+                                 "fundingReferences": [],
+                                 "relatedIdentifiers": [],
+                                 "alternateIdentifiers": [],
+                                 "rightsList": []},
                     "dlhub": {"version": __dlhub_version__,
                               "visible_to": ["public"], 'name': 'sklearn',
                               "domains": [], "id": None,
-                              'files': {'model': model_path, 'other': []}},
+                              'files': {'model': model_path}},
                     'servable': {
                         'language': 'python',
                         'type': 'Scikit-learn estimator',
@@ -80,7 +84,8 @@ class TestSklearn(unittest.TestCase):
                                                    classes=np.array(['number']))
 
         # Check that the metadata is as expected
-        self.assertEqual(model_info.method, "predict")
+        self.assertEqual(model_info["servable"]["methods"]["run"]["method_details"]["method_name"],
+                         "predict")
         self.assertEqual([model_path], model_info.list_files())
-        self.assertEqual(['number'], model_info.classes)
-        self.assertEqual([None], model_info._get_output()['shape'])
+        self.assertEqual(['number'], model_info["servable"]["options"]["classes"])
+        self.assertEqual([None], model_info["servable"]["methods"]["run"]['output']['shape'])

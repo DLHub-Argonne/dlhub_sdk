@@ -38,9 +38,14 @@ class TestKeras(TestCase):
                              "publisher": "DLHub", "publicationYear": "2018",
                              "identifier": {"identifier": "10.YET/UNASSIGNED",
                                             "identifierType": "DOI"},
-                             "resourceType": {"resourceTypeGeneral": "InteractiveResource"}},
+                             "resourceType": {"resourceTypeGeneral": "InteractiveResource"},
+                             "descriptions": [],
+                             "fundingReferences": [],
+                             "relatedIdentifiers": [],
+                             "alternateIdentifiers": [],
+                             "rightsList": []},
                 "dlhub": {"version": "0.1", "domains": [], "visible_to": ["public"], "id": None,
-                          "name": "mlp", "files": {"model": model_path, "other": []}},
+                          "name": "mlp", "files": {"model": model_path}},
                 "servable": {"methods": {"run": {
                     "input": {"type": "ndarray", "description": "Tensor", "shape": [None, 1]},
                     "output": {"type": "ndarray", "description": "Tensor",
@@ -95,7 +100,7 @@ _________________________________________________________________
             metadata.set_title('Keras Test')
             metadata.set_name('mlp')
 
-            self.assertEqual(metadata._get_output(),
+            self.assertEqual(metadata['servable']['methods']['run']['output'],
                              {'type': 'list',
                               'description': 'List of tensors',
                               'item_type': [

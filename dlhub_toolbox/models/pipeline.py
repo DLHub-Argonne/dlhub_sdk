@@ -18,7 +18,12 @@ class PipelineModel(BaseMetadataModel):
 
     def __init__(self):
         super(PipelineModel, self).__init__()
-        self.steps = []
+
+        # Make as a "InteractiveResource"
+        self['datacite']['resourceType'] = {'resourceTypeGeneral': 'InteractiveResource'}
+
+        # Add list of pipeline steps
+        self._output['pipeline'] = {'steps': []}
 
     def add_step(self, identifier, description, parameters=None):
         """Add a step to the pipeline
@@ -40,14 +45,4 @@ class PipelineModel(BaseMetadataModel):
         }
         if parameters is not None:
             step['parameters'] = parameters
-        self.steps.append(step)
-
-    def to_dict(self, simplify_paths=False):
-        output = super(PipelineModel, self).to_dict(simplify_paths)
-
-        # Make as a "InteractiveResource"
-        output['datacite']['resourceType'] = {'resourceTypeGeneral': 'InteractiveResource'}
-
-        # Add the pipeline information
-        output['pipeline'] = {'steps': self.steps}
-        return output
+        self["pipeline"]["steps"].append(step)
