@@ -4,27 +4,22 @@ from dlhub_toolbox.models import BaseMetadataModel
 class BaseServableModel(BaseMetadataModel):
     """Base class for servables"""
 
-    def to_dict(self, simplify_paths=False):
-        output = super(BaseServableModel, self).to_dict(simplify_paths)
+    def __init__(self):
+        super(BaseServableModel, self).__init__()
 
         # Add the resource type
         #  I chose "InteractiveResource" as the point of DLHub is to provide
         #   web servies for interacting with these models ("query/response portals" are
         #   defined as "InteractiveResources") rather than downloading the source code
         #   (which would fit the definition of software)
-        output['datacite']['resourceType'] = {'resourceTypeGeneral': 'InteractiveResource'}
+        self._output['datacite']['resourceType'] = {'resourceTypeGeneral': 'InteractiveResource'}
 
-        # Add the model running-information
-        output['servable'] = {
-            'methods': {'run': {
-                'input': self._get_input(),
-                'output': self._get_output(),
-                'parameters': self._get_parameters(),
-                'method_details': self._get_method_details(),
-            }},
-            "shim": self._get_handler()}
-
-        return output
+        # Initialize the model running-information
+        self._output['servable'] = {
+            'methods': {'run': {}},
+            'shim': self._get_handler(),
+            'type': self._get_type()
+        }
 
     def _get_handler(self):
         """Generate the name of the servable class that DLHub will use to read this metadata
@@ -40,42 +35,43 @@ class BaseServableModel(BaseMetadataModel):
         Returns:
             (string): Human-friendly name of an object
         """
-
-    def _get_input(self):
-        """Generate a listing of the desired inputs to an ML model
-
-        Returns:
-            (dict) Description of the model inputs, required keys:
-                - type: Category of input (e.g., 'Python object', 'ndarray', 'list')
-                - description: Human-friendly descriptio of the model
-                - shape: Shape of the array, for list-like inputs
-                - items: Type of the items in the list
-        """
         raise NotImplementedError()
 
-    def _get_output(self):
-        """Generate a listing of the outputs for a model
+    def register_function(self, name, inputs, outputs, parameters=None, method_details=None):
+        """Registers a new function to this servable
 
-        Returns:
-            (dict) Description of the model inputs, required keys:
-                - type: Category of input (e.g., 'Python object', 'ndarray', 'list')
-                - description: Human-friendly descriptio of the model
-                - shape: Shape of the array, for list-like inputs
-                - items: Type of the items in the list
+        See :code:`compose_argument_type` utility function for how to define the inputs
+        and outputs to this function.
+
+        Args:
+            name (string): Name of the function (e.g., "run")
+            inputs (dict): Description of inputs to the function
+            outputs (dict): Description of the outputs of the function
+            parameters (dict): Any additional parameters for the function and their default values
+            method_details (dict): Any options used when constructing a shim to run this function.
         """
-        raise NotImplementedError()
 
-    def _get_parameters(self):
-        """Generate a dictionary of parameters of the function and their default values
+        # Check defaults
+        if method_details is None:
+            method_details = {}
+        if parameters is None:
+            parameters = {}
 
-        Returns:
-            (dict) Default parameters for the servable
-        """
-        raise NotImplementedError()
+        # Add the function
+        self._output["servable"]["methods"][name] = {
+            'input': inputs,
+            'output': outputs,
+            'parameters': parameters,
+            'method_details': method_details
+        }
 
-    def _get_method_details(self):
-        """Generate any special options used to construct the servable.
-        In contrast to the parameters, these options are only used when constructing the servable
-        and not on every invocation.
-        """
-        raise NotImplementedError()
+        return self
+
+    def to_dict(self, simplify_paths=False):
+        # Make sure the inputs and outputs have been set
+        if len(self._output["servable"]["methods"]["run"].get("input", {})) == 0:
+            raise ValueError('Inputs have not been defined')
+        if len(self._output["servable"]["methods"]["run"].get("output", {})) == 0:
+            raise ValueError('Outputs have not been defined')
+
+        return super(BaseServableModel, self).to_dict(simplify_paths)

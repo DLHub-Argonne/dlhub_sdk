@@ -24,34 +24,31 @@ class KerasModel(BasePythonServableModel):
        """
         output = super(KerasModel, cls).create_model('predict')
 
-        # Save model information
-        output.model_path = model_path
-        output.output_names = output_names
-
         # Add model as a file to be sent
-        output.add_file(output.model_path, 'model')
+        output.add_file(model_path, 'model')
 
         # Get the model details
-        model = load_model(output.model_path)
+        model = load_model(model_path)
 
         # Get the inputs of the model
-        output.input = output._format_layer_spec(model.input_shape)
-        output.output = output._format_layer_spec(model.output_shape)
+        output['servable']['methods']['run']['input'] = output.format_layer_spec(model.input_shape)
+        output['servable']['methods']['run']['output'] = output.format_layer_spec(model.output_shape)
+        output['servable']['methods']['run']['method_details']['classes'] = output_names
 
         # Get a full description of the model
         output.summary = ""
-
         def capture_summary(x):
             output.summary += x + "\n"
-
         model.summary(print_fn=capture_summary)
+        output['servable']['model_summary'] = output.summary
+        output['servable']['model_type'] = 'Deep NN'
 
         # Add keras as a dependency
         output.add_requirement('keras', keras_version)
         output.add_requirement('h5py', 'detect')
         return output
 
-    def _format_layer_spec(self, layers):
+    def format_layer_spec(self, layers):
         """Make a description of a list of input or output layers
 
         Args:
@@ -60,25 +57,13 @@ class KerasModel(BasePythonServableModel):
             (dict) Description of the inputs / outputs
         """
         if isinstance(layers, tuple):
-            return compose_argument_block("ndarray", "Tensor", shape=layers)
+            return compose_argument_block("ndarray", "Tensor", shape=list(layers))
         else:
             return compose_argument_block("list", "List of tensors",
-                                          item_type=[self._format_layer_spec(i) for i in layers])
-
-    def _get_method_details(self):
-        output = super(KerasModel, self)._get_method_details()
-        output['classes'] = self.output_names
-        return output
+                                          item_type=[self.format_layer_spec(i) for i in layers])
 
     def _get_handler(self):
         return "keras.KerasServable"
 
-    def to_dict(self, simplify_paths=False):
-        output = super(KerasModel, self).to_dict(simplify_paths)
-
-        # Add in some general metadata
-        output['servable']['type'] = 'Keras Model'
-        output['servable']['model_type'] = 'Deep NN'
-        output['servable']['model_summary'] = self.summary
-
-        return output
+    def _get_type(self):
+        return "Keras Model"

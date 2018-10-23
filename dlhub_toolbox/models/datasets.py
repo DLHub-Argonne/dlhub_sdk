@@ -1,5 +1,6 @@
 import os
 
+from collections import OrderedDict
 import pandas as pd
 
 from dlhub_toolbox.models import BaseMetadataModel
@@ -13,17 +14,14 @@ class Dataset(BaseMetadataModel):
     for describing what a dataset is and how to use it. 
     """
 
-    def to_dict(self, simplify_paths=False):
-        # Get the metadata from the superclass
-        output = super(Dataset, self).to_dict(simplify_paths)
+    def __init__(self):
+        super(Dataset, self).__init__()
 
         # Add the datacite type as Dataset
-        output['datacite']['resourceType'] = {'resourceTypeGeneral': 'Dataset'}
+        self._output['datacite']['resourceType'] = {'resourceTypeGeneral': 'Dataset'}
 
-        # Initialize the dataset block
-        output['dataset'] = {}
-
-        return output
+        # Initialize the "dataset" block
+        self._output['dataset'] = {}
 
 
 class TabularDataset(Dataset):
@@ -34,16 +32,6 @@ class TabularDataset(Dataset):
     
     This class is compatible with any data format readable by the Pandas
     library. See the list of `read functions in Pandas<https://pandas.pydata.org/pandas-docs/stable/io.html>`_"""
-
-    def __init__(self):
-        super(TabularDataset, self).__init__()
-        self.read_kwargs = dict()
-        self.path = None
-        self.format = None
-        self.read_kwargs = {}
-        self.columns = {}
-        self.inputs = []
-        self.labels = []
 
     @classmethod
     def create_model(cls, path, format="csv", read_kwargs=None):
@@ -74,19 +62,26 @@ class TabularDataset(Dataset):
             "csv" for "read_csv").
         **kwargs (dict): arguments for the Pandas read function
         """
+
+        # Add the data as the path of interest
         self.add_file(path, 'data')
-        self.format = format
-        self.read_kwargs = kwargs
+
+        # Store the format information
+        self._output["dataset"]["format"] = format
+        self._output["dataset"]["read_options"] = kwargs
 
         # Read in the data
         read_fun = getattr(pd, 'read_{}'.format(format))
         data = read_fun(path, **kwargs)
-        self.columns = dict((c, {'name': c, 'type': simplify_numpy_dtype(d)})
-                            for c, d in zip(data.columns, data.dtypes))
+        self._output["dataset"]["columns"] = [
+            {'name': c, 'type': simplify_numpy_dtype(d)}
+            for c, d in zip(data.columns, data.dtypes)
+        ]
 
         # Zero out the input and output columns
-        self.inputs = []
-        self.labels = []
+        for x in ["inputs", "labels"]:
+            if x in self._output["dataset"]:
+                del self._output["dataset"][x]
 
     def annotate_column(self, column_name, description=None, data_type=None, units=None):
         """Provide documentation about a certain column within a dataset.
@@ -99,18 +94,27 @@ class TabularDataset(Dataset):
             data_type (string): Short description of the data type
             units (string): Units for the columns data (if applicable)
         """
-        self._check_column_name(column_name)
+        column = self._get_column(column_name)
         if description is not None:
-            self.columns[column_name]['description'] = description
+            column['description'] = description
         if data_type is not None:
-            self.columns[column_name]['type'] = data_type
+            column['type'] = data_type
         if units is not None:
-            self.columns[column_name]['units'] = units
+            column['units'] = units
         return self
 
-    def _check_column_name(self, column_name):
-        if column_name not in self.columns:
-            raise ValueError('No such column {}'.format(column_name))
+    def _get_column(self, column_name):
+        """Gets the metadata for a certain column
+
+        Args:
+            column_name (string): Name of column to be altered
+        Returns:
+            (dict) Column metadata. The editable object, not a copy
+            """
+        for column in self._output["dataset"]["columns"]:
+            if column["name"] == column_name:
+                return column
+        raise ValueError('No such column {}'.format(column_name))
 
     def mark_inputs(self, column_names):
         """Mark which columns are inputs to a model
@@ -118,9 +122,10 @@ class TabularDataset(Dataset):
         Args:
             column_names ([string]): Names of columns
         """
+        # Make sure all the columns exist
         for c in column_names:
-            self._check_column_name(c)
-        self.inputs = list(column_names)
+            self._get_column(c)
+        self._output["dataset"]["inputs"] = list(column_names)
         return self
  
     def mark_labels(self, column_names):
@@ -130,21 +135,6 @@ class TabularDataset(Dataset):
             column_names ([string]): Names of columns
         """
         for c in column_names:
-            self._check_column_name(c)
-        self.labels = list(column_names)
+            self._get_column(c)
+        self._output["dataset"]["labels"] = list(column_names)
         return self
-
-    def to_dict(self, simplify_paths=False):
-        output = super(TabularDataset, self).to_dict(simplify_paths)
-
-        dataset_block = output['dataset']
-        # Add the format description
-        dataset_block['format'] = self.format
-        dataset_block['read_options'] = self.read_kwargs
-
-        # Add the column descriptions
-        dataset_block['columns'] = list(self.columns.values())
-        dataset_block['inputs'] = self.inputs
-        dataset_block['labels'] = self.labels
-
-        return output

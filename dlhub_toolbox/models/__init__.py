@@ -24,22 +24,29 @@ class BaseMetadataModel:
         Initialize a dataset record
         """
 
-        self.authors = []
-        self.title = None
-        self.version = None
-        self.funders = []
-        self.alternate_ident = []
-        self.related_ident = []
-        self.rights = []
-        self.abstract = None
-        self.methods = None
-        self.domains = []
-        self.visible_to = ['public']
-        self.doi = None
-        self.publication_year = str(datetime.now().year)
-        self.files = {'other': []}
-        self.dlhub_id = None
-        self.name = None
+        # Populate initial fields
+        self._output = {"datacite": {
+            "creators": [],
+            "titles": [{'title': None}],
+            "publisher": "DLHub",
+            "publicationYear": str(datetime.now().year),
+            "identifier": {'identifier': '10.YET/UNASSIGNED', 'identifierType': 'DOI'},
+            "descriptions": [],
+            "fundingReferences": [],
+            "relatedIdentifiers": [],
+            "alternateIdentifiers": [],
+            "rightsList": []
+        }, "dlhub": {
+            "version": __dlhub_version__,
+            "domains": [],
+            "visible_to": ["public"],
+            'id': None,
+            'name': None,
+            'files': {}
+        }}
+
+    def __getitem__(self, item):
+        return self._output[item]
 
     @classmethod
     def create_model(cls, **kwargs):
@@ -60,7 +67,6 @@ class BaseMetadataModel:
                 In format: "<Family Name>, <Given Name>"
             affiliations ([[string]]): List of affiliations for each author.
         """
-        self.authors = []
         for author, aff in zip_longest(authors, affiliations, fillvalue=[]):
             # Get the authors
             temp = author.split(",")
@@ -68,7 +74,7 @@ class BaseMetadataModel:
             given = temp[1].strip()
 
             # Add them to the list
-            self.authors.append({
+            self._output["datacite"]["creators"].append({
                 "givenName": given,
                 "familyName": family,
                 "affiliations": aff,
@@ -77,7 +83,7 @@ class BaseMetadataModel:
 
     def set_title(self, title):
         """Add a title to the dataset"""
-        self.title = title
+        self._output["datacite"]["titles"][0]["title"] = title
         return self
 
     def set_version(self, version):
@@ -86,7 +92,7 @@ class BaseMetadataModel:
         Args:
             version (string): Version number
         """
-        self.version = str(version)
+        self._output["datacite"]["version"] = str(version)
         return self
 
     def set_abstract(self, abstract):
@@ -95,7 +101,16 @@ class BaseMetadataModel:
         Args:
             abstract (string): Description of this artifact
         """
-        self.abstract = abstract
+        abs_block = {'description': abstract, 'descriptionType': 'Abstract'}
+
+        # Delete Abstract block if it already exists
+        self._output["datacite"]["descriptions"] = [
+            x for x in self._output["datacite"]["descriptions"]
+            if x["descriptionType"] != "Abstract"
+        ]
+
+        # Add the new block
+        self._output["datacite"]["descriptions"].append(abs_block)
         return self
 
     def set_methods(self, methods):
@@ -105,7 +120,15 @@ class BaseMetadataModel:
         Args:
             methods (str): Detailed method descriptions
         """
-        self.methods = methods
+        method_blcok = {'description': methods, 'descriptionType': 'Methods'}
+
+        # Delete Methods block if it already exists
+        self._output["datacite"]["descriptions"] = [
+            x for x in self._output["datacite"]["descriptions"]
+            if x["descriptionType"] != "Methods"
+        ]
+
+        self._output["datacite"]["descriptions"].append(method_blcok)
         return self
 
     def set_domains(self, domains):
@@ -114,7 +137,7 @@ class BaseMetadataModel:
         Args:
             domains ([string]): Name of a fields of science (e.g., "materials science")
         """
-        self.domains = domains
+        self._output["dlhub"]["domains"] = domains
         return self
 
     def set_visibility(self, visible_to):
@@ -125,7 +148,7 @@ class BaseMetadataModel:
         Args:
             visible_to ([string]): List of allowed users and groups, listed by GlobusAuth UUID
         """
-        self.visible_to = visible_to
+        self._output["dlhub"]["visible_to"] = visible_to
         return self
 
     def set_doi(self, doi):
@@ -137,7 +160,7 @@ class BaseMetadataModel:
         Args:
             doi (string): DOI of the object
         """
-        self.doi = doi
+        self._output["datacite"]["identifier"]["identifier"] = doi
         return self
 
     def set_dlhub_id(self, dlhub_id):
@@ -148,7 +171,7 @@ class BaseMetadataModel:
         Args:
             dlhub_id (string): UUID of artifact
         """
-        self.dlhub_id = dlhub_id
+        self._output["dlhub"]["id"] = dlhub_id
         return self
 
     def assign_dlhub_id(self):
@@ -158,6 +181,10 @@ class BaseMetadataModel:
         """
 
         return self.set_dlhub_id(str(uuid.uuid1()))
+
+    @property
+    def dlhub_id(self):
+        return self._output["dlhub"]["id"]
 
     def set_name(self, name):
         """Set the name of artifact.
@@ -169,7 +196,7 @@ class BaseMetadataModel:
         """
         if name_re.match(name) is None:
             raise ValueError('Name cannot contain any whitespace')
-        self.name = name
+        self._output["dlhub"]["name"] = name
         return self
 
     def set_publication_year(self, year):
@@ -180,8 +207,7 @@ class BaseMetadataModel:
         Args:
             year (string): Publication year
         """
-
-        self.publication_year = str(year)
+        self._output["datacite"]["publicationYear"] = str(year)
         return self
 
     def add_rights(self, uri=None, rights=None):
@@ -205,7 +231,7 @@ class BaseMetadataModel:
             new_rights['rights'] = rights
 
         # Add it to the list
-        self.rights.append(new_rights)
+        self._output["datacite"]["rightsList"].append(new_rights)
         return self
 
     def add_funding_reference(self, name, identifier=None, identifier_type=None,
@@ -240,7 +266,7 @@ class BaseMetadataModel:
             funder['awardTitle'] = award_title
 
         # Append to the total list
-        self.funders.append(funder)
+        self._output["datacite"]["fundingReferences"].append(funder)
 
         return self
 
@@ -252,7 +278,7 @@ class BaseMetadataModel:
             identifier_type (string): Identifier type
         """
 
-        self.alternate_ident.append({
+        self._output["datacite"]["alternateIdentifiers"].append({
             'alternateIdentifier': identifier,
             'alternateIdentifierType': identifier_type
         })
@@ -290,7 +316,7 @@ class BaseMetadataModel:
                                  "Describes"]:
             raise ValueError('Unknown relation type: ({})'.format(relation_type))
 
-        self.related_ident.append({
+        self._output["datacite"]["relatedIdentifiers"].append({
             'relatedIdentifier': identifier,
             'relatedIdentifierType': identifier_type,
             'relationType': relation_type
@@ -308,9 +334,11 @@ class BaseMetadataModel:
         """
 
         if name is None or name == "other":
-            self.files['other'].append(file)
+            if "other" not in self._output["dlhub"]["files"]:
+                self._output["dlhub"]["files"]["other"] = []
+            self._output["dlhub"]["files"]['other'].append(file)
         else:
-            self.files[name] = file
+            self._output["dlhub"]["files"][name] = file
         return self
 
     def add_directory(self, directory, recursive=False):
@@ -344,7 +372,9 @@ class BaseMetadataModel:
         if isinstance(files, str):
             files = [files]
 
-        self.files['other'].extend(files)
+        # Add the files
+        for file in files:
+            self.add_file(file)
         return self
 
     def to_dict(self, simplify_paths=False):
@@ -357,45 +387,13 @@ class BaseMetadataModel:
         """
 
         # Check for required fields
-        if self.title is None:
+        if self._output["datacite"]["titles"][0]["title"] is None:
             raise ValueError('Title must be specified. Use `set_title`')
-        if self.name is None:
+        if self._output["dlhub"]["name"] is None:
             raise ValueError('Name must be specified. Use `set_name`')
 
-        # Populate initial fields
-        out = {"datacite": {
-            "creators": self.authors,
-            "titles": [{'title': self.title}],
-            "publisher": "DLHub",
-            "publicationYear": self.publication_year
-        }}
-
-        # Add optional fields
-        if self.version is not None:
-            out['datacite']['version'] = self.version
-        if len(self.funders) > 0:
-            out['datacite']['fundingReferences'] = self.funders
-        if len(self.related_ident):
-            out['datacite']['relatedIdentifiers'] = self.related_ident
-        if len(self.alternate_ident):
-            out['datacite']['alternateIdentifiers'] = self.alternate_ident
-        if len(self.rights) > 0:
-            out['datacite']['rightsList'] = self.rights
-
-        # Add in the DOI, if known. Use a fake DOI otherwise
-        doi = self.doi
-        if doi is None:
-            doi = '10.YET/UNASSIGNED'
-        out['datacite']['identifier'] = {'identifier': doi, 'identifierType': 'DOI'}
-
-        # Add in descriptions
-        desc = []
-        if self.abstract is not None:
-            desc.append({'description': self.abstract, 'descriptionType': 'Abstract'})
-        if self.methods is not None:
-            desc.append({'description': self.methods, 'descriptionType': 'Methods'})
-        if len(desc) > 0:
-            out['datacite']['descriptions'] = desc
+        # Make a copy of the output
+        out = dict(self._output)
 
         # Prepare the files
         if simplify_paths:
@@ -403,24 +401,15 @@ class BaseMetadataModel:
             common_path = self._get_common_path()
 
             files = {}
-            for k, v in self.files.items():
+            for k, v in out["dlhub"]["files"].items():
                 if k == "other":
                     files[k] = [os.path.relpath(f, common_path) for f in v]
                 else:
                     files[k] = os.path.relpath(v, common_path)
 
-        else:
-            files = self.files
+            # Copy over the current files list
+            out["dlhub"]["files"] = files
 
-        # Add in the DLHub block
-        out['dlhub'] = {
-            'version': __dlhub_version__,
-            'domains': self.domains,
-            'visible_to': self.visible_to,
-            'id': self.dlhub_id,
-            'name': self.name,
-            'files': files
-        }
         return out
 
     def list_files(self):
@@ -430,10 +419,10 @@ class BaseMetadataModel:
             ([string]) list of file paths"""
         # Gather a list of all the files
         output = []
-        for k, v in self.files.items():
+        for k, v in self._output["dlhub"]["files"].items():
             if isinstance(v, string_types):
                 output.append(v)
-            else:
+            else:  # It is a list
                 output.extend(v)
         return output
 

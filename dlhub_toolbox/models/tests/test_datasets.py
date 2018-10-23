@@ -84,15 +84,13 @@ class TestModels(unittest.TestCase):
                               "domains": ["materials science"],
                               "id": my_uuid,
                               "name": "example_data",
-                              "files": {"other": []}},
-                          "dataset": {}})
+                              "files": {}
+                          }, "dataset": {}})
         validate_against_dlhub_schema(m.to_dict(), "dataset")
 
     def test_tabular_dataset(self):
         data_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'test.csv'))
         m = TabularDataset.create_model(data_path)
-        self.assertEqual({'x': {'name': 'x', 'type': 'integer'},
-                          'y': {'name': 'y', 'type': 'integer'}}, m.columns)
 
         # Add some nonsense
         m.set_title('Example dataset')
@@ -105,19 +103,24 @@ class TestModels(unittest.TestCase):
         m.annotate_column('y', data_type='scalar')
         self.assertEqual(m.to_dict(), {"datacite": {"titles": [{'title': "Example dataset"}],
                                                     "creators": [], "publisher": "DLHub",
-                                                    "resourceType": {"resourceTypeGeneral":
-                                                                         "Dataset"},
-                                                    "publicationYear": _year,
+                                                    "resourceType": {
+                                                        "resourceTypeGeneral": "Dataset"
+                                                    }, "publicationYear": _year,
                                                     'identifier': {
                                                         'identifier': '10.YET/UNASSIGNED',
                                                         'identifierType': 'DOI'},
+                                                    "descriptions": [],
+                                                    "fundingReferences": [],
+                                                    "relatedIdentifiers": [],
+                                                    "alternateIdentifiers": [],
+                                                    "rightsList": [],
                                                     },
                                        "dlhub": {"version": __dlhub_version__,
                                                  "visible_to": ["public"],
                                                  "domains": [],
                                                  "id": None,
                                                  "name": "example_dataset",
-                                                 "files": {'data': data_path, 'other': []}},
+                                                 "files": {'data': data_path}},
                                        "dataset": {"columns": [
                                                        {"name": "x",
                                                         "description": "Input variable",
@@ -129,7 +132,7 @@ class TestModels(unittest.TestCase):
 
         # Test the simplification of files
         metadata = m.to_dict(simplify_paths=True)
-        self.assertEqual({'data': 'test.csv', 'other': []}, metadata['dlhub']['files'])
+        self.assertEqual({'data': 'test.csv'}, metadata['dlhub']['files'])
 
     def test_zip(self):
         """Test generating a zip file with the requested files"""
