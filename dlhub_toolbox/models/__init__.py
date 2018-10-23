@@ -377,11 +377,12 @@ class BaseMetadataModel:
             self.add_file(file)
         return self
 
-    def to_dict(self, simplify_paths=False):
+    def to_dict(self, simplify_paths=False, save_class_data=False):
         """Render the dataset to a JSON description
 
         Args:
             simplify_paths (bool): Whether to simplify the paths of each file
+            save_class_data (bool): Whether to save data about the class
         Returns:
             (dict) A description of the dataset in a form suitable for download
         """
@@ -394,6 +395,11 @@ class BaseMetadataModel:
 
         # Make a copy of the output
         out = dict(self._output)
+
+        # Add the name of the class to the output, if desired
+        if save_class_data:
+            out['@class'] = '{}.{}'.format(self.__class__.__module__,
+                                           self.__class__.__name__)
 
         # Prepare the files
         if simplify_paths:
@@ -411,6 +417,24 @@ class BaseMetadataModel:
             out["dlhub"]["files"] = files
 
         return out
+
+    @classmethod
+    def from_dict(cls, data):
+        """Reconstitute class from dictionary
+
+        Args:
+            data (dict): Metadata for this class
+        """
+
+        # Create the object, overwrite data
+        output = cls()
+        output._output = dict(data)
+
+        # Make sure the class information is removed
+        if '@class' in output._output:
+            del output._output['@class']
+
+        return output
 
     def list_files(self):
         """Provide a list of files associated with this artifact.

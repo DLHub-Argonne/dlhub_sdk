@@ -179,5 +179,17 @@ class TestModels(unittest.TestCase):
         finally:
             os.unlink(temp_path)
 
+    def test_serialize(self):
+        # Make metadata where I overwrite a auto-generated field
+        metadata = Dataset().set_title('Test').set_name('test')
+        metadata['dlhub']['version'] = 'test'
+
+        # Pickle/unpickle the object
+        metadata_copy = Dataset.from_dict(metadata.to_dict())
+
+        # Make sure the fields are the same
+        self.assertEqual(metadata._output, metadata_copy._output)
+
+
 if __name__ == "__main__":
     unittest.main()
