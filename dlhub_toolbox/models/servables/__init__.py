@@ -67,7 +67,7 @@ class BaseServableModel(BaseMetadataModel):
 
         return self
 
-    def to_dict(self, simplify_paths=False):
+    def to_dict(self, simplify_paths=False, save_class_data=False):
         # Make sure the inputs and outputs have been set
         if len(self._output["servable"]["methods"]["run"].get("input", {})) == 0:
             raise ValueError('Inputs have not been defined')
