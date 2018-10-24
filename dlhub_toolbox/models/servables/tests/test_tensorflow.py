@@ -79,8 +79,10 @@ class TestTensorflow(TestCase):
         model = TensorFlowModel.create_model(tf_export_path).set_title('TF Test')\
             .set_name('tf-test')
 
-        # Check the results
+        # Generate the metadata for the test
         metadata = model.to_dict(simplify_paths=True)
+
+        # Check whether the 'x' is listed first for the multiple-input model or second
         self.assertEqual({'other': ['saved_model.pb']}, metadata['dlhub']['files'])
         self.assertEqual(metadata['servable'],
                          {'methods':

@@ -45,6 +45,8 @@ def _read_tf_inputs_and_outputs(arg_def):
         return dlhub_arg_defs[0]
 
     # Otherwise, create a "tuple" type
+    #   First sort arguments by description, to ensure a deterministic order to them between runs
+    dlhub_arg_defs = sorted(dlhub_arg_defs, key=lambda x: x['description'])
     return compose_argument_block('list', 'Arguments', shape=[len(dlhub_arg_defs)],
                                   item_type=dlhub_arg_defs)
 
