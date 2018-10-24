@@ -17,7 +17,13 @@ class BaseMetadataModel:
     """Base class for models describing objects published via DLHub
 
     Covers information that goes in the :code:`datacite` block of the metadata file and
-    some of the DLHub block."""
+    some of the DLHub block.
+
+    ## Using a MetadataModel
+
+
+
+    """
 
     def __init__(self):
         """

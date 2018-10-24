@@ -1,6 +1,7 @@
 """Utilities for generating descriptions of data types"""
 from six import string_types
 
+
 def simplify_numpy_dtype(dtype):
     """Given a numpy dtype, write out the type as string
 
