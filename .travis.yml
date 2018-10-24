@@ -11,6 +11,7 @@ install:
   - pip install --only-binary=numpy,scipy -r requirements.txt
   - pip install -r example-requirements.txt
   - pip install keras==$KERAS_VERSION
+  - pip list
 script:
   - nosetests --with-coverage --cover-package=dlhub_toolbox
   - cd examples
