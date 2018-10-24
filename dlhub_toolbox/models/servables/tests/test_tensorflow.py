@@ -21,6 +21,8 @@ class TestTensorflow(TestCase):
 
     def make_model(self):
 
+        tf.reset_default_graph()
+
         with tf.Session() as sess:
 
             # Make two simple graphs, both of which will be served by TF
