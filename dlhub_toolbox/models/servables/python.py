@@ -1,10 +1,8 @@
 """Tools to annotate generic operations (e.g., class method calls) in Python"""
+import pickle as pkl
+
 from dlhub_toolbox.models.servables import BaseServableModel
 from dlhub_toolbox.utils.types import compose_argument_block
-import pickle as pkl
-import pkg_resources
-import importlib
-import requests
 
 
 class BasePythonServableModel(BaseServableModel):
@@ -16,7 +14,6 @@ class BasePythonServableModel(BaseServableModel):
         # Update some information about the servable
         self._output['servable'].update({
             'language': 'python',
-            'dependencies': {'python': {}}
         })
 
     @classmethod
@@ -37,45 +34,6 @@ class BasePythonServableModel(BaseServableModel):
         # Set values
         output.register_function("run", {}, {}, function_kwargs, {'method_name': method})
         return output
-
-    def add_requirement(self, library, version=None):
-        """Add a required Python library.
-
-        The name of the library should be either the name on PyPI, or a link to the
-
-        Args:
-            library (string): Name of library
-            version (string): Required version. 'latest' to use the most recent version on PyPi (if
-            available). 'detect' will attempt to find the version of the library installed on
-                the computer running this software.
-        """
-
-        # Attempt to determine the version automatically
-        if version == "detect":
-            try:
-                module = importlib.import_module(library)
-                version = module.__version__
-            except:
-                version = pkg_resources.get_distribution(library).version
-        elif version == "latest":
-            pypi_req = requests.get('https://pypi.org/pypi/{}/json'.format(library))
-            version = pypi_req.json()['info']['version']
-
-        # Set the requirements
-        self._output["servable"]["dependencies"]["python"][library] = version
-        return self
-
-    def add_requirements(self, requirements):
-        """Add a dictionary of requirements
-
-        Utility wrapper for `add_requirement`
-
-        Args:
-            requirements (dict): Keys are names of library (str), values are the version
-        """
-        for p, v in requirements.items():
-            self.add_requirement(p, v)
-        return self
 
     def set_inputs(self, data_type, description, shape=(), item_type=None, **kwargs):
         """Define the inputs to the default ("run") function
