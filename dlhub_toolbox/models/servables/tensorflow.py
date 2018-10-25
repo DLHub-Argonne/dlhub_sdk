@@ -24,14 +24,20 @@ def _read_tf_inputs_and_outputs(arg_def):
     Args:
         arg_def (MessageMap): Description of the inputs/outputs
     Returns:
-        (dict)
+        - (dict) Description of the input/output data in DLHub format
+        - ([string]) Names of the input and output nodes
     """
 
-    # Convert the tensor descriptions to
+    # Convert the tensor descriptions to a format compatible with DLHub,
+    #   and fetch the names of the corresponding node on the graph
     dlhub_arg_defs = []
+    node_names = []
     for name, arg_def in arg_def.items():
         # Get the shape of the Tensor (assuming all inputs are tensors)
         shape = [d.size if d.size != - 1 else None for d in arg_def.tensor_shape.dim]
+
+        # Append the node name
+        node_names.append(arg_def.name)
 
         # Different case if it is a scalar or a tensor
         if len(shape) == 0:
@@ -42,13 +48,14 @@ def _read_tf_inputs_and_outputs(arg_def):
 
     # If the function has only one argument, return that
     if len(dlhub_arg_defs) == 1:
-        return dlhub_arg_defs[0]
+        return dlhub_arg_defs[0], node_names
 
     # Otherwise, create a "tuple" type
     #   First sort arguments by description, to ensure a deterministic order to them between runs
-    dlhub_arg_defs = sorted(dlhub_arg_defs, key=lambda x: x['description'])
+    dlhub_arg_defs, node_names = zip(*sorted(zip(dlhub_arg_defs, node_names),
+                                             key=lambda x: x[0]['description']))
     return compose_argument_block('list', 'Arguments', shape=[len(dlhub_arg_defs)],
-                                  item_type=dlhub_arg_defs)
+                                  item_type=dlhub_arg_defs), list(node_names)
 
 
 class TensorFlowModel(BaseServableModel):
@@ -88,15 +95,17 @@ class TensorFlowModel(BaseServableModel):
         # Build descriptions for each function in the description
         for name, func_def in model_def.signature_def.items():
             # Get the descriptions for the inputs and outputs
-            input_def = _read_tf_inputs_and_outputs(func_def.inputs)
-            output_def = _read_tf_inputs_and_outputs(func_def.outputs)
+            input_def, input_nodes = _read_tf_inputs_and_outputs(func_def.inputs)
+            output_def, output_nodes = _read_tf_inputs_and_outputs(func_def.outputs)
 
             # Rename the default function
             if name == tf.saved_model.signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY:
                 name = "run"
 
             # Register the function with the DLHub schema
-            output.register_function(name, input_def, output_def)
+            output.register_function(name, input_def, output_def,
+                                     method_details={'input_nodes': input_nodes,
+                                                     'output_nodes': output_nodes})
 
         # Check if there is a run method
         if 'run' not in output['servable']['methods']:
