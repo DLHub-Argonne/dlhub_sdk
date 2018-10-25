@@ -27,10 +27,10 @@ class TestTensorflow(TestCase):
 
             # Make two simple graphs, both of which will be served by TF
             x = tf.placeholder('float', shape=(None, 3), name='Input')
-            z = tf.placeholder('float', shape=(), name='Multiple')
+            z = tf.placeholder('float', shape=(), name='ScalarMultiple')
             y = x + 1
             len_fun = tf.reduce_sum(y - x)  # Returns the number of elements in the array
-            scale_mult = tf.multiply(z, x)
+            scale_mult = tf.multiply(z, x, name='scale_mult')
 
             # Create the tool for saving the model to disk
             builder = tf.saved_model.builder.SavedModelBuilder(tf_export_path)
@@ -91,12 +91,16 @@ class TestTensorflow(TestCase):
                                            'shape': [None, 3], 'item_type': {'type': 'float'}},
                                  'output': {'type': 'ndarray', 'description': 'y',
                                             'shape': [None, 3], 'item_type': {'type': 'float'}},
-                                 'parameters': {}, 'method_details': {}
+                                 'parameters': {},
+                                 'method_details': {'input_nodes': ['Input:0'],
+                                                    'output_nodes': ['add:0']}
                              }, 'length': {
                                  'input': {'type': 'ndarray', 'description': 'x',
                                            'shape': [None, 3], 'item_type': {'type': 'float'}},
                                  'output': {'type': 'float', 'description': 'len'},
-                                 'parameters': {}, 'method_details': {}
+                                 'parameters': {},
+                                 'method_details': {'input_nodes': ['Input:0'],
+                                                    'output_nodes': ['Sum:0']}
                              }, 'scalar_multiply': {
                                  'input': {'type': 'list', 'description': 'Arguments',
                                            'item_type': [
@@ -106,7 +110,9 @@ class TestTensorflow(TestCase):
                                            ]},
                                  'output': {'type': 'ndarray', 'description': 'scale_mult',
                                             'shape': [None, 3], 'item_type': {'type': 'float'}},
-                                 'parameters': {}, 'method_details': {}
+                                 'parameters': {},
+                                 'method_details': {'input_nodes': ['Input:0', 'ScalarMultiple:0'],
+                                                    'output_nodes': ['scale_mult:0']}
                              }},
                              'shim': 'tensorflow.TensorFlowServable',
                              'type': 'TensorFlow Model',
