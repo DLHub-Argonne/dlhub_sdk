@@ -1,5 +1,5 @@
-from dlhub_toolbox.models.servables.sklearn import ScikitLearnModel
-from dlhub_toolbox.models.datasets import TabularDataset
+from dlhub_sdk.models.servables.sklearn import ScikitLearnModel
+from dlhub_sdk.models.datasets import TabularDataset
 import pandas as pd
 import json
 

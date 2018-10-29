@@ -1,9 +1,9 @@
 """Create a pipeline that guesses the digit for any image"""
 
 
-from dlhub_toolbox.models.servables.python import PythonStaticMethodModel
-from dlhub_toolbox.models.pipeline import PipelineModel
-from dlhub_toolbox.utils.types import compose_argument_block
+from dlhub_sdk.models.servables.python import PythonStaticMethodModel
+from dlhub_sdk.models.pipeline import PipelineModel
+from dlhub_sdk.utils.types import compose_argument_block
 from skimage.transform import resize
 from skimage.io import imread
 

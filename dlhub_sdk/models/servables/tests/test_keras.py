@@ -1,5 +1,5 @@
-from dlhub_toolbox.utils.schemas import validate_against_dlhub_schema
-from dlhub_toolbox.models.servables.keras import KerasModel
+from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
+from dlhub_sdk.models.servables.keras import KerasModel
 from keras import __version__ as keras_version
 from keras.models import Sequential, Model
 from keras.layers import Dense, Input

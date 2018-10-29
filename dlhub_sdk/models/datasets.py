@@ -3,8 +3,8 @@ import os
 from collections import OrderedDict
 import pandas as pd
 
-from dlhub_toolbox.models import BaseMetadataModel
-from dlhub_toolbox.utils.types import simplify_numpy_dtype
+from dlhub_sdk.models import BaseMetadataModel
+from dlhub_sdk.utils.types import simplify_numpy_dtype
 
 
 class Dataset(BaseMetadataModel):

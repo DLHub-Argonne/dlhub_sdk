@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from dlhub_toolbox.utils import unserialize_object
-from dlhub_toolbox.models.datasets import Dataset
+from dlhub_sdk.utils import unserialize_object
+from dlhub_sdk.models.datasets import Dataset
 
 
 class TestBase(TestCase):

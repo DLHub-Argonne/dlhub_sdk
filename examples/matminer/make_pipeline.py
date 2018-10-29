@@ -1,7 +1,7 @@
 """Create a pipeline that predicts formation energies of a list of strings"""
 
-from dlhub_toolbox.models.servables.python import PythonStaticMethodModel
-from dlhub_toolbox.models.pipeline import PipelineModel
+from dlhub_sdk.models.servables.python import PythonStaticMethodModel
+from dlhub_sdk.models.pipeline import PipelineModel
 from pymatgen import Composition
 import pickle as pkl
 import json

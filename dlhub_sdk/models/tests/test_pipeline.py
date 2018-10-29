@@ -1,8 +1,8 @@
 import unittest
 
-from dlhub_toolbox.models.servables.python import PythonStaticMethodModel
-from dlhub_toolbox.utils.schemas import validate_against_dlhub_schema
-from dlhub_toolbox.models.pipeline import PipelineModel
+from dlhub_sdk.models.servables.python import PythonStaticMethodModel
+from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
+from dlhub_sdk.models.pipeline import PipelineModel
 
 
 class TestPipeline(unittest.TestCase):

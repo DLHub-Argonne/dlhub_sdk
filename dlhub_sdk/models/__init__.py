@@ -8,7 +8,7 @@ import sys
 import os
 import re
 
-from dlhub_toolbox import __dlhub_version__
+from dlhub_sdk import __dlhub_version__
 
 name_re = re.compile(r'^\S+$')
 

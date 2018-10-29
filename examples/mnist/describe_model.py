@@ -1,4 +1,4 @@
-from dlhub_toolbox.models.servables.keras import KerasModel
+from dlhub_sdk.models.servables.keras import KerasModel
 import pickle as pkl
 import json
 

@@ -1,4 +1,4 @@
-from dlhub_toolbox.utils.types import compose_argument_block, simplify_numpy_dtype
+from dlhub_sdk.utils.types import compose_argument_block, simplify_numpy_dtype
 from . import BaseServableModel
 import tensorflow as tf
 import numpy as np

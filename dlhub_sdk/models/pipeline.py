@@ -1,5 +1,5 @@
 """Model for a pipeline of several servables"""
-from dlhub_toolbox.models import BaseMetadataModel
+from dlhub_sdk.models import BaseMetadataModel
 
 
 class PipelineModel(BaseMetadataModel):
