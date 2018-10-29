@@ -1,5 +1,5 @@
 from dlhub_toolbox.models.servables.python import PythonStaticMethodModel
-from dlhub_toolbox.api.client import DLHubClient
+from dlhub_toolbox.client import DLHubClient
 from unittest import TestCase, skip
 import pandas as pd
 
@@ -43,6 +43,8 @@ class TestClient(TestCase):
     @skip  # Do not yet have a "test" route for submitted objects
     def test_submit(self):
         dl = DLHubClient()
+
+        # TODO: Set the same UUID as the original test
 
         # Make an example function
         model = PythonStaticMethodModel.create_model('numpy.linalg', 'norm')
