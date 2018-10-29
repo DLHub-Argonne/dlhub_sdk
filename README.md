@@ -1,7 +1,7 @@
-# DLHub Toolbox
+# DLHub SDK
 [![Build Status](https://travis-ci.org/DLHub-Argonne/dlhub_toolbox.svg?branch=master)](https://travis-ci.org/DLHub-Argonne/dlhub_toolbox)[![Coverage Status](https://coveralls.io/repos/github/DLHub-Argonne/dlhub_toolbox/badge.svg?branch=master)](https://coveralls.io/github/DLHub-Argonne/dlhub_toolbox?branch=master)
 
-DLHub Toolbox contains scripts designed to make it easier to submit datasets and machine learning models to the Data and Learning Hub for Science (DLHub). 
+DLHub SDK contains scripts designed to make it easier to submit datasets and machine learning models to the Data and Learning Hub for Science (DLHub). 
 This package provides utility functions for building data in the correct schema for DLHub and tools that automatically extract metadata from common types of datasets and ML models.
 
 ## Installation
@@ -12,7 +12,7 @@ cd dlhub_toolbox
 pip install -e .
 ```
 
-`dlhub_toolbox` is not yet on PyPi. So, you have to install it by first cloning the repository and then calling `pip install -e .`
+`dlhub_sdk` is not yet on PyPi. So, you have to install it by first cloning the repository and then calling `pip install -e .`
 
 ## Example Usage
 
@@ -34,10 +34,10 @@ sepal_length,sepal_width,petal_length,petal_width,species
 
 To make this dataset usable for others, we want to tell them how to read it and what the columns are.
 Also, to make sure the authors of the data can be properly recognized, we need to provide provenance information.
-`dlhub_toolbox` provides a simple tool for specifying this information: `TabularDataset`.
+`dlhub_sdk` provides a simple tool for specifying this information: `TabularDataset`.
 
 ```python
-from dlhub_toolbox.models.datasets import TabularDataset
+from dlhub_sdk.models.datasets import TabularDataset
 import pandas as pd
 import json
 
@@ -178,7 +178,7 @@ After running this script, the model produces a simple JSON description of the d
 }
 ```
 
-Note that the toolbox automatically put the metadata in DataCite format and includes data automatically pulled from the dataset (e.g., that the inputs are floats).
+Note that the SDK automatically put the metadata in DataCite format and includes data automatically pulled from the dataset (e.g., that the inputs are floats).
 
 ## Describe the Model
 
@@ -187,7 +187,7 @@ For brevity, we will upload much less metadata about a model created using Sciki
 We simply load in a Scikit-Learn model from a pickle file, and then provide a minimal amount of information about it.
 
 ```python
-from dlhub_toolbox.models.servables.sklearn import ScikitLearnModel
+from dlhub_sdk.models.servables.sklearn import ScikitLearnModel
 
 model_info = ScikitLearnModel.create_model('model.pkl', n_input_columns=len(data.columns) - 1,
                                            classes=data['species'].unique())
@@ -198,7 +198,7 @@ model_info.set_name("iris_svm")
 model_info.set_domains(["biology"])
 ```
 
-The toolbox will inspect the pickle file to determine the type of the model and the version of scikit-learn that was used to create it.
+The SDK will inspect the pickle file to determine the type of the model and the version of scikit-learn that was used to create it.
 
 ```json
 {
@@ -287,3 +287,26 @@ The toolbox will inspect the pickle file to determine the type of the model and 
 ```
 
 At this point, we are ready to publish both the model and dataset on DLHub.
+
+### Publishing to DLHub
+
+Users interact with DLHub by submitting HTTP requests to the REST API. 
+In an effort to make using this API simple, the DLHub SDK contains a client that provides a Python API to these requests and hides the tedious operations involved in making an HTTP call from Python.
+You can publish a model to DLHub by first reading in the metadata from file and then calling the client:
+
+```python
+from dlhub_sdk.models import BaseMetadataModel
+from dlhub_sdk.client import DLHubClient
+import json
+
+# Read the model description
+with open('model.json') as fp:
+    model = BaseMetadataModel.from_dict(json.load(fp)) 
+
+# Publish the model to DLHub
+client = DLHubClient()
+client.publish_servable(model)
+print('Model published to DLHub. ID:', model.dlhub_id)
+```
+
+When you call this script, the DLHub client will assign your model a unique identifier and the model will soon be available for you to use via DLHub.
