@@ -1,5 +1,5 @@
 # DLHub SDK
-[![Build Status](https://travis-ci.org/DLHub-Argonne/dlhub_toolbox.svg?branch=master)](https://travis-ci.org/DLHub-Argonne/dlhub_toolbox)[![Coverage Status](https://coveralls.io/repos/github/DLHub-Argonne/dlhub_toolbox/badge.svg?branch=master)](https://coveralls.io/github/DLHub-Argonne/dlhub_toolbox?branch=master)[![PyPI version](https://badge.fury.io/py/dlhub-sdk.svg)](https://badge.fury.io/py/dlhub-sdk)
+[![Build Status](https://travis-ci.org/DLHub-Argonne/dlhub_sdk.svg?branch=master)](https://travis-ci.org/DLHub-Argonne/dlhub_sdk)[![Coverage Status](https://coveralls.io/repos/github/DLHub-Argonne/dlhub_sdk/badge.svg?branch=master)](https://coveralls.io/github/DLHub-Argonne/dlhub_sdk?branch=master)[![PyPI version](https://badge.fury.io/py/dlhub-sdk.svg)](https://badge.fury.io/py/dlhub-sdk)
 
 DLHub SDK contains scripts designed to make it easier to submit datasets and machine learning models to the Data and Learning Hub for Science (DLHub). 
 This package provides utility functions for building data in the correct schema for DLHub and tools that automatically extract metadata from common types of datasets and ML models.
