@@ -1,8 +1,8 @@
 from keras import __version__ as keras_version
 from keras.models import load_model
 
-from dlhub_toolbox.models.servables.python import BasePythonServableModel
-from dlhub_toolbox.utils.types import compose_argument_block
+from dlhub_sdk.models.servables.python import BasePythonServableModel
+from dlhub_sdk.utils.types import compose_argument_block
 
 
 _keras_version_tuple = tuple(int(i) for i in keras_version.split("."))

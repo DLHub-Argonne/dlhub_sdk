@@ -3,9 +3,9 @@ import numpy as np
 import unittest
 import os
 
-from dlhub_toolbox.models.servables.sklearn import ScikitLearnModel
-from dlhub_toolbox import __dlhub_version__
-from dlhub_toolbox.utils.schemas import validate_against_dlhub_schema
+from dlhub_sdk.models.servables.sklearn import ScikitLearnModel
+from dlhub_sdk import __dlhub_version__
+from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 
 
 _year = str(datetime.now().year)

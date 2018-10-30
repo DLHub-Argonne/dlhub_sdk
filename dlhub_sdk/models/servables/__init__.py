@@ -3,7 +3,7 @@ import importlib
 import pkg_resources
 import requests
 
-from dlhub_toolbox.models import BaseMetadataModel
+from dlhub_sdk.models import BaseMetadataModel
 
 
 class BaseServableModel(BaseMetadataModel):

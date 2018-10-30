@@ -1,16 +1,18 @@
 from setuptools import setup
 
 setup(
-    name='dlhub_toolbox',
+    name='dlhub_sdk',
     version='0.0.1',
-    packages=['dlhub_toolbox'],
+    packages=['dlhub_sdk'],
     description='Tools for submitting datasets and models to DLHub',
-    long_description=("DLHub Toolbox contains scripts designed to make it easier to submit "
-        "datasets and machine learning models to the Data and Learning Hub for Science (DLHub). "
-        "This package contains ans tools for formatting descriptions of datasets and machine learning models "
-        "in the format required by DLHub, and a wrapper around the API for sending them to DLHub for publication"),
+    long_description=("DLHub SDK contains utilities that simplify interacting with the Data and"
+                      " Learning Hub for Science (DLHub). This package contains ans tools for"
+                      " formatting descriptions of datasets and machine learning models in the"
+                      " format required by DLHub, and a wrapper around the API (DLHubClient)."
+                      " The DLHub client provides an easy route for publishing, discovering, and"
+                      " using machine learning models in DLHub."),
     install_requires=[
-        "pandas", "scikit-learn"
+        "pandas", "requests"
     ],
     python_requires=">=3.4",
     classifiers=[
@@ -30,5 +32,5 @@ setup(
         "reproducibility",
     ],
     license="Apache License, Version 2.0",
-    url="https://github.com/DLHub-Argonne/dlhub_toolbox"
+    url="https://github.com/DLHub-Argonne/dlhub_sdk"
 )

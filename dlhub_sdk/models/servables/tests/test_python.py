@@ -1,8 +1,8 @@
 """Tests for models for generic Python functions"""
 
-from dlhub_toolbox.models.servables.python import PythonClassMethodModel, \
+from dlhub_sdk.models.servables.python import PythonClassMethodModel, \
     PythonStaticMethodModel
-from dlhub_toolbox import __dlhub_version__
+from dlhub_sdk import __dlhub_version__
 from sklearn import __version__ as skl_version
 from numpy import __version__ as numpy_version
 from datetime import datetime
@@ -10,7 +10,7 @@ import unittest
 import math
 import os
 
-from dlhub_toolbox.utils.schemas import validate_against_dlhub_schema
+from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 
 
 _year = str(datetime.now().year)

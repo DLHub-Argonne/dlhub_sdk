@@ -4,8 +4,8 @@ import tensorflow as tf
 import shutil
 import os
 
-from dlhub_toolbox.models.servables.tensorflow import TensorFlowModel
-from dlhub_toolbox.utils.schemas import validate_against_dlhub_schema
+from dlhub_sdk.models.servables.tensorflow import TensorFlowModel
+from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 
 tf_export_path = os.path.join(os.path.dirname(__file__), 'tf-model')
 

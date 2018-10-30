@@ -1,8 +1,8 @@
 """Tools to annotate generic operations (e.g., class method calls) in Python"""
 import pickle as pkl
 
-from dlhub_toolbox.models.servables import BaseServableModel
-from dlhub_toolbox.utils.types import compose_argument_block
+from dlhub_sdk.models.servables import BaseServableModel
+from dlhub_sdk.utils.types import compose_argument_block
 
 
 class BasePythonServableModel(BaseServableModel):

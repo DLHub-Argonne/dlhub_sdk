@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from dlhub_toolbox.utils.types import simplify_numpy_dtype, compose_argument_block
+from dlhub_sdk.utils.types import simplify_numpy_dtype, compose_argument_block
 
 
 class TestTypes(unittest.TestCase):

@@ -1,4 +1,4 @@
-from dlhub_toolbox.models.servables.python import BasePythonServableModel
+from dlhub_sdk.models.servables.python import BasePythonServableModel
 from sklearn.base import is_classifier
 from sklearn.pipeline import Pipeline
 from sklearn.externals import joblib

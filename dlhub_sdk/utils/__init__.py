@@ -12,11 +12,11 @@ def unserialize_object(data):
 
     # Get the class to be loaded
     #   Assume the base class if '@class' not present
-    class_name = data.get('@class', 'dlhub_toolbox.models.BaseMetadataModel')
+    class_name = data.get('@class', 'dlhub_sdk.models.BaseMetadataModel')
 
     # Make sure it is from the correct package
-    if not class_name.startswith('dlhub_toolbox.models.'):
-        raise AttributeError('Metadata class must be from the `dlhub_toolbox.models package')
+    if not class_name.startswith('dlhub_sdk.models.'):
+        raise AttributeError('Metadata class must be from the `dlhub_sdk.models package')
 
     # Get the desired metadata class
     components = class_name.split(".")

@@ -1,5 +1,5 @@
-from dlhub_toolbox.models.datasets import Dataset, TabularDataset
-from dlhub_toolbox import __dlhub_version__
+from dlhub_sdk.models.datasets import Dataset, TabularDataset
+from dlhub_sdk import __dlhub_version__
 
 from datetime import datetime
 from tempfile import mkstemp
@@ -9,7 +9,7 @@ import unittest
 import uuid
 import os
 
-from dlhub_toolbox.utils.schemas import validate_against_dlhub_schema
+from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 
 
 _year = str(datetime.now().year)

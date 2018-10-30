@@ -1,6 +1,6 @@
-from dlhub_toolbox.models.servables.python import PythonClassMethodModel
-from dlhub_toolbox.models.servables.sklearn import ScikitLearnModel
-from dlhub_toolbox.models.datasets import TabularDataset
+from dlhub_sdk.models.servables.python import PythonClassMethodModel
+from dlhub_sdk.models.servables.sklearn import ScikitLearnModel
+from dlhub_sdk.models.datasets import TabularDataset
 import pickle as pkl
 import pandas as pd
 import json

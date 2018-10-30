@@ -8,7 +8,7 @@ import sys
 import os
 import re
 
-from dlhub_toolbox import __dlhub_version__
+from dlhub_sdk import __dlhub_version__
 
 name_re = re.compile(r'^\S+$')
 
@@ -21,8 +21,27 @@ class BaseMetadataModel:
 
     ## Using a MetadataModel
 
+    There are many kinds of MetadataModel classes that each describe a different kind of object.
+    Each of these different types are created using the :code:`create_model` operation
+    (e.g., :code:`KerasModel.create_model('model.h5')`), but have different arguments depending
+    on the type of object. For example, TensorFlow models only require the directory created
+    when saving the model for serving but scikit-learn models require the pickle file, how
+    the pickle was created (e.g., with joblib), and how many input features it requires.
 
+    Once created, you will need to fill in additional details about the object to make it reusable.
+    The MetadataModel classes attempt to learn as much about an object as possible automatically,
+    but there is some information that must be provided by a human. To start, you must define a
+    title and name for the object and are encouraged to provide an abstract describing the model
+    and list any associated papers/websites that describe the model. You will fill plenty of
+    examples for how to describe the models in the DLHub_containers repostiory. Some types of
+    objects require data specific to their type (e.g., Python servables need a list of required
+    packages). We encourage you to find examples for your specific type of object in the containers
+    repository for inspiration and to see the Python documentation for each Metadata Model.
 
+    The MetadataModel object can be saved using the `to_dict` operation and read back into
+    memory using the `from_dict` method. We recommend you save your dictionary to disk in the
+    JSON or yaml format, which will allow for manual edits to be made before submitting or
+    resubmitting a object description.
     """
 
     def __init__(self):
