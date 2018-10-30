@@ -31,6 +31,8 @@ setup(
         "data publication",
         "reproducibility",
     ],
+    author='Ben Blaiszik',
+    author_email='bblaiszik@anl.gov',
     license="Apache License, Version 2.0",
     url="https://github.com/DLHub-Argonne/dlhub_sdk"
 )
