@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='dlhub_sdk',
-    version='0.0.1',
+    version='0.1.0',
     packages=['dlhub_sdk'],
     description='Tools for submitting datasets and models to DLHub',
     long_description=("DLHub SDK contains utilities that simplify interacting with the Data and"
