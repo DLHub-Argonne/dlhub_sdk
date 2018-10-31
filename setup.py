@@ -1,9 +1,9 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='dlhub_sdk',
-    version='0.1.0',
-    packages=['dlhub_sdk'],
+    version='0.1.1',
+    packages=find_packages(),
     description='Tools for submitting datasets and models to DLHub',
     long_description=("DLHub SDK contains utilities that simplify interacting with the Data and"
                       " Learning Hub for Science (DLHub). This package contains tools for"
