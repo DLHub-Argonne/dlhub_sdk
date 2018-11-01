@@ -190,6 +190,16 @@ class TestModels(unittest.TestCase):
         # Make sure the fields are the same
         self.assertEqual(metadata._output, metadata_copy._output)
 
+    def test_unlabeled(self):
+        data_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'test.csv'))
+        m = TabularDataset.create_model(data_path)
+
+        # Check that all columns are unlabeled
+        self.assertEqual(["x", "y"], m.get_unannotated_columns())
+
+        # Label one, make sure it changes
+        m.annotate_column("x", "description")
+        self.assertEqual(["y"], m.get_unannotated_columns())
 
 if __name__ == "__main__":
     unittest.main()

@@ -103,6 +103,11 @@ class TabularDataset(Dataset):
             column['units'] = units
         return self
 
+    def get_unannotated_columns(self):
+        """Get the names of columns that have not been described"""
+
+        return [x["name"] for x in self["dataset"]["columns"] if "description" not in x]
+
     def _get_column(self, column_name):
         """Gets the metadata for a certain column
 
