@@ -1,5 +1,6 @@
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 from dlhub_sdk.models.servables.keras import KerasModel
+from dlhub_sdk import __dlhub_version__
 from keras import __version__ as keras_version
 from keras.models import Sequential, Model
 from keras.layers import Dense, Input
@@ -44,7 +45,8 @@ class TestKeras(TestCase):
                              "relatedIdentifiers": [],
                              "alternateIdentifiers": [],
                              "rightsList": []},
-                "dlhub": {"version": "0.1", "domains": [], "visible_to": ["public"], "id": None,
+                "dlhub": {"version": __dlhub_version__, "domains": [],
+                          "visible_to": ["public"], "id": None,
                           "name": "mlp", "files": {"model": model_path}},
                 "servable": {"methods": {"run": {
                     "input": {"type": "ndarray", "description": "Tensor", "shape": [None, 1]},

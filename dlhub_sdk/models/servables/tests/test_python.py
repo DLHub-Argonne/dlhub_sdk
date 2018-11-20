@@ -57,7 +57,8 @@ class TestPythonModels(unittest.TestCase):
                                "alternateIdentifiers": [],
                                "rightsList": []
                                },
-                          'dlhub': {'version': '0.1', 'domains': [], 'visible_to': ['public'],
+                          'dlhub': {'version': __dlhub_version__, 'domains': [],
+                                    'visible_to': ['public'],
                                     "id": None, "name": "class_method",
                                     'files': {'pickle': pickle_path}},
                           'servable': {'language': 'python', 'type': 'Python class method',

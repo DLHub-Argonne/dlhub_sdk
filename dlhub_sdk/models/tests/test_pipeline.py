@@ -3,6 +3,7 @@ import unittest
 from dlhub_sdk.models.servables.python import PythonStaticMethodModel
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 from dlhub_sdk.models.pipeline import PipelineModel
+from dlhub_sdk import __dlhub_version__
 
 
 class TestPipeline(unittest.TestCase):
@@ -36,7 +37,7 @@ class TestPipeline(unittest.TestCase):
                           "relatedIdentifiers": [],
                           "alternateIdentifiers": [],
                           "rightsList": []},
-             'dlhub': {'version': '0.1', 'domains': [], 'visible_to': ['public'],
+             'dlhub': {'version': __dlhub_version__, 'domains': [], 'visible_to': ['public'],
                        'id': None, 'name': 'numpy_test',
                        'files': {}},
              'pipeline': {'steps': [{'dlhub_id': step1.dlhub_id,
