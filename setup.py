@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='dlhub_sdk',
-    version='0.2.0',
+    version='0.2.1',
     packages=find_packages(),
     description='Python interface and utilities for DLHub',
     long_description=("DLHub SDK contains a Python interface to the Data "
