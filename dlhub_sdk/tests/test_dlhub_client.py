@@ -8,7 +8,7 @@ class TestClient(TestCase):
 
     def test_dlhub_init(self):
         dl = DLHubClient()
-        self.assertEqual(dl.service, "https://dlhub.org/api/v1")
+        self.assertEqual(dl.service, "https://api.dlhub.org/api/v1")
         self.assertIsInstance(dl, DLHubClient)
 
     def test_get_servables(self):

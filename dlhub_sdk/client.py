@@ -12,7 +12,7 @@ class DLHubClient:
 
     Holds helper operations for performing common tasks with the DLHub service. For example,
     `get_servables` produces a list of all servables registered with DLHub."""
-    service = "https://dlhub.org/api/v1"
+    service = "https://api.dlhub.org/api/v1"
 
     def __init__(self, timeout=None):
         """Initialize the client
