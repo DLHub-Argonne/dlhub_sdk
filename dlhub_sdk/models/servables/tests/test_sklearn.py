@@ -4,7 +4,7 @@ import unittest
 import os
 
 from dlhub_sdk.models.servables.sklearn import ScikitLearnModel
-from dlhub_sdk import __dlhub_version__
+from dlhub_sdk import __version__
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 
 
@@ -31,7 +31,7 @@ class TestSklearn(unittest.TestCase):
                                  "relatedIdentifiers": [],
                                  "alternateIdentifiers": [],
                                  "rightsList": []},
-                    "dlhub": {"version": __dlhub_version__,
+                    "dlhub": {"version": __version__,
                               "visible_to": ["public"], 'name': 'sklearn',
                               "domains": [], "id": None,
                               'files': {'model': model_path}},

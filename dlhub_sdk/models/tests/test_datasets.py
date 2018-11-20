@@ -1,5 +1,5 @@
 from dlhub_sdk.models.datasets import Dataset, TabularDataset
-from dlhub_sdk import __dlhub_version__
+from dlhub_sdk import __version__
 
 from datetime import datetime
 from tempfile import mkstemp
@@ -79,7 +79,7 @@ class TestModels(unittest.TestCase):
                                               'identifierType': 'DOI'},
                                },
                           "dlhub": {
-                              "version": __dlhub_version__,
+                              "version": __version__,
                               "visible_to": ["public"],
                               "domains": ["materials science"],
                               "id": my_uuid,
@@ -115,7 +115,7 @@ class TestModels(unittest.TestCase):
                                                     "alternateIdentifiers": [],
                                                     "rightsList": [],
                                                     },
-                                       "dlhub": {"version": __dlhub_version__,
+                                       "dlhub": {"version": __version__,
                                                  "visible_to": ["public"],
                                                  "domains": [],
                                                  "id": None,

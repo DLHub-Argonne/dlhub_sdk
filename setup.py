@@ -2,15 +2,14 @@ from setuptools import setup, find_packages
 
 setup(
     name='dlhub_sdk',
-    version='0.1.1',
+    version='0.2.0',
     packages=find_packages(),
-    description='Tools for submitting datasets and models to DLHub',
-    long_description=("DLHub SDK contains utilities that simplify interacting with the Data and"
-                      " Learning Hub for Science (DLHub). This package contains tools for"
-                      " formatting descriptions of datasets and machine learning models in the"
-                      " format required by DLHub (MetadataModels), and a wrapper around the "
-                      " REST API for DLHub (DLHubClient). The DLHubClient provides an easy route"
-                      " for publishing, discovering, and using machine learning models in DLHub."),
+    description='Python interface and utilities for DLHub',
+    long_description=("DLHub SDK contains a Python interface to the Data "
+                      "and Learning Hub for Science (DLHub). These interfaces "
+                      "include functions for quickly describing a model in the "
+                      "correct schema for DLHub, and discovering or using models "
+                      "that other scientists have published."),
     install_requires=[
         "pandas", "requests"
     ],

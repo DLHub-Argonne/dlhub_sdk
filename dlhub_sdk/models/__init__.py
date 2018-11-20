@@ -8,7 +8,7 @@ import sys
 import os
 import re
 
-from dlhub_sdk import __dlhub_version__
+from dlhub_sdk import __version__
 
 name_re = re.compile(r'^\S+$')
 
@@ -62,7 +62,7 @@ class BaseMetadataModel:
             "alternateIdentifiers": [],
             "rightsList": []
         }, "dlhub": {
-            "version": __dlhub_version__,
+            "version": __version__,
             "domains": [],
             "visible_to": ["public"],
             'id': None,

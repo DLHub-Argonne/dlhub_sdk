@@ -2,7 +2,7 @@
 
 from dlhub_sdk.models.servables.python import PythonClassMethodModel, \
     PythonStaticMethodModel
-from dlhub_sdk import __dlhub_version__
+from dlhub_sdk import __version__
 from sklearn import __version__ as skl_version
 from numpy import __version__ as numpy_version
 from datetime import datetime
@@ -57,7 +57,7 @@ class TestPythonModels(unittest.TestCase):
                                "alternateIdentifiers": [],
                                "rightsList": []
                                },
-                          'dlhub': {'version': __dlhub_version__, 'domains': [],
+                          'dlhub': {'version': __version__, 'domains': [],
                                     'visible_to': ['public'],
                                     "id": None, "name": "class_method",
                                     'files': {'pickle': pickle_path}},
@@ -111,7 +111,7 @@ class TestPythonModels(unittest.TestCase):
                                "alternateIdentifiers": [],
                                "rightsList": []
                            },
-                          'dlhub': {'version': __dlhub_version__, 'domains': [], 'visible_to': ['public'],
+                          'dlhub': {'version': __version__, 'domains': [], 'visible_to': ['public'],
                                     "id": None, "name": "static_method",
                                     'files': {}},
                           'servable': {'language': 'python', 'type': 'Python static method',
