@@ -7,3 +7,5 @@ keras==2.2.0
 tensorflow==1.8.0
 h5py==2.8.0
 boto3==1.5.36
+sphinx_rtd_theme
+nbsphinx

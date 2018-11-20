@@ -1,8 +1,8 @@
 # DLHub SDK
 [![Build Status](https://travis-ci.org/DLHub-Argonne/dlhub_sdk.svg?branch=master)](https://travis-ci.org/DLHub-Argonne/dlhub_sdk)[![Coverage Status](https://coveralls.io/repos/github/DLHub-Argonne/dlhub_sdk/badge.svg?branch=master)](https://coveralls.io/github/DLHub-Argonne/dlhub_sdk?branch=master)[![PyPI version](https://badge.fury.io/py/dlhub-sdk.svg)](https://badge.fury.io/py/dlhub-sdk)
 
-DLHub SDK contains scripts designed to make it easier to submit datasets and machine learning models to the Data and Learning Hub for Science (DLHub). 
-This package provides utility functions for building data in the correct schema for DLHub and tools that automatically extract metadata from common types of datasets and ML models.
+DLHub SDK contains a Python and Command Line interface to the Data and Learning Hub for Science (DLHub). 
+These interfaces include functions for quickly describing a model in the correct schema for DLHub, and discovering or using models that other scientists have published.
 
 ## Installation
 
@@ -14,10 +14,74 @@ pip install dlhub-sdk
 
 ## Example Usage
 
+The following sections are short introductions to using the DLHub SDK.
+
+### Discovering and Running Models
+
+Users interact with DLHub by submitting HTTP requests to a REST API. 
+In an effort to make using this API simple, the DLHub SDK contains a client that provides a Python API to these requests and hides the tedious operations involved in making an HTTP call from Python.
+
+To create the client, call
+
+```python
+from dlhub_sdk.client import DLHubClient
+
+client = DLHubClinet()
+```
+
+The client makes it simple to find interesting machine learning models. 
+For example, you can get all of the models on DLHub by 
+
+```python
+d = client.get_servables()
+```
+
+That command will return a Pandas DataFrame of models, which looks something like:
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>name</th>
+      <th>description</th>
+      <th>id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>mnist_tiny_example</td>
+      <td>MNIST Digit Classifier with a small NN</td>
+      <td>123</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>mnist</td>
+      <td>CNN acheiving 99.25% on the MNIST test data</td>
+      <td>111</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>formation_energy</td>
+      <td>Predict the formation enthalpy of a material given its composition</td>
+      <td>112</td>
+    </tr>
+  </tbody>
+</table>
+
+Once you get the name of a model, it can be run thorugh the client as well:
+
+```python
+model = client.get_id_by_name('noop')
+client.run(model, 'my data')
+```
+
+### Publishing a Model
+
 As a simple example, we will show how to submit a machine learning model created based on the [Iris Dataset](https://archive.ics.uci.edu/ml/datasets/Iris).
 Full scripts for this example model are in [/examples/iris](./examples/iris).
 
-### Describe the Training Set
+#### Describe the Training Set
 
 The first step is to describe the training data, which we assume is in a `csv` file named `iris.csv`. 
 The `iris.csv` file looks something like
@@ -178,7 +242,7 @@ After running this script, the model produces a simple JSON description of the d
 
 Note that the SDK automatically put the metadata in DataCite format and includes data automatically pulled from the dataset (e.g., that the inputs are floats).
 
-## Describe the Model
+#### Describe the Model
 
 For brevity, we will upload much less metadata about a model created using Scikit-Learn.
 
@@ -286,10 +350,8 @@ The SDK will inspect the pickle file to determine the type of the model and the 
 
 At this point, we are ready to publish both the model and dataset on DLHub.
 
-### Publishing to DLHub
+#### Publishing to DLHub
 
-Users interact with DLHub by submitting HTTP requests to the REST API. 
-In an effort to make using this API simple, the DLHub SDK contains a client that provides a Python API to these requests and hides the tedious operations involved in making an HTTP call from Python.
 You can publish a model to DLHub by first reading in the metadata from file and then calling the client:
 
 ```python
