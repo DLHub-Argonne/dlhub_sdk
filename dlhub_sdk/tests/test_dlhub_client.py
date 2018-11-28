@@ -35,10 +35,14 @@ class TestClient(TestCase):
         name = "noop"
         data = {"data": ["V", "Co", "Zr"]}
         serv = dl.get_id_by_name(name)
-        res = dl.run(serv, data)
 
-        # Check the results
-        self.assertIsInstance(res, pd.DataFrame)
+        # Test sending the data as JSON
+        res = dl.run(serv, data, input_type='json')
+        self.assertEqual({}, res)
+
+        # Test sending the data as pickle
+        res = dl.run(serv, data, input_type='pickle')
+        self.assertEqual({}, res)
 
     @skip  # Do not yet have a "test" route for submitted objects
     def test_submit(self):

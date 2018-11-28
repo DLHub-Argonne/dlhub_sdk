@@ -4,11 +4,12 @@ from dlhub_sdk.config import (
     lookup_option, write_option, format_output, remove_option,
     internal_auth_client, check_logged_in, safeprint, DLHUB_SERVICE_ADDRESS)
 from tempfile import mkstemp
-
+import pickle as pkl
 import pandas as pd
 import globus_sdk
 import platform
 import requests
+import codecs
 import boto3
 import uuid
 import os
@@ -19,7 +20,6 @@ class DLHubClient:
 
     Holds helper operations for performing common tasks with the DLHub service. For example,
     `get_servables` produces a list of all servables registered with DLHub."""
-
 
     def __init__(self, timeout=None):
         """Initialize the client
@@ -90,22 +90,38 @@ class DLHubClient:
             serv = df_tmp[df_tmp.name == servable_name]
         return serv.iloc[0]
 
-    def run(self, servable_id, data):
+    def run(self, servable_id, inputs, input_type='json'):
         """Invoke a DLHub servable
 
         Args:
             servable_id (string): UUID of the servable
-            data (dict): Dictionary of the data to send to the servable
+            inputs: Data to be used as input to the function. Can be a string of file paths or URLs
+            input_type (string): How to send the data to DLHub. Can be "python" (which pickles
+                the data), "json" (which uses JSON to serialize the data), or "files" (which
+                sends the data as files).
         Returns:
-            (pd.DataFrame): Reply from the service
+            Reply from the service
         """
         servable_path = '{service}/servables/{servable_id}/run'.format(
             service=DLHUB_SERVICE_ADDRESS, servable_id=servable_id)
 
+        # Prepare the data to be sent to DLHub
+        if input_type == 'python':
+            data = {'python': codecs.encode(pkl.dumps(inputs), 'base64').decode()}
+        elif input_type == 'json':
+            data = {'data': inputs}
+        elif input_type == 'files':
+            raise NotImplementedError('Files support is not yet implemented')
+        else:
+            raise ValueError('Input type not recognized: {}'.format(input_type))
+
+        # Send the data to DLHub
         r = requests.post(servable_path, json=data, timeout=self.timeout)
         if r.status_code is not 200:
             raise Exception(r)
-        return pd.DataFrame(r.json())
+
+        # Return the result
+        return r.json()
 
     def publish_servable(self, model):
         """Submit a servable to DLHub
@@ -165,7 +181,6 @@ class DLHubClient:
 
         task_id = response.json()['task_id']
         return task_id
-
 
     def _stage_data(self, servable):
         """
