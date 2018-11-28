@@ -9,7 +9,7 @@ import sys
 import os
 import re
 
-from dlhub_sdk import __version__
+from dlhub_sdk.version import __version__
 from dlhub_sdk.utils.schemas import codemeta_to_datacite
 
 name_re = re.compile(r'^\S+$')
