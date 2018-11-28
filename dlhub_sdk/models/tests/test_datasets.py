@@ -203,7 +203,16 @@ class TestModels(unittest.TestCase):
 
     def test_codemeta(self):
         m = TabularDataset()
-        m.read_codemeta_file()
+
+        # Read in the codemeta file
+        odir = os.getcwd()
+        try:
+            os.chdir(os.path.dirname(__file__))
+            m.read_codemeta_file()
+        finally:
+            os.chdir(odir)
+
+        # Check that it produces valid datacite
         validate_against_dlhub_schema(m['datacite'], 'datacite-v4.1')
 
 if __name__ == "__main__":
