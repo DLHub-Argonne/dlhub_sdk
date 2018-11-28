@@ -8,7 +8,6 @@ class TestClient(TestCase):
 
     def test_dlhub_init(self):
         dl = DLHubClient()
-        self.assertEqual(dl.service, "https://api.dlhub.org/api/v1")
         self.assertIsInstance(dl, DLHubClient)
 
     def test_get_servables(self):
@@ -41,7 +40,7 @@ class TestClient(TestCase):
         self.assertEqual({}, res)
 
         # Test sending the data as pickle
-        res = dl.run(serv, data, input_type='pickle')
+        res = dl.run(serv, data, input_type='python')
         self.assertEqual({}, res)
 
     @skip  # Do not yet have a "test" route for submitted objects
