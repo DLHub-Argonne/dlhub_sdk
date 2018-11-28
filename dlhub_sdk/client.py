@@ -39,6 +39,18 @@ class DLHubClient:
             service=DLHUB_SERVICE_ADDRESS), timeout=self.timeout)
         return pd.DataFrame(r.json())
 
+    def get_servables(self):
+        """Get all of the servables available in the service
+
+        This is for backwards compatibility. Previous demos relied on this function
+        prior to it being made an internal function.
+
+        Returns:
+            (pd.DataFrame) Summary of all the models available in the service
+        """
+
+        return self._get_servables()
+
     def list_servables(self):
         """Get a list of the servables available in the service
 
@@ -130,6 +142,30 @@ class DLHubClient:
 
         task_id = response.json()['task_id']
         return task_id
+
+    def publish_repository(self, repository):
+        """Submit a repository to DLHub for publication
+
+        Args:
+            repository (string): Repository to publish
+        Returns:
+            (string) Task ID of this submission, used for checking for success
+        """
+
+
+        # Get the metadata
+        # metadata = model.to_dict(simplify_paths=True)
+        # Validate against the servable schema
+        # validate_against_dlhub_schema(metadata, 'servable')
+
+        # Publish to DLHub
+        metadata = {"repository": repository}
+        response = requests.post('{service}/publish_repo'.format(service=DLHUB_SERVICE_ADDRESS),
+                                 json=metadata, timeout=self.timeout)
+
+        task_id = response.json()['task_id']
+        return task_id
+
 
     def _stage_data(self, servable):
         """
