@@ -1,7 +1,8 @@
-import importlib
-
 import pkg_resources
+import importlib
 import requests
+import os
+
 
 from dlhub_sdk.models import BaseMetadataModel
 
@@ -119,4 +120,31 @@ class BaseServableModel(BaseMetadataModel):
         """
         for p, v in requirements.items():
             self.add_requirement(p, v)
+        return self
+
+    def parse_repo2docker_configuration(self, directory=None):
+        """Gathers information about required environment from repo2docker configuration files.
+
+        See https://repo2docker.readthedocs.io/en/latest/config_files.html for more details
+
+        Args:
+            directory (str): Path to directory containing configuration files
+                (default: current working directory)
+        """
+
+        # Get a list of all files
+        config_files = ['environment.yml', 'requirements.txt', 'setup.py', 'REQUIRE', 'install.R',
+                        'apt.txt', 'DESCRIPTION', 'manifest.xml', 'postBuild', 'start',
+                        'runtime.txt', 'default.nix', 'Dockerfile']
+
+        # Get the directory name if `None`
+        if directory is None:
+            directory = os.getcwd()
+
+        # Add every file we can find
+        for file in config_files:
+            path = os.path.join(directory, file)
+            if os.path.isfile(path):
+                self.add_file(path)
+
         return self
