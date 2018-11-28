@@ -47,7 +47,7 @@ class DLHubClient:
         serv = df_tmp[df_tmp.name == name]
         return serv.iloc[0]['uuid']
 
-    def run(self, servable_id, inputs, input_type='python'):
+    def run(self, servable_id, inputs, input_type='json'):
         """Invoke a DLHub servable
 
         Args:
