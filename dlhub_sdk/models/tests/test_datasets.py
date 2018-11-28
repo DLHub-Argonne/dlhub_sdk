@@ -1,5 +1,5 @@
 from dlhub_sdk.models.datasets import Dataset, TabularDataset
-from dlhub_sdk import __version__
+from dlhub_sdk.version import __version__
 
 from datetime import datetime
 from tempfile import mkstemp

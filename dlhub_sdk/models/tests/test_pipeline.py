@@ -3,7 +3,7 @@ import unittest
 from dlhub_sdk.models.servables.python import PythonStaticMethodModel
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 from dlhub_sdk.models.pipeline import PipelineModel
-from dlhub_sdk import __version__
+from dlhub_sdk.version import __version__
 
 
 class TestPipeline(unittest.TestCase):
