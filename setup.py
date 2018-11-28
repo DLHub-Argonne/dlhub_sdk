@@ -1,8 +1,15 @@
+import os
 from setuptools import setup, find_packages
+
+# single source of truth for package version
+version_ns = {}
+with open(os.path.join("dlhub_sdk", "version.py")) as f:
+    exec(f.read(), version_ns)
+version = version_ns['__version__']
 
 setup(
     name='dlhub_sdk',
-    version='0.2.1',
+    version=version,
     packages=find_packages(),
     description='Python interface and utilities for DLHub',
     long_description=("DLHub SDK contains a Python interface to the Data "
