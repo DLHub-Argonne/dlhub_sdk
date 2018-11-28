@@ -3,12 +3,14 @@ from datetime import datetime
 from six import string_types
 from zipfile import ZipFile
 from glob import glob
+import json
 import uuid
 import sys
 import os
 import re
 
 from dlhub_sdk import __version__
+from dlhub_sdk.utils.schemas import codemeta_to_datacite
 
 name_re = re.compile(r'^\S+$')
 
@@ -83,6 +85,28 @@ class BaseMetadataModel:
         """
         
         return cls()
+
+    def read_codemeta_file(self, directory=None):
+        """Read in metadata from a codemeta.json file
+
+        Args:
+            directory (string): Path to directory contain the codemeta.json file
+                (default: current working directory)
+        """
+
+        # If no directory, use the current
+        if directory is None:
+            directory = os.getcwd()
+
+        # Load in the codemeta
+        with open(os.path.join(directory, 'codemeta.json')) as fp:
+            codemeta = json.load(fp)
+
+        # Convert it to datacite and store it
+        datacite = codemeta_to_datacite(codemeta)
+        self._output["datacite"].update(datacite)
+
+        return self
 
     def set_authors(self, authors, affiliations=list()):
         """Add authors to a dataset
