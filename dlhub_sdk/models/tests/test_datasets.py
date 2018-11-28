@@ -201,5 +201,10 @@ class TestModels(unittest.TestCase):
         m.annotate_column("x", "description")
         self.assertEqual(["y"], m.get_unannotated_columns())
 
+    def test_codemeta(self):
+        m = TabularDataset()
+        m.read_codemeta_file()
+        validate_against_dlhub_schema(m['datacite'], 'datacite-v4.1')
+
 if __name__ == "__main__":
     unittest.main()
