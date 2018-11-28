@@ -22,7 +22,6 @@ __all__ = (
 )
 
 # The path to read and write servable definitions.
-DLHUB_DIRECTORY_PATH = '.dlhub'
 DLHUB_URL = "https://dlhub.org/"
 DLHUB_SERVICE_ADDRESS = "https://api.dlhub.org/api/v1"
 
@@ -124,15 +123,6 @@ def check_logged_in():
     native_client = internal_auth_client()
     res = native_client.oauth2_validate_token(search_rt)
     return res['active']
-
-
-def get_dlhub_directory():
-    """
-    Standardize the dlhub directory path for each command.
-
-    :return str: path to the directory
-    """
-    return DLHUB_DIRECTORY_PATH
 
 def safeprint(s):
     """
