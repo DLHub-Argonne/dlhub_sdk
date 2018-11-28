@@ -61,15 +61,21 @@ class DLHubClient:
         serv = df_tmp[df_tmp.name == name]
         return serv.iloc[0]['uuid']
 
-    def describe_servable(self, servable_id):
+    def describe_servable(self, servable_id=None, servable_name=None):
         """Get a list of the servables available in the service
         Args:
             servable_id (string): ID of the servable
+            servable_name (string): Name of the servable
         Returns:
-            (pd.DataFrame) Summary of all the models available in the service
+            (pd.DataFrame) Summary of the servable
         """
+
         df_tmp = self._get_servables()
-        serv = df_tmp[df_tmp.uuid == servable_id]
+        serv = pd.DataFrame({})
+        if servable_id:
+            serv = df_tmp[df_tmp.uuid == servable_id]
+        elif servable_name:
+            serv = df_tmp[df_tmp.name == servable_name]
         return serv.iloc[0]
 
     def run(self, servable_id, data):
