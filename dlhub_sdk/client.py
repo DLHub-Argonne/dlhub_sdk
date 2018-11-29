@@ -58,7 +58,7 @@ class DLHubClient:
             (pd.DataFrame) Summary of all the models available in the service
         """
         df_tmp = self._get_servables()
-        return df_tmp['name']
+        return df_tmp[['name', 'uuid']]
 
     def get_id_by_name(self, name):
         """Get the ID of a DLHub servable by name
