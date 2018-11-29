@@ -84,6 +84,7 @@ class DLHubClient:
 
         df_tmp = self._get_servables()
         serv = pd.DataFrame({})
+        df_tmp = df_tmp[['name', 'uuid', 'description', 'input', 'output', 'author','status']]
         if servable_id:
             serv = df_tmp[df_tmp.uuid == servable_id]
         elif servable_name:
