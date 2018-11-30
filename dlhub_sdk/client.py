@@ -73,6 +73,19 @@ class DLHubClient:
         serv = df_tmp[df_tmp.name == name]
         return serv.iloc[0]['uuid']
 
+    def get_task_status(self, task_id):
+        """Get the status of a DLHub task.
+
+        Args:
+            task_id (string): UUID of the task
+        Returns:
+            (dict) status block containing "status" key.
+        """
+
+        r = requests.get("{service}/{task_id}/status".format(
+            service=DLHUB_SERVICE_ADDRESS, task_id=task_id), timeout=self.timeout)
+        return r.json()
+
     def describe_servable(self, servable_id=None, servable_name=None):
         """Get a list of the servables available in the service
         Args:
