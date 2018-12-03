@@ -1,7 +1,7 @@
 # DLHub SDK
 [![Build Status](https://travis-ci.org/DLHub-Argonne/dlhub_sdk.svg?branch=master)](https://travis-ci.org/DLHub-Argonne/dlhub_sdk)[![Coverage Status](https://coveralls.io/repos/github/DLHub-Argonne/dlhub_sdk/badge.svg?branch=master)](https://coveralls.io/github/DLHub-Argonne/dlhub_sdk?branch=master)[![PyPI version](https://badge.fury.io/py/dlhub-sdk.svg)](https://badge.fury.io/py/dlhub-sdk)[![Documentation Status](https://readthedocs.org/projects/dlhub-sdk/badge/?version=latest)](https://dlhub-sdk.readthedocs.io/en/latest/?badge=latest)
 
-DLHub SDK contains a Python interface to the Data and Learning Hub for Science (DLHub). 
+DLHub SDK contains a Python interface to [the Data and Learning Hub for Science (DLHub)](https://www.dlhub.org). 
 These interfaces include functions for quickly describing a model in the correct schema for DLHub, and discovering or using models that other scientists have published.
 
 ## Installation
@@ -374,3 +374,8 @@ print('Model published to DLHub. ID:', model.dlhub_id)
 ```
 
 When you call this script, the DLHub client will assign your model a unique identifier and the model will soon be available for you to use via DLHub.
+
+
+#### Project Support
+This material is based upon work supported by Laboratory Directed Research and Development (LDRD) funding from Argonne National Laboratory, provided by the Director, Office of Science, of the U.S. Department of Energy under Contract No. DE-AC02-06CH11357.
+
