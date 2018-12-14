@@ -8,6 +8,7 @@ import pickle as pkl
 import pandas as pd
 import globus_sdk
 import platform
+import botocore
 import requests
 import codecs
 import boto3
@@ -158,13 +159,16 @@ class DLHubClient:
         # Get the metadata
         metadata = model.to_dict(simplify_paths=True)
 
-        # Validate against the servable schema
-        validate_against_dlhub_schema(metadata, 'servable')
-
         # Stage data for DLHub to access
         staged_path = self._stage_data(model)
+        if not staged_path:
+            return
+        
         # Mark the method used to submit the model
         metadata['dlhub']['transfer_method'] = {'S3': staged_path}
+
+        # Validate against the servable schema
+        validate_against_dlhub_schema(metadata, 'servable')
 
         # Publish to DLHub
         response = requests.post('{service}/publish'.format(service=DLHUB_SERVICE_ADDRESS),
@@ -223,6 +227,9 @@ class DLHubClient:
                                                        Body=open(zip_filename, 'rb'))
             staged_path = os.path.join("s3://", bucket_name, dest_dir, dest_uuid)
             return staged_path
+        except botocore.exceptions.NoCredentialsError as e:
+            print("Failed to load AWS credentials. Please check they are configured with 'aws configure'.")
+            return None
         except Exception as e:
             print("Publication error: {}".format(e))
         finally:
