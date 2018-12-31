@@ -18,6 +18,7 @@ Source Code: https://github.com/DLHub-Argonne/dlhub_cli
    :caption: Contents:
 
    quickstart
+   model_publication
    source/modules
 
 
