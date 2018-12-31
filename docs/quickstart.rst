@@ -17,16 +17,16 @@ Installation using Pip
 ^^^^^^^^^^^^^^^^^^^^^^
 
 While ``pip`` and ``pip3`` can be used to install the CLI we suggest the following approach
-for reliable installation when many Python environments are avaialble.::
+for reliable installation when many Python environments are available.::
 
      $ python3 -m pip install dlhub_sdk
 
-     (to update a previously installed parsl to a newer version, use: python3 -m pip install -U dlhub_sdk)
+ To update a previously installed dlhub_sdk to a newer version, use: ``python3 -m pip install -U dlhub_sdk)``
 
 
 Installation using Conda
 ^^^^^^^^^^^^^^^^^^^^^^^^
-1. Install Conda and setup python3.6 following the instructions `here <https://conda.io/docs/user-guide/install/macos.html>`_::
+1. Install Conda and setup python3.6 following the instructions `here <https://conda.io/docs/user-guide/install>`_::
 
      $ conda create --name dlhub_py36 python=3.6
      $ source activate dlhub_py36
@@ -35,7 +35,7 @@ Installation using Conda
 
      $ python3 -m pip install dlhub_sdk
 
-     (to update a previously installed the cli to a newer version, use: python3 -m pip install -U dlhub_sdk)
+     (to update a previously installed DLHub SDK to a newer version, use: python3 -m pip install -U dlhub_sdk)
 
 For Developers
 --------------
