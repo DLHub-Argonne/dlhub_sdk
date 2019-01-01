@@ -105,7 +105,7 @@ Describing the Model
 
 DLHub currently supports several different deep learning frameworks and other types of servable models:
 
-- Generic Python Functions
+- `Generic Python Functions <servable-type/python.html>`_
 - Tensorflow
 - Keras
 - Scikit-Learn

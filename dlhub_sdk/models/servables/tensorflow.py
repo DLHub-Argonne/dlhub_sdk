@@ -1,5 +1,5 @@
 from dlhub_sdk.utils.types import compose_argument_block, simplify_numpy_dtype
-from . import BaseServableModel
+from dlhub_sdk.models.servables import BaseServableModel
 import tensorflow as tf
 import numpy as np
 

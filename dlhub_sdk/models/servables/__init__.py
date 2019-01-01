@@ -92,7 +92,7 @@ class BaseServableModel(BaseMetadataModel):
         Args:
             library (string): Name of library
             version (string): Required version. 'latest' to use the most recent version on PyPi (if
-            available). 'detect' will attempt to find the version of the library installed on
+                available). 'detect' will attempt to find the version of the library installed on
                 the computer running this software. Default is ``None``
         """
 

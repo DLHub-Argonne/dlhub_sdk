@@ -1,3 +1,5 @@
+"""This module contains tools for describing objects being published to DLHub."""
+
 from itertools import zip_longest
 from datetime import datetime
 from six import string_types
@@ -21,7 +23,7 @@ class BaseMetadataModel:
     Covers information that goes in the :code:`datacite` block of the metadata file and
     some of the DLHub block.
 
-    ## Using a MetadataModel
+    --> Using a MetadataModel <--
 
     There are many kinds of MetadataModel classes that each describe a different kind of object.
     Each of these different types are created using the :code:`create_model` operation
