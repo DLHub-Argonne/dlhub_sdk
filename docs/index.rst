@@ -18,10 +18,10 @@ Source Code: https://github.com/DLHub-Argonne/dlhub_cli
    :caption: Contents:
 
    quickstart
-   model_publication
+   model-publication
+   servable-types
+   argument-types
    source/modules
-
-
 
 
 Indices and tables
