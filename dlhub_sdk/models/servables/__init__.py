@@ -86,13 +86,14 @@ class BaseServableModel(BaseMetadataModel):
     def add_requirement(self, library, version=None):
         """Add a required Python library.
 
-        The name of the library should be either the name on PyPI, or a link to the
+        The name of the library should be either the name on PyPI, or a URL for the git repository
+        holding the code (e.g., ``git+https://github.com/DLHub-Argonne/dlhub_sdk.git``)
 
         Args:
             library (string): Name of library
             version (string): Required version. 'latest' to use the most recent version on PyPi (if
             available). 'detect' will attempt to find the version of the library installed on
-                the computer running this software.
+                the computer running this software. Default is ``None``
         """
 
         # Attempt to determine the version automatically

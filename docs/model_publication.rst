@@ -53,22 +53,62 @@ Both libraries are on PyPi, so you can install them with::
 The first step in the model submission process is to autheticate with dlhub: :code:`dlhub login`
 
 Next, call :code:`dlhub init` in the directory to generate a template for describing the model.
-The template is a Python script named `describe_model.py`, which contains instructions for how to provide the metadata
+The template is a Python script named ``describe_model.py``, which contains instructions for how to provide the metadata
 for your model.
 
 Step 2: Describing a Model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The template file created in Step 1 provides a framework for describing how to use your machine learning model.
-The provenance information (e.g., "who made this model?", "why?") is the same for all types of models.
+The provenance information (e.g., "who made this model?", "why?") and computational environment are the same for all types of models.
 Where the description part differs is in how to specify how to run the models.
+
+Describing the Computational Environment
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+There are two routes for specifying environment: defining Python libraries or using ``repo2docker``.
+
+Basic Route: Specifying Python Libraries
+++++++++++++++++++++++++++++++++++++++++
+
+The computational environment for many models can be defined by only the required Python packages.
+If this is true for your model, edit the ``describe_model.py`` file to include these requirements::
+
+    # Add a specific requirement without version information
+    model.add_requirement('library')
+
+    # Autodetect the version installed on your environment
+    model.add_requirement('library', 'detect')
+
+    # Get the latest version on PyPI
+    model.add_requirement('library', 'latest')
+
+    # Get a specific version
+    model.add_requirement('library', '1.0.0b')
+
+Advanced: Using ``repo2docker``
++++++++++++++++++++++++++++++++
+
+DLHub uses the configuration files specified by `repo2docker <https://repo2docker.readthedocs.io>`_ to define a complicated computational environment.
+We refer you to the `documentation for repo2docker <https://repo2docker.readthedocs.io/en/latest/config_files.html>`_ to
+learn how to create these configuration files.
+Once you have created the files, edit the ``describe_model.py`` to point to the directory containing the files::
+
+    # Include repo2docker files in current directory
+    model.parse_repo2docker_configuration()
+
+    # Include repo2docker files in a different directory
+    model.parse_repo2docker_configuration('../another/path')
+
+Describing the Model
+^^^^^^^^^^^^^^^^^^^^
 
 DLHub currently supports several different deep learning frameworks and other types of servable models:
 
+- Generic Python Functions
 - Tensorflow
 - Keras
 - Scikit-Learn
-- Generic Python Functions
 
 Follow the instructions for describing each of these model types.
 Once finished, the ``dlhub.json`` file created by your model will have all the information needed by DLHub to run your model
@@ -76,4 +116,54 @@ Once finished, the ``dlhub.json`` file created by your model will have all the i
 Step 3: Submitting the Model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-TBD: Currently overhauling the model submission process
+There are several routes for submitting a model to DLHub.
+
+Recommended: Publishing Model to Git Repository
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Our recommended route for submitting models to DLHub is to first publish the model on a publicly-accessible git repository.
+You will need to add the ``dlhub.json`` file to your git repository along with all files mentioned in that model description.
+The weights for a model can occasionally be large enough to cause performance issues with git and, in those cases, we
+recommend using `git-lfs <https://git-lfs.github.com/>`_ to publish those files.
+For files that are surpass the limits of GitHub and ``git-lfs`` to handle (~GBs), consider `using Globus to submit the models <#send-data-via-globus>`_.
+
+After publishing all associated file to GitHub, use the DLHub CLI to request DLHub imports a model from GitHub::
+
+    # Publish from the root folder of a git repository
+    $ dlhub publish --repository https://github.com/ryanchard/dlhub_publish_example
+
+    # Publish from another path within of a git repository
+    $ dlhub publish --repository https://github.com/ryanchard/dlhub_publish_example another/path
+
+*Note: Publication from a non-root directory is still under development*
+
+Publication via Direct Upload
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+*Note: This feature is under development*
+
+It is also possible to submit models directly from your computer to DLHub via HTTP::
+
+    $ dlhub publish --local
+
+This route is recommend for models you do not want to share publicly and have small file sizes.
+
+Send Data via Globus
+^^^^^^^^^^^^^^^^^^^^
+
+*Note: This feature is under development*
+
+`Globus Transfer <https://www.globus.org/>`_ is our preferred route for publishing models with larger numbers or sizes of files.
+If you are transfering data from your personal computer or a small research cluster, you may need to first
+`install a Globus endpoint <https://www.globus.org/globus-connect>`_ on your system.
+If you are transferring data directly from a high-performance computing center, Globus may already be configured and
+available for use.
+In either case, you may need to determine the endpoint ID of the system holding your data (see
+`Endpoint Management on Globus.org <https://app.globus.org/endpoints>`_).
+Once you determine the endpoint, submit your data via Globus using the CLI::
+
+    $ dlhub publish --globus --endpoint <your endpoint ID>
+
+Alternatively, you can allow the CLI to attempt to determine the endpoint ID::
+
+    $ dlhub publish --globus
