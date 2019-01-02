@@ -31,7 +31,7 @@ def simplify_numpy_dtype(dtype):
 
 
 def compose_argument_block(data_type, description, shape=(), item_type=None,
-                           python_type=None, properties=None, **kwargs):
+                           python_type=None, properties=None, element_types=None, **kwargs):
     """Compile a list of argument descriptions into an argument_type block
 
     Args:
@@ -43,6 +43,8 @@ def compose_argument_block(data_type, description, shape=(), item_type=None,
             Can either be a string type, or a dict that is a valid type for an argument type block
         python_type (string): Full path of a Python object type (e.g., :code:`pymatgen.core.Compostion`)
         properties (dict): Descriptions of the types in a dictionary
+        element_types ([dict] or [list]): Types of elements in a tuple. List of type definition
+            dictionaries or types as strings.
     Keyword Arguments: Any other details particular to this kind of data
     Returns:
         (dict) Description of method in a form compatible with DLHub
@@ -64,6 +66,11 @@ def compose_argument_block(data_type, description, shape=(), item_type=None,
         if item_type is None:
             raise ValueError('Item type must be defined for lists')
 
+    # Check if the element_type need be defined
+    if data_type == "tuple":
+        if element_types is None:
+            raise ValueError('Element type must be defined for tuples')
+
     # If the type is "python object", python_type must be specified
     if data_type == "python object":
         if python_type is None:
@@ -82,8 +89,10 @@ def compose_argument_block(data_type, description, shape=(), item_type=None,
             args['item_type'] = item_type
         elif isinstance(item_type, string_types):  # Is a string
             args['item_type'] = {'type': item_type}
-        else:  # Third option is a list
-            args['item_type'] = list(item_type)
+
+    # Define the types of tuples
+    if element_types is not None:
+        args['element_types'] = list(element_types)
 
     # Add in any kwargs
     args.update(**kwargs)

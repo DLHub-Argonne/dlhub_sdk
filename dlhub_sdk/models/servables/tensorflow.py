@@ -54,8 +54,8 @@ def _read_tf_inputs_and_outputs(arg_def):
     #   First sort arguments by description, to ensure a deterministic order to them between runs
     dlhub_arg_defs, node_names = zip(*sorted(zip(dlhub_arg_defs, node_names),
                                              key=lambda x: x[0]['description']))
-    return compose_argument_block('list', 'Arguments', shape=[len(dlhub_arg_defs)],
-                                  item_type=dlhub_arg_defs), list(node_names)
+    return compose_argument_block('tuple', 'Arguments', shape=[len(dlhub_arg_defs)],
+                                  element_types=dlhub_arg_defs), list(node_names)
 
 
 class TensorFlowModel(BaseServableModel):

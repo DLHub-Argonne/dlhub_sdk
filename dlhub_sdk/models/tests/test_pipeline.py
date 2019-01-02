@@ -4,6 +4,10 @@ from dlhub_sdk.models.servables.python import PythonStaticMethodModel
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 from dlhub_sdk.models.pipeline import PipelineModel
 from dlhub_sdk.version import __version__
+from datetime import datetime
+
+
+_year = str(datetime.now().year)
 
 
 class TestPipeline(unittest.TestCase):
@@ -28,7 +32,7 @@ class TestPipeline(unittest.TestCase):
         metadata = pipeline.to_dict()
         self.assertEqual(metadata,
             {'datacite': {'creators': [], 'titles': [{'title': 'Average of Column Maximums'}],
-                          'publisher': 'DLHub', 'publicationYear': '2018',
+                          'publisher': 'DLHub', 'publicationYear': _year,
                           'identifier': {'identifier': '10.YET/UNASSIGNED',
                                          'identifierType': 'DOI'},
                           'resourceType': {'resourceTypeGeneral': 'InteractiveResource'},

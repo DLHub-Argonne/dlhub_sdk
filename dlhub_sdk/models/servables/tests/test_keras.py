@@ -6,10 +6,12 @@ from keras.models import Sequential, Model
 from keras.layers import Dense, Input
 from h5py import __version__ as h5py_version
 from unittest import TestCase
+from datetime import datetime
 from tempfile import mkdtemp
 import shutil
 import os
 
+_year = str(datetime.now().year)
 
 class TestKeras(TestCase):
 
@@ -36,7 +38,7 @@ class TestKeras(TestCase):
             output = metadata.to_dict()
             self.assertEqual(output, {
                 "datacite": {"creators": [], "titles": [{"title": "Keras Test"}],
-                             "publisher": "DLHub", "publicationYear": "2018",
+                             "publisher": "DLHub", "publicationYear": _year,
                              "identifier": {"identifier": "10.YET/UNASSIGNED",
                                             "identifierType": "DOI"},
                              "resourceType": {"resourceTypeGeneral": "InteractiveResource"},
@@ -103,9 +105,9 @@ _________________________________________________________________
             metadata.set_name('mlp')
 
             self.assertEqual(metadata['servable']['methods']['run']['output'],
-                             {'type': 'list',
-                              'description': 'List of tensors',
-                              'item_type': [
+                             {'type': 'tuple',
+                              'description': 'Tuple of tensors',
+                              'element_types': [
                                   {'type': 'ndarray', 'description': 'Tensor', 'shape': [None, 1]},
                                   {'type': 'ndarray', 'description': 'Tensor', 'shape': [None, 2]}
                               ]})

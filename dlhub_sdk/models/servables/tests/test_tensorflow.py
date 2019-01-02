@@ -102,8 +102,8 @@ class TestTensorflow(TestCase):
                                  'method_details': {'input_nodes': ['Input:0'],
                                                     'output_nodes': ['Sum:0']}
                              }, 'scalar_multiply': {
-                                 'input': {'type': 'list', 'description': 'Arguments',
-                                           'item_type': [
+                                 'input': {'type': 'tuple', 'description': 'Arguments',
+                                           'element_types': [
                                                {'type': 'ndarray', 'description': 'x',
                                                 'shape': [None, 3], 'item_type': {'type': 'float'}},
                                                {'type': 'float', 'description': 'z'}
