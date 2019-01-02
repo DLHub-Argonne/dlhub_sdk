@@ -154,7 +154,7 @@ class DLHubClient:
 
         # If unassigned, give the model a UUID
         if model.dlhub_id is None:
-            model.assign_uuid()
+            model.assign_dlhub_id()
 
         # Get the metadata
         metadata = model.to_dict(simplify_paths=True)
