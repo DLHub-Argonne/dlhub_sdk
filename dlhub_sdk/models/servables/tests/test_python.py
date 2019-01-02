@@ -12,7 +12,6 @@ import math
 import os
 
 
-
 _year = str(datetime.now().year)
 
 

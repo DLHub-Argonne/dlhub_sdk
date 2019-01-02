@@ -37,6 +37,7 @@ class KerasModel(BasePythonServableModel):
 
         # Get a full description of the model
         output.summary = ""
+
         def capture_summary(x):
             output.summary += x + "\n"
         model.summary(print_fn=capture_summary)
@@ -59,8 +60,8 @@ class KerasModel(BasePythonServableModel):
         if isinstance(layers, tuple):
             return compose_argument_block("ndarray", "Tensor", shape=list(layers))
         else:
-            return compose_argument_block("list", "List of tensors",
-                                          item_type=[self.format_layer_spec(i) for i in layers])
+            return compose_argument_block("tuple", "Tuple of tensors",
+                                          element_types=[self.format_layer_spec(i) for i in layers])
 
     def _get_handler(self):
         return "keras.KerasServable"
