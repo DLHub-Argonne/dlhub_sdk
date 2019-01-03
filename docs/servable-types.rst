@@ -90,3 +90,56 @@ of files required by DLHub::
 
     model.add_file('example.py')
 
+Keras Models
+------------
+
+**Model Class**: `KerasModel <source/dlhub_sdk.models.servables.html#dlhub_sdk.models.servables.keras.KerasModel>`_
+
+DLHub serves Keras models using the HDF5 file saved using the ``Model.save`` function.
+(see `Keras FAQs <https://keras.io/getting-started/faq/#savingloading-whole-models-architecture-weights-optimizer-state>`_).
+As an example, the description for a Keras model created using:
+
+.. code-block:: python
+
+    model = Sequential()
+    model.add(Dense(16, input_shape=(1,), activation='relu', name='hidden'))
+    model.add(Dense(1, name='output'))
+    model.compile(optimizer='rmsprop', loss='mse')
+    model.fit(X, y)
+    model.save('model.h5')
+
+can be created from this model file and names for the output classes:
+
+.. code-block:: python
+
+    model info = KerasModel.create_model(model_path, ["y"])
+
+The DLHub SDK reads the architecture in the HDF5 file and determines the inputs
+and outputs automatically:
+
+.. code-block:: json
+
+    {
+      "methods": {
+        "run": {
+          "input": {
+            "type": "ndarray", "description": "Tensor", "shape": [null, 1]
+          },
+          "output": {
+            "type": "ndarray", "description": "Tensor", "shape": [null, 1]
+          },
+          "parameters": {},
+          "method_details": {
+            "method_name": "predict",
+            "classes": ["y"]
+          }
+        }
+      }
+    }
+
+We recommended changing the descriptions for the inputs and outputs from their
+default values::
+
+    model_info['servable']['methods']['run']['output']['description'] = 'Response'
+
+but the model is ready to be served without any modifications.
