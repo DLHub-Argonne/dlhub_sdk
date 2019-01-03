@@ -1,6 +1,3 @@
-import os
-
-from collections import OrderedDict
 import pandas as pd
 
 from dlhub_sdk.models import BaseMetadataModel
@@ -31,7 +28,7 @@ class TabularDataset(Dataset):
     column names with descriptions of the data provided.
     
     This class is compatible with any data format readable by the Pandas
-    library. See the list of `read functions in Pandas<https://pandas.pydata.org/pandas-docs/stable/io.html>`_"""
+    library. See the list of `read functions in Pandas <https://pandas.pydata.org/pandas-docs/stable/io.html>`_"""
 
     @classmethod
     def create_model(cls, path, format="csv", read_kwargs=None):
@@ -55,12 +52,12 @@ class TabularDataset(Dataset):
         """Load in a dataset to get some high-level descriptions of it
 
         Args:
-        path (string): Path to dataset
-        format (string): Format of the dataset. We support all of the 
-            read operations of Pandas (e.g., read_csv). Provide the format
-            of your dataset as the suffix for the Pandas read command (e.g.,
-            "csv" for "read_csv").
-        **kwargs (dict): arguments for the Pandas read function
+            path (string): Path to dataset
+            format (string): Format of the dataset. We support all of the
+                read operations of Pandas (e.g., read_csv). Provide the format
+                of your dataset as the suffix for the Pandas read command (e.g.,
+                "csv" for "read_csv").
+            **kwargs (dict): arguments for the Pandas read function
         """
 
         # Add the data as the path of interest

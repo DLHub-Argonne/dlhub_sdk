@@ -151,7 +151,7 @@ class PythonStaticMethodModel(BasePythonServableModel):
 
         Args:
             f (object): A function pointer
-            autobatch (bool): Whether to run function on an interable of entries
+            autobatch (bool): Whether to run function on an iterable of entries
             function_kwargs (dict): Any default options for this function
         """
         return cls.create_model(f.__module__, f.__name__, autobatch, function_kwargs)

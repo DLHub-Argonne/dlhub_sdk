@@ -7,7 +7,6 @@ Subpackages
 .. toctree::
 
     dlhub_sdk.models.servables
-    dlhub_sdk.models.tests
 
 Submodules
 ----------

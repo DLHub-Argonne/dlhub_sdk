@@ -1,5 +1,5 @@
 from dlhub_sdk.utils.types import compose_argument_block, simplify_numpy_dtype
-from . import BaseServableModel
+from dlhub_sdk.models.servables import BaseServableModel
 import tensorflow as tf
 import numpy as np
 
@@ -109,8 +109,10 @@ class TensorFlowModel(BaseServableModel):
 
         # Check if there is a run method
         if 'run' not in output['servable']['methods']:
-            raise ValueError('There is no default servable for this model.'
-                             ' DLHub currently requires ones')
+            raise ValueError('There is no default servable for this model.\n'
+                             ' Make sure to use '
+                             'tf.saved_model.signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY '
+                             'when saving model.')
 
         # Add tensorflow version and files
         output.add_requirement('tensorflow', tf.__version__)
