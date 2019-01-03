@@ -18,7 +18,7 @@ Source Code: https://github.com/DLHub-Argonne/dlhub_cli
    :caption: Contents:
 
    quickstart
-   model-publication
+   servable-publication
    servable-types
    argument-types
    source/modules
