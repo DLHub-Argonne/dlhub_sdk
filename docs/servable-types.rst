@@ -1,20 +1,20 @@
 Servable Types
 ==============
 
-DLHub supports many different types of machine learning models and functions.
-This part of the guide documents how to describe each of these types of servables for publication in DLHub.
+DLHub can serve many different kinds of functions and machine learning models.
+Each type of servable has a different tool (a "Model Class") that will aid you
+in collecting the data needed to run the servable.
+Here, we detail the types of servables available in DLHub and how to describe them.
 
 Python Functions
 ----------------
 
-While there are specialized routes for publishing different types of deep learning models, it is possible to publish
-any Python function as a servable in DLHub.
-We break Python functions into two distinct classifications that each have different metadata requirements:
-static functions and class methods.
-Static functions involve calling functions that are members of Python modules and class methods involve calling
+It is possible to publish any Python function as a servable in DLHub.
+DLHub currently supports two types of Python functions: static functions and class methods.
+Static functions call members of Python modules and class methods involve calling
 a function of a specific Python object.
-Using ``numpy`` as an example, ``numpy.sum(x)`` involves calling a static method of the ``numpy`` module and
-``x.sum()`` calls the ``sum`` method of the ``ndarray`` ``x``.
+Using ``numpy`` as an example, ``numpy.sum(x)`` involves calling a *static function* of the ``numpy`` module and
+``x.sum()`` calls the ``sum`` *class method* of the ``ndarray`` ``x``.
 
 
 Python Static Functions
@@ -29,12 +29,9 @@ As an example, documenting the ``max`` function from ``numpy`` would start with:
     model = PythonStaticMethodModel.create_model('numpy', 'max', autobatch=False,
                                                          function_kwargs={'axis': 0})
 
-The first two arguments define the module and function name, and are followed by further documentation for how the command is executed.
-``autobatch=True`` is a special feature of DLHub that automatically runs the function on each member of a list, which
-we do not use in this example.
-``function_kwargs`` defines the default keyword arguments for the function.
-Here, we define the ``axis`` keyword argument to have a default value of ``0``.
-Note that DLHub will allow this default value to be overridden when running the function later.
+The first arguments define the module and function name, and are followed by how the command is executed.
+``autobatch=True`` would tell DLHub to run the function on each member of a list.
+``function_kwargs`` defines the default keyword arguments for the function (in our case, ``axis=0``)
 
 The next step is to define the arguments to the function::
 
@@ -48,12 +45,11 @@ See `Argument Types <argument-types.html>`_ for a complete listing of argument t
 Using Static Functions to Create Special Interfaces
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We commonly find that some servables required a specialized interface to make the software servable via DLHub.
-There may be some preprocessing of the input before it is sent to a function or the Tensorflow environment
-needs to be reset before invoking the model.
+Some servables required a specialized interface to make the software servable via DLHub.
+For example, some preprocessing of the input may need to occur before execution.
 
-For these cases, we have adopted a pattern of defining this interface as a special function in file named ``app.py`` and
-creating a Python static method servable for that function.
+For these cases, we define a static function in file named ``app.py`` and
+create a Python servable for that interface function.
 
 See our interface to ``SchNet`` as an example: `link <https://github.com/DLHub-Argonne/dlhub_containers/tree/master/schnet>`_.
 
@@ -63,8 +59,8 @@ Python Class Method
 **Model Class**: `PythonClassMethodModel <source/dlhub_sdk.models.servables.html#dlhub_sdk.models.servables.python.PythonClassMethodModel>`_
 
 Python class methods are functions associated with a specific Python object.
-To serve these types of methods, DLHub needs both the file containing the object itself and the information about the function.
-As an example, consider we create a Python object using the following code::
+DLHub needs both the file containing the object itself and documentation for the function.
+As an example, consider a Python object using the following code::
 
     class ExampleClass:
         def __init__(self, a):
@@ -81,11 +77,11 @@ The code to serve function ``f`` would be::
     model.set_inputs('float', 'Input value')
     model.set_outputs('float', 'Output value')
 
-We define the file containing the serialized object (``pickle.pkl``), the name of the function to be run, and
-the types of the inputs and outputs.
-The syntax for defining the inputs and outputs is the same as the static functions.
+This code defines the file containing the serialized object (``pickle.pkl``),
+the name of the function to be run, and the types of the inputs and outputs.
+Note that the syntax for defining inputs and outputs is the same as the static functions.
 
-For this example, we would need to include a module defining ``ExampleClass`` in the required libraries::
+For this example, it is necessary to include a module defining ``ExampleClass`` in the required libraries::
 
     model.add_requirement('fake_module_with_exampleclass_on_pypi')
 
@@ -93,3 +89,4 @@ or adding the code that defines the class to a seperate file (e.g., ``example.py
 of files required by DLHub::
 
     model.add_file('example.py')
+
