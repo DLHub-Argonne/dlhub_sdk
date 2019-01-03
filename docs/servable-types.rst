@@ -143,3 +143,72 @@ default values::
     model_info['servable']['methods']['run']['output']['description'] = 'Response'
 
 but the model is ready to be served without any modifications.
+
+TensorFlow Graphs
+-----------------
+
+DLHub uses the same information as `TensorFlow Serving <https://www.tensorflow.org/serving/>`_ for
+serving a TensorFlow model.
+Accordingly, you must save your model using the ``SavedModelBuilder`` as described
+in the `TensorFlow Serving documentation <https://www.tensorflow.org/serving/serving_basic>`_.
+As an example, consider a :math:`y = x + 1` defined and saved using::
+
+
+    # Create the graph
+    with tf.Session() as sess:
+        x = tf.placeholder('float', shape=(None, 3), name='Input')
+        y = x + 1
+
+        # Prepare to save the function
+        builder = tf.saved_model.builder.SavedModelBuilder('./export')
+
+        #  Make descriptions for the inputs and outputs
+        x_desc = tf.saved_model.utils.build_tensor_info(x)
+        y_desc = tf.saved_model.utils.build_tensor_info(y)
+
+        # Create a function signature
+        func_sig = tf.saved_model.signature_def_utils.build_signature_def(
+            inputs={'x': x_desc},
+            outputs={'y': y_desc},
+            method_name='run'
+        )
+
+        # Add the session, graph, and function signature to the saved model
+        builder.add_meta_graph_and_variables(
+            sess, [tf.saved_model.tag_constants.SERVING],
+            signature_def_map={
+                tf.saved_model.signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY: func_sig
+            }
+        )
+
+        # Write the files
+        builder.save()
+
+The DLHub SDK reads the ``./export`` directory written by this code::
+
+    metadata = TensorFlowModel.create_model("./export")
+
+to generate metadata describing which functions were saved:
+
+.. code-block:: json
+
+    {
+      "methods": {
+        "run": {
+          "input": {
+            "type": "ndarray", "description": "x", "shape": [null, 3]
+          },
+          "output": {
+            "type": "ndarray", "description": "y", "shape": [null, 3]
+          },
+          "parameters": {},
+          "method_details": {
+            "input_nodes": ["Input:0"],
+            "output_nodes": ["add:0"]
+          }
+        }
+      }
+    }
+
+DLHub supports multiple functions to be defined this way for the same ``SavedModel``
+servable, but requires one function is marked with ``DEFAULT_SERVING_SIGNATURE_DEF_KEY``.
