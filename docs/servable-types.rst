@@ -95,7 +95,7 @@ Keras Models
 
 **Model Class**: `KerasModel <source/dlhub_sdk.models.servables.html#dlhub_sdk.models.servables.keras.KerasModel>`_
 
-DLHub serves Keras models using the HDF5 file saved using the ``Model.save`` function.
+DLHub serves Keras models using the HDF5 file saved using the ``Model.save`` function
 (see `Keras FAQs <https://keras.io/getting-started/faq/#savingloading-whole-models-architecture-weights-optimizer-state>`_).
 As an example, the description for a Keras model created using:
 
@@ -112,7 +112,7 @@ can be created from this model file and names for the output classes:
 
 .. code-block:: python
 
-    model info = KerasModel.create_model(model_path, ["y"])
+    model info = KerasModel.create_model('model.h5', ["y"])
 
 The DLHub SDK reads the architecture in the HDF5 file and determines the inputs
 and outputs automatically:
@@ -144,14 +144,18 @@ default values::
 
 but the model is ready to be served without any modifications.
 
+The SDK also determines the version of Keras on your system, and saves that in the requirements.
+
 TensorFlow Graphs
 -----------------
+
+**Model Class**: `TensorFlowModel <source/dlhub_sdk.models.servables.html#dlhub_sdk.models.servables.tensorflow.TensorFlowModel>`_
 
 DLHub uses the same information as `TensorFlow Serving <https://www.tensorflow.org/serving/>`_ for
 serving a TensorFlow model.
 Accordingly, you must save your model using the ``SavedModelBuilder`` as described
 in the `TensorFlow Serving documentation <https://www.tensorflow.org/serving/serving_basic>`_.
-As an example, consider a :math:`y = x + 1` defined and saved using::
+As an example, consider a graph expressing :math:`y = x + 1`::
 
 
     # Create the graph
@@ -210,5 +214,51 @@ to generate metadata describing which functions were saved:
       }
     }
 
-DLHub supports multiple functions to be defined this way for the same ``SavedModel``
+DLHub supports multiple functions to be defined for the same ``SavedModel``
 servable, but requires one function is marked with ``DEFAULT_SERVING_SIGNATURE_DEF_KEY``.
+
+The SDK also determines the version of TensorFlow installed on your system,
+and lists it as a requirement.
+
+Scikit-Learn Models
+-------------------
+
+**Model Class**: `ScikitLearnModel <source/dlhub_sdk.models.servables.html#dlhub_sdk.models.servables.sklearn.ScikitLearnModel>`_
+
+DLHub supports scikit-learn models saved using either pickle or joblib.
+The saved models files do not always contain the number of input features
+for the model, so they need to provided along with the serialization method
+and, for classifiers, the class names::
+
+    # Loading SVC trained on the iris dataset
+    model_info = ScikitLearnModel.create_model('model.pkl', n_input_columns=4, classes=3)
+
+Given this information, the SDK generates documentation for how to invoke the model:
+
+.. code-block:: json
+
+    {
+      "methods": {
+        "run": {
+          "input": {
+            "type": "ndarray",
+            "shape": [null, 4],
+            "description": "List of records to evaluate with model. Each record is a list of 4 variables.",
+            "item_type": {"type": "float"}
+          },
+          "output": {
+            "type": "ndarray",
+            "shape": [null, 3],
+            "description": "Probabilities for membership in each of 3 classes",
+            "item_type": {"type": "float"}
+          },
+          "parameters": {},
+          "method_details": {
+            "method_name": "_predict_proba"
+          }
+        }
+      }
+    }
+
+The SDK will automatically document the type of model and extract the scikit-learn
+version used to save the model, which it includes in the requirements.
