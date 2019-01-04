@@ -13,7 +13,6 @@ import uuid
 import os
 
 
-# TODO: Make this inherit from BaseClient in globus_sdk
 class DLHubClient(BaseClient):
     """Main class for interacting with the DLHub service
 
@@ -64,9 +63,9 @@ class DLHubClient(BaseClient):
         Returns:
             (pd.DataFrame) Summary of all the models available in the service
         """
-        r = requests.get("{service}/servables".format(
-            service=DLHUB_SERVICE_ADDRESS), timeout=self._http_timeout)
-        return pd.DataFrame(r.json())
+
+        r = self.get("servables")
+        return pd.DataFrame(r.data)
 
     def get_servables(self):
         """Get all of the servables available in the service
@@ -111,8 +110,7 @@ class DLHubClient(BaseClient):
             (dict) status block containing "status" key.
         """
 
-        r = requests.get("{service}/{task_id}/status".format(
-            service=DLHUB_SERVICE_ADDRESS, task_id=task_id), timeout=self.timeout)
+        r = self.get("{task_id}/status".format(task_id=task_id))
         return r.json()
 
     def describe_servable(self, servable_id=None, servable_name=None):
@@ -145,7 +143,7 @@ class DLHubClient(BaseClient):
         Returns:
             Reply from the service
         """
-        servable_path = '{service}/servables/{servable_id}/run'.format(
+        servable_path = 'servables/{servable_id}/run'.format(
             service=DLHUB_SERVICE_ADDRESS, servable_id=servable_id)
 
         # Prepare the data to be sent to DLHub
@@ -159,12 +157,12 @@ class DLHubClient(BaseClient):
             raise ValueError('Input type not recognized: {}'.format(input_type))
 
         # Send the data to DLHub
-        r = requests.post(servable_path, json=data, timeout=self._http_timeout)
-        if r.status_code is not 200:
+        r = self.post(servable_path, json_body=data)
+        if r.http_status is not 200:
             raise Exception(r)
 
         # Return the result
-        return r.json()
+        return r.data
 
     def publish_servable(self, model):
         """Submit a servable to DLHub
@@ -199,8 +197,7 @@ class DLHubClient(BaseClient):
         validate_against_dlhub_schema(metadata, 'servable')
 
         # Publish to DLHub
-        response = requests.post('{service}/publish'.format(service=DLHUB_SERVICE_ADDRESS),
-                                 json=metadata, timeout=self.timeout)
+        response = self.post('publish', json_body=metadata)
 
         task_id = response.json()['task_id']
         return task_id
@@ -214,16 +211,9 @@ class DLHubClient(BaseClient):
             (string) Task ID of this submission, used for checking for success
         """
 
-
-        # Get the metadata
-        # metadata = model.to_dict(simplify_paths=True)
-        # Validate against the servable schema
-        # validate_against_dlhub_schema(metadata, 'servable')
-
         # Publish to DLHub
         metadata = {"repository": repository}
-        response = requests.post('{service}/publish_repo'.format(service=DLHUB_SERVICE_ADDRESS),
-                                 json=metadata, timeout=self.timeout)
+        response = self.post('publish_repo', json_body=metadata)
 
         task_id = response.json()['task_id']
         return task_id
