@@ -6,47 +6,46 @@ import pandas as pd
 
 class TestClient(TestCase):
 
+    def setUp(self):
+        self.dl = DLHubClient.login(http_timeout=10)
+
     def test_dlhub_init(self):
-        dl = DLHubClient()
-        self.assertIsInstance(dl, DLHubClient)
+        self.assertIsInstance(self.dl, DLHubClient)
 
     def test_get_servables(self):
-        dl = DLHubClient()
-        r = dl.get_servables()
+        r = self.dl.get_servables()
         self.assertIsInstance(r, pd.DataFrame)
         self.assertGreater(r.shape[-1], 0)
         self.assertNotEqual(r.shape[0], 0)
 
     def test_get_id_by_name(self):
-        dl = DLHubClient()
         name = "noop"
-        r = dl.get_id_by_name(name)
-        r2 = dl.get_servables()
+        r = self.dl.get_id_by_name(name)
+        r2 = self.dl.get_servables()
         true_val = r2["uuid"][r2["name"].tolist().index(name)]
         self.assertEqual(r, true_val)
 
         # Invalid name
         with self.assertRaises(IndexError):
-            dl.get_id_by_name("foo")
+            self.dl.get_id_by_name("foo")
 
     def test_run(self):
-        dl = DLHubClient(timeout=10)
         name = "noop"
         data = {"data": ["V", "Co", "Zr"]}
-        serv = dl.get_id_by_name(name)
+
+        # Test getting the name
+        serv = self.dl.get_id_by_name(name)
 
         # Test sending the data as JSON
-        res = dl.run(serv, data, input_type='json')
+        res = self.dl.run(serv, data, input_type='json')
         self.assertEqual({}, res)
 
         # Test sending the data as pickle
-        res = dl.run(serv, data, input_type='python')
+        res = self.dl.run(serv, data, input_type='python')
         self.assertEqual({}, res)
 
     @skip  # Do not yet have a "test" route for submitted objects
     def test_submit(self):
-        dl = DLHubClient()
-
         # TODO: Set the same UUID as the original test
 
         # Make an example function
@@ -57,4 +56,4 @@ class TestClient(TestCase):
         model.set_outputs('number', 'Norm of the array')
 
         # Submit the model
-        dl.publish_servable(model)
+        self.dl.publish_servable(model)

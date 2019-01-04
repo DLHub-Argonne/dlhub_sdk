@@ -46,7 +46,6 @@ if GLOBUS_ENV:
     }.get(GLOBUS_ENV, CLIENT_ID)
 
 
-
 def get_config_obj(file_error=False):
     path = os.path.expanduser("~/.globus.cfg")
 
