@@ -16,7 +16,14 @@ class DLHubClient(BaseClient):
     """Main class for interacting with the DLHub service
 
     Holds helper operations for performing common tasks with the DLHub service. For example,
-    `get_servables` produces a list of all servables registered with DLHub."""
+    `get_servables` produces a list of all servables registered with DLHub.
+
+    For most cases, we recommend creating a new DLHubClient by calling ``DLHubClient.login``.
+    This operation will check if you have saved any credentials to disk before using the CLI or SDK
+    and, if not, get new credentials and save them for later use.
+    For cases where disk access is unacceptable, you can create the client by creating an authorizer
+    following the `tutorial for the Globus SDK <https://globus-sdk-python.readthedocs.io/en/stable/tutorial/>_
+    and providing that authorizer to the initializer (e.g., ``DLHubClient(auth)``)"""
 
     def __init__(self, authorizer, http_timeout=None, **kwargs):
         """Initialize the client
@@ -85,20 +92,7 @@ class DLHubClient(BaseClient):
             (pd.DataFrame) Summary of all the models available in the service
         """
         df_tmp = self._get_servables()
-        return df_tmp[['name', 'uuid']]
-
-    def get_id_by_name(self, name):
-        """Get the ID of a DLHub servable by name
-
-        Args:
-            name (string): Name of the servable
-        Returns:
-            (string) UUID of the servable
-        """
-
-        df_tmp = self._get_servables()
-        serv = df_tmp[df_tmp.name == name]
-        return serv.iloc[0]['uuid']
+        return df_tmp[['name']]
 
     def get_task_status(self, task_id):
         """Get the status of a DLHub task.
@@ -112,29 +106,31 @@ class DLHubClient(BaseClient):
         r = self.get("{task_id}/status".format(task_id=task_id))
         return r.json()
 
-    def describe_servable(self, servable_id=None, servable_name=None):
+    def describe_servable(self, author, name):
         """Get a list of the servables available in the service
+
         Args:
-            servable_id (string): ID of the servable
-            servable_name (string): Name of the servable
+            author (string): Username of the owner of the servable
+            name (string): Name of the servable
         Returns:
             (pd.DataFrame) Summary of the servable
         """
 
         df_tmp = self._get_servables()
-        serv = pd.DataFrame({})
-        df_tmp = df_tmp[['name', 'uuid', 'description', 'input', 'output', 'author','status']]
-        if servable_id:
-            serv = df_tmp[df_tmp.uuid == servable_id]
-        elif servable_name:
-            serv = df_tmp[df_tmp.name == servable_name]
+
+        # Downselect to more useful information
+        df_tmp = df_tmp[['name', 'description', 'input', 'output', 'author', 'status']]
+
+        # Get the desired servable
+        serv = df_tmp.query('name={name} AND author={author}'.format(name=name, author=author))
         return serv.iloc[0]
 
-    def run(self, servable_id, inputs, input_type='json'):
+    def run(self, author, name, inputs, input_type='json'):
         """Invoke a DLHub servable
 
         Args:
-            servable_id (string): UUID of the servable
+            author (string): Username of the owner of a servable
+            name (string): Name of the servable
             inputs: Data to be used as input to the function. Can be a string of file paths or URLs
             input_type (string): How to send the data to DLHub. Can be "python" (which pickles
                 the data), "json" (which uses JSON to serialize the data), or "files" (which
@@ -142,8 +138,7 @@ class DLHubClient(BaseClient):
         Returns:
             Reply from the service
         """
-        servable_path = 'servables/{servable_id}/run'.format(
-            service=DLHUB_SERVICE_ADDRESS, servable_id=servable_id)
+        servable_path = 'servables/{author}/{name}/run'.format(author=author, name=name)
 
         # Prepare the data to be sent to DLHub
         if input_type == 'python':
@@ -177,10 +172,6 @@ class DLHubClient(BaseClient):
             (string) Task ID of this submission, used for checking for success
         """
 
-        # If unassigned, give the model a UUID
-        if model.dlhub_id is None:
-            model.assign_dlhub_id()
-
         # Get the metadata
         metadata = model.to_dict(simplify_paths=True)
 
@@ -198,7 +189,7 @@ class DLHubClient(BaseClient):
         # Publish to DLHub
         response = self.post('publish', json_body=metadata)
 
-        task_id = response.json()['task_id']
+        task_id = response.data['task_id']
         return task_id
 
     def publish_repository(self, repository):
@@ -214,7 +205,7 @@ class DLHubClient(BaseClient):
         metadata = {"repository": repository}
         response = self.post('publish_repo', json_body=metadata)
 
-        task_id = response.json()['task_id']
+        task_id = response.data['task_id']
         return task_id
 
     def _stage_data(self, servable):
