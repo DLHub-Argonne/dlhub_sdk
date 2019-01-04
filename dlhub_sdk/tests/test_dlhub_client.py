@@ -18,17 +18,6 @@ class TestClient(TestCase):
         self.assertGreater(r.shape[-1], 0)
         self.assertNotEqual(r.shape[0], 0)
 
-    def test_get_id_by_name(self):
-        name = "noop"
-        r = self.dl.get_id_by_name(name)
-        r2 = self.dl.get_servables()
-        true_val = r2["uuid"][r2["name"].tolist().index(name)]
-        self.assertEqual(r, true_val)
-
-        # Invalid name
-        with self.assertRaises(IndexError):
-            self.dl.get_id_by_name("foo")
-
     def test_run(self):
         name = "noop"
         data = {"data": ["V", "Co", "Zr"]}
