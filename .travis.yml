@@ -1,6 +1,7 @@
 language: python
 python:
   - "3.6"
+cache: pip
 env:
   - KERAS_VERSION=2.1.3
   - KERAS_VERSION=2.2.2
