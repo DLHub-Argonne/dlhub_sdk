@@ -6,7 +6,6 @@ from tempfile import mkstemp
 import pickle as pkl
 import pandas as pd
 import botocore
-import requests
 import codecs
 import boto3
 import uuid

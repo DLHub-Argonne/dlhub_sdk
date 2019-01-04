@@ -25,7 +25,7 @@ __all__ = (
 DLHUB_URL = "https://dlhub.org/"
 DLHUB_SERVICE_ADDRESS = "https://api.dlhub.org/api/v1"
 
-CONF_SECTION_NAME = 'dlhub-cli'
+CONF_SECTION_NAME = 'dlhub'
 
 CLIENT_ID = 'f47a891c-cfd0-443c-8db8-c72fb82fe3f7'
 DLHUB_RT_OPTNAME = 'dlhub_refresh_token'
