@@ -107,7 +107,8 @@ class DLHubClient(BaseClient):
         return r.json()
 
     def describe_servable(self, author, name):
-        """Get a list of the servables available in the service
+        """
+        Get the description for a certain servable
 
         Args:
             author (string): Username of the owner of the servable
