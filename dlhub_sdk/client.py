@@ -39,7 +39,7 @@ class DLHubClient(BaseClient):
                                           **kwargs)
 
     @classmethod
-    def login(cls, force=True, **kwargs):
+    def login(cls, force=False, **kwargs):
         """Create a DLHubClient with credentials
 
         Either uses the credentials already saved on the system or, if no credentials are present
@@ -54,7 +54,7 @@ class DLHubClient(BaseClient):
         """
 
         # If not logged in or `force`, get credentials
-        if not force and check_logged_in():
+        if force or not check_logged_in():
             # Asks for user credentials, saves the resulting Auth tokens to disk
             do_login_flow()
 
