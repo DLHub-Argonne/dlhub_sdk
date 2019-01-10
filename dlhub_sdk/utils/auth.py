@@ -21,11 +21,10 @@ def do_login_flow():
 
     label = platform.node() or None
 
-    # TODO: Change this to dlhub's scope.
-    SEARCH_ALL_SCOPE = 'urn:globus:auth:scope:search.api.globus.org:all'
+    DLHUB_SCOPE = 'https://auth.globus.org/scopes/81fc4156-a623-47f2-93ad-7184118226ba/auth'
 
     native_client.oauth2_start_flow(
-        requested_scopes=SEARCH_ALL_SCOPE,
+        requested_scopes=DLHUB_SCOPE,
         refresh_tokens=True, prefill_named_grant=label)
     linkprompt = 'Please log into Globus here'
     safeprint('{0}:\n{1}\n{2}\n{1}\n'
@@ -106,7 +105,7 @@ def _revoke_current_tokens(native_client):
     for token_opt in (DLHUB_RT_OPTNAME, DLHUB_AT_OPTNAME):
         token = lookup_option(token_opt)
         if token:
-            native_client.aotuh2_revoke_token(token)
+            native_client.oauth2_revoke_token(token)
 
 
 def _store_config(token_response):
@@ -117,11 +116,12 @@ def _store_config(token_response):
         token_response (OAuthTokenResponse): Response from a token request
     """
     tkn = token_response.by_resource_server
+    print(tkn)
 
-    search_at = tkn['search.api.globus.org']['access_token']
-    search_rt = tkn['search.api.globus.org']['refresh_token']
-    search_at_expires = tkn['search.api.globus.org']['expires_at_seconds']
+    dlhub_at = tkn['dlhub_org']['access_token']
+    dlhub_rt = tkn['dlhub_org']['refresh_token']
+    dlhub_at_expires = tkn['dlhub_org']['expires_at_seconds']
 
-    write_option(DLHUB_RT_OPTNAME, search_rt)
-    write_option(DLHUB_AT_OPTNAME, search_at)
-    write_option(DLHUB_AT_EXPIRES_OPTNAME, search_at_expires)
+    write_option(DLHUB_RT_OPTNAME, dlhub_rt)
+    write_option(DLHUB_AT_OPTNAME, dlhub_at)
+    write_option(DLHUB_AT_EXPIRES_OPTNAME, dlhub_at_expires)
