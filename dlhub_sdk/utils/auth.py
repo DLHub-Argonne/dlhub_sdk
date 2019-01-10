@@ -116,7 +116,6 @@ def _store_config(token_response):
         token_response (OAuthTokenResponse): Response from a token request
     """
     tkn = token_response.by_resource_server
-    print(tkn)
 
     dlhub_at = tkn['dlhub_org']['access_token']
     dlhub_rt = tkn['dlhub_org']['refresh_token']
