@@ -1,14 +1,13 @@
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 from dlhub_sdk.utils.auth import do_login_flow, make_authorizer
 from dlhub_sdk.config import check_logged_in, DLHUB_SERVICE_ADDRESS
-from globus_sdk.base import BaseClient
+from globus_sdk.base import BaseClient, slash_join
 from tempfile import mkstemp
 import pickle as pkl
 import pandas as pd
-import botocore
+import requests
 import codecs
-import boto3
-import uuid
+import json
 import os
 
 
@@ -168,7 +167,7 @@ class DLHubClient(BaseClient):
         will update the model to the new version.
 
         Args:
-            model (BaseMetadataModel): Model to be submitted
+            model (BaseMetadataModel): Servable to be submitted
         Returns:
             (string) Task ID of this submission, used for checking for success
         """
@@ -176,22 +175,40 @@ class DLHubClient(BaseClient):
         # Get the metadata
         metadata = model.to_dict(simplify_paths=True)
 
-        # Stage data for DLHub to access
-        staged_path = self._stage_data(model)
-        if not staged_path:
-            return
-        
         # Mark the method used to submit the model
-        metadata['dlhub']['transfer_method'] = {'S3': staged_path}
+        metadata['dlhub']['transfer_method'] = {'POST': 'file'}
 
         # Validate against the servable schema
         validate_against_dlhub_schema(metadata, 'servable')
 
-        # Publish to DLHub
-        response = self.post('publish', json_body=metadata)
+        # Get the data to be submitted as a ZIP file
+        fp, zip_filename = mkstemp('.zip')
+        os.close(fp)
+        os.unlink(zip_filename)
+        try:
+            model.get_zip_file(zip_filename)
 
-        task_id = response.data['task_id']
-        return task_id
+            # Get the authorization headers
+            headers = {}
+            self.authorizer.set_authorization_header(headers)
+
+            # Submit data to DLHub service
+            with open(zip_filename, 'rb') as zf:
+                reply = requests.post(
+                    slash_join(self.base_url, 'publish'),
+                    headers=headers,
+                    files={
+                        'json': ('dlhub.json', json.dumps(metadata), 'application/json'),
+                        'file': ('servable.zip', zf, 'application/octet-stream')
+                    }
+                )
+
+            # Return the task id
+            if reply.status_code is not 200:
+                raise Exception(reply.text)
+            return reply.json()['task_id']
+        finally:
+            os.unlink(zip_filename)
 
     def publish_repository(self, repository):
         """Submit a repository to DLHub for publication
@@ -208,38 +225,3 @@ class DLHubClient(BaseClient):
 
         task_id = response.data['task_id']
         return task_id
-
-    def _stage_data(self, servable):
-        """
-        Stage data to the DLHub service.
-
-        :param data_path: The data to upload
-        :return str: path to the data on S3
-        """
-        s3 = boto3.resource('s3')
-
-        # Generate a uuid to deposit the data
-        dest_uuid = str(uuid.uuid4())
-        dest_dir = 'servables/'
-        bucket_name = 'dlhub-anl'
-
-        fp, zip_filename = mkstemp('.zip')
-        os.close(fp)
-        os.unlink(zip_filename)
-
-        try:
-            servable.get_zip_file(zip_filename)
-
-            destpath = os.path.join(dest_dir, dest_uuid, zip_filename.split("/")[-1])
-            print("Uploading: {}".format(zip_filename))
-            res = s3.Object(bucket_name, destpath).put(ACL="public-read",
-                                                       Body=open(zip_filename, 'rb'))
-            staged_path = os.path.join("s3://", bucket_name, dest_dir, dest_uuid)
-            return staged_path
-        except botocore.exceptions.NoCredentialsError as e:
-            print("Failed to load AWS credentials. Please check they are configured with 'aws configure'.")
-            return None
-        except Exception as e:
-            print("Publication error: {}".format(e))
-        finally:
-            os.unlink(zip_filename)

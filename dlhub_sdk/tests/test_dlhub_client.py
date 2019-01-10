@@ -19,24 +19,19 @@ class TestClient(TestCase):
         self.assertNotEqual(r.shape[0], 0)
 
     def test_run(self):
+        user = "dlhub"
         name = "noop"
         data = {"data": ["V", "Co", "Zr"]}
 
-        # Test getting the name
-        serv = self.dl.get_id_by_name(name)
-
         # Test sending the data as JSON
-        res = self.dl.run(serv, data, input_type='json')
+        res = self.dl.run(user, name, data, input_type='json')
         self.assertEqual({}, res)
 
         # Test sending the data as pickle
-        res = self.dl.run(serv, data, input_type='python')
+        res = self.dl.run(user, name, data, input_type='python')
         self.assertEqual({}, res)
 
-    @skip  # Do not yet have a "test" route for submitted objects
     def test_submit(self):
-        # TODO: Set the same UUID as the original test
-
         # Make an example function
         model = PythonStaticMethodModel.create_model('numpy.linalg', 'norm')
         model.set_name('1d_norm')
