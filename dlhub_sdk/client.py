@@ -1,6 +1,6 @@
-from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
-from dlhub_sdk.utils.auth import do_login_flow, make_authorizer
+from dlhub_sdk.utils.auth import do_login_flow, make_authorizer, logout
 from dlhub_sdk.config import check_logged_in, DLHUB_SERVICE_ADDRESS
+from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 from globus_sdk.base import BaseClient, slash_join
 from tempfile import mkstemp
 import pickle as pkl
@@ -54,7 +54,11 @@ class DLHubClient(BaseClient):
 
         # If not logged in or `force`, get credentials
         if force or not check_logged_in():
-            # Asks for user credentials, saves the resulting Auth tokens to disk
+            # Revoke existing credentials
+            if check_logged_in():
+                logout()
+
+            # Ask for user credentials, save the resulting Auth tokens to disk
             do_login_flow()
 
         # Makes an authorizer
