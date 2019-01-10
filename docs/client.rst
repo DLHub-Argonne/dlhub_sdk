@@ -76,11 +76,3 @@ You can also send the data as Python objects by changing the input type::
 
 The client will use ``pickle`` to send the input data to DLHub in this case,
 allowing for a broader range of data types to be used as inputs.
-
-
-Advanced: Integrating Client in Other Services
-----------------------------------------------
-
-.. TODO: Make a demo for this functionality
-
-*TBD: A description for how to integrate DLHub into another web service*
