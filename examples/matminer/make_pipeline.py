@@ -21,15 +21,10 @@ convert_info.set_outputs("list", "List of pymatgen composition objects",
                                     'python_type': 'pymatgen.core.Composition'})
 convert_info.add_requirement('pymatgen', 'latest')
 
-# Assign each step a DLHub ID
-feat_info.assign_dlhub_id()
-convert_info.assign_dlhub_id()
-model_info.assign_dlhub_id()
-
 # Compile them into a Pipeline
 pipeline_info = PipelineModel().set_name('delta_e-predictor')
 pipeline_info.set_title("Predict Formation Enthalpy from Composition")
-pipeline_info.add_step(convert_info.dlhub_id, "Convert strings to pymatgen objects")
-pipeline_info.add_step(feat_info.dlhub_id, "Compute features each object")
-pipeline_info.add_step(model_info.dlhub_id, "Use features to compute formation enthalpy")
+pipeline_info.add_step("username", convert_info.name, "Convert strings to pymatgen objects")
+pipeline_info.add_step("username", feat_info.name, "Compute features each object")
+pipeline_info.add_step("username", model_info.name, "Use features to compute formation enthalpy")
 print(json.dumps(pipeline_info.to_dict(), indent=2))

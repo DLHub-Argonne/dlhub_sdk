@@ -6,7 +6,6 @@ from six import string_types
 from zipfile import ZipFile
 from glob import glob
 import json
-import uuid
 import sys
 import os
 import re
@@ -69,13 +68,22 @@ class BaseMetadataModel:
             "version": __version__,
             "domains": [],
             "visible_to": ["public"],
-            'id': None,
             'name': None,
             'files': {}
         }}
 
     def __getitem__(self, item):
         return self._output[item]
+
+    @property
+    def name(self):
+        """
+        Get the name of the servable
+
+        Returns:
+            (string) Name of the servable
+        """
+        return self['dlhub']['name']
 
     @classmethod
     def create_model(cls, **kwargs):
@@ -213,29 +221,6 @@ class BaseMetadataModel:
         """
         self._output["datacite"]["identifier"]["identifier"] = doi
         return self
-
-    def set_dlhub_id(self, dlhub_id):
-        """Set the identifier of this object
-
-        This function is only for advanced users.
-
-        Args:
-            dlhub_id (string): UUID of artifact
-        """
-        self._output["dlhub"]["id"] = dlhub_id
-        return self
-
-    def assign_dlhub_id(self):
-        """Assign the step a DLHub id
-
-        Generates a UUID, which is guaranteed to be unique
-        """
-
-        return self.set_dlhub_id(str(uuid.uuid1()))
-
-    @property
-    def dlhub_id(self):
-        return self._output["dlhub"]["id"]
 
     def set_name(self, name):
         """Set the name of artifact.

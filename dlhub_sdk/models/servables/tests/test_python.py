@@ -58,7 +58,7 @@ class TestPythonModels(unittest.TestCase):
                                },
                           'dlhub': {'version': __version__, 'domains': [],
                                     'visible_to': ['public'],
-                                    "id": None, "name": "class_method",
+                                    "name": "class_method",
                                     'files': {'pickle': pickle_path}},
                           'servable': {'language': 'python', 'type': 'Python class method',
                                        'shim': 'python.PythonClassMethodServable',
@@ -111,8 +111,7 @@ class TestPythonModels(unittest.TestCase):
                                "rightsList": []
                            },
                           'dlhub': {'version': __version__, 'domains': [], 'visible_to': ['public'],
-                                    "id": None, "name": "static_method",
-                                    'files': {}},
+                                    "name": "static_method", 'files': {}},
                           'servable': {'language': 'python', 'type': 'Python static method',
                                        'shim': 'python.PythonStaticMethodServable',
                                        'methods': {'run': {'input': {'type': 'list',

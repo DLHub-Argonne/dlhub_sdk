@@ -33,7 +33,7 @@ class TestSklearn(unittest.TestCase):
                                  "rightsList": []},
                     "dlhub": {"version": __version__,
                               "visible_to": ["public"], 'name': 'sklearn',
-                              "domains": [], "id": None,
+                              "domains": [],
                               'files': {'model': model_path}},
                     'servable': {
                         'language': 'python',

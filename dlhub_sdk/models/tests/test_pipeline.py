@@ -16,17 +16,14 @@ class TestPipeline(unittest.TestCase):
         """Make a pipeline composed of two numpy steps"""
 
         # Generate the two steps
-        step1 = PythonStaticMethodModel.create_model('numpy', 'max', function_kwargs={'axis': 1})
-        step2 = PythonStaticMethodModel.create_model('numpy', 'mean')
-
-        # Assign them dlhub IDs
-        step1.assign_dlhub_id()
-        step2.assign_dlhub_id()
+        step1 = PythonStaticMethodModel.create_model('numpy', 'max', function_kwargs={'axis': 1})\
+            .set_name('step1')
+        step2 = PythonStaticMethodModel.create_model('numpy', 'mean').set_name('step2')
 
         # Make the pipeline
         pipeline = PipelineModel().set_title('Average of Column Maximums').set_name('numpy_test')
-        pipeline.add_step(step1.dlhub_id, 'Maximum of each column', {'axis': 0})
-        pipeline.add_step(step2, 'Average of the maximums')
+        pipeline.add_step('username', step1.name, 'Maximum of each column', {'axis': 0})
+        pipeline.add_step('username', step2.name, 'Average of the maximums')
 
         # Generate the pipeline metadata
         metadata = pipeline.to_dict()
@@ -42,10 +39,10 @@ class TestPipeline(unittest.TestCase):
                           "alternateIdentifiers": [],
                           "rightsList": []},
              'dlhub': {'version': __version__, 'domains': [], 'visible_to': ['public'],
-                       'id': None, 'name': 'numpy_test',
-                       'files': {}},
-             'pipeline': {'steps': [{'dlhub_id': step1.dlhub_id,
-                           'description': 'Maximum of each column', 'parameters': {'axis': 0}},
-                          {'dlhub_id': step2.dlhub_id,
+                       'name': 'numpy_test', 'files': {}},
+             'pipeline': {'steps': [{'author': 'username', 'name': step1.name,
+                                     'description': 'Maximum of each column',
+                                     'parameters': {'axis': 0}},
+                          {'author': 'username', 'name': step2.name,
                            'description': 'Average of the maximums'}]}})
         validate_against_dlhub_schema(metadata, 'pipeline')

@@ -48,7 +48,7 @@ class TestKeras(TestCase):
                              "alternateIdentifiers": [],
                              "rightsList": []},
                 "dlhub": {"version": __version__, "domains": [],
-                          "visible_to": ["public"], "id": None,
+                          "visible_to": ["public"],
                           "name": "mlp", "files": {"model": model_path}},
                 "servable": {"methods": {"run": {
                     "input": {"type": "ndarray", "description": "Tensor", "shape": [None, 1]},

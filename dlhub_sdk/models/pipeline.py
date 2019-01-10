@@ -25,23 +25,21 @@ class PipelineModel(BaseMetadataModel):
         # Add list of pipeline steps
         self._output['pipeline'] = {'steps': []}
 
-    def add_step(self, identifier, description, parameters=None):
+    def add_step(self, author, name, description, parameters=None):
         """Add a step to the pipeline
 
         Args:
-            identifier (string/BaseMetadataModel): The DLHub identifier of the step (a UUID)
+            author (string): DLHub username of the owner of the servable
+            name (string): Name of the DLHub servable
             description (string): A short description of this step
             parameters (dict): Any options for the servable. See the list of parameters for a servable
         """
 
-        # Get the identifier if the user provides a metadata model, rather than a string
-        if isinstance(identifier, BaseMetadataModel):
-            identifier = identifier.dlhub_id
-
         # Compose the block
         step = {
-            'dlhub_id': identifier,
-            'description': description,
+            'author': author,
+            'name': name,
+            'description': description
         }
         if parameters is not None:
             step['parameters'] = parameters
