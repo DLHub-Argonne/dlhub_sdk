@@ -18,7 +18,7 @@ setup(
                       "correct schema for DLHub, and discovering or using models "
                       "that other scientists have published."),
     install_requires=[
-        "pandas", "requests", "jsonschema", "globus_sdk", "configobj", "boto3",
+        "pandas", "requests", "jsonschema", "globus_sdk", "configobj"
     ],
     python_requires=">=3.4",
     classifiers=[
