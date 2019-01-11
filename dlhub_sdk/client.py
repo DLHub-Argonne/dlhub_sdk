@@ -95,7 +95,7 @@ class DLHubClient(BaseClient):
             (pd.DataFrame) Summary of all the models available in the service
         """
         df_tmp = self._get_servables()
-        return df_tmp[['name']]
+        return df_tmp[['dlhub_name']]
 
     def get_task_status(self, task_id):
         """Get the status of a DLHub task.
