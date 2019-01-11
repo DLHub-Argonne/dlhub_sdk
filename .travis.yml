@@ -7,7 +7,7 @@ env:
   - KERAS_VERSION=2.2.2
 before_install:
   - openssl aes-256-cbc -K $encrypted_ac5a6dd41c09_key -iv $encrypted_ac5a6dd41c09_iv
-    -in test-files/.globus.cfg.enc -out test-files/.globus.cfg -d
+    -in .globus.cfg.enc -out test-files/.globus.cfg -d
   - cp test-files/.globus.cfg ~/
 install:
   - pip install --upgrade pip setuptools wheel
