@@ -18,5 +18,14 @@ script:
   - cd examples
   - ./run_examples.sh
   - cd .. # So that coveralls works
+deploy:
+  provider: pypi
+  user: ward.logan.t@gmail.com
+  skip_existing: true
+  distributions: "sdist bdist_wheel"
+  password:
+    secure: "G5F6UIOYtI2qmlOPTp3Td9S067wQg4sv25mxFzeRf/DdC5auEeqkV0NucOlpVQ4ju4ZMIzWuzHvB9Ob8Nfih3Bzh4ube/ZlVZY7LgpGHLbTcDYsuu2M5f1iIil3a6yLd0XRNRXw/sqYC8DLR7AgXacEeQH92rL3wcJ7IXUYCwgnSN0ou4lMo+CQFbLnx5/IHOojJUFVAV8MpQVOGXyrfz2+QR0IUZkLza+rmE8z5HQOws4Iz7Wwa9OSUam5Tvm1awjmZTdEY/8VqY7PLZhLXJlLfOM19+OpySK/mYhgGSsfuZpG24bKVYKJ1xDkJudPsOk+Hk5lG9LnsE0/POHjOcl/bT1U02EcjrgFWnyllMtkJeBI9kt0k6ELo98fmq1LplbpPzdXPeUvRNuvB6ixhl/gAJ9Wx8tVR7lxSQ5gci2yQTF1nEQDpHi0Qsn5lnSh7VNYwk2FISjWP2bDqRD/CHKKg5uiIGZXGuTTXcAuu8/bYCYWzhg5kCTkDQvR/VXTnE9odl50qb6Z358vilvLNvAm/bVhb0EEsk6Yebi3gYgL4SmO2LP9L4HReM8dcMeAs92ULqpEC14HclM+bOY0bBI9+XRsUdphzVCdIkqWEG55c6BKJ/xPqmIE/cj7bpuCORxN9uFfft/jJ3nx7vDg0SChSsgQEc+CANpBsDMLhuxc="
+  on:
+    tags: true
 after_success:
   coveralls
