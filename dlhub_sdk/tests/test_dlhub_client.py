@@ -19,7 +19,7 @@ class TestClient(TestCase):
         self.assertNotEqual(r.shape[0], 0)
 
     def test_run(self):
-        user = "dlhub"
+        user = "ryan_globusid"
         name = "noop"
         data = {"data": ["V", "Co", "Zr"]}
 
