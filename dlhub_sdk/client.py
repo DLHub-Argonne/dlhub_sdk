@@ -5,6 +5,7 @@ from globus_sdk.base import BaseClient, slash_join
 from tempfile import mkstemp
 import pickle as pkl
 import pandas as pd
+import jsonpickle
 import requests
 import codecs
 import json
@@ -129,7 +130,7 @@ class DLHubClient(BaseClient):
         serv = df_tmp.query('name={name} AND author={author}'.format(name=name, author=author))
         return serv.iloc[0]
 
-    def run(self, author, name, inputs, input_type='json'):
+    def run(self, author, name, inputs, input_type='python'):
         """Invoke a DLHub servable
 
         Args:
@@ -146,7 +147,8 @@ class DLHubClient(BaseClient):
 
         # Prepare the data to be sent to DLHub
         if input_type == 'python':
-            data = {'python': codecs.encode(pkl.dumps(inputs), 'base64').decode()}
+            # data = {'python': codecs.encode(pkl.dumps(inputs), 'base64').decode()}
+            data = {'python': jsonpickle.encode(inputs)}
         elif input_type == 'json':
             data = {'data': inputs}
         elif input_type == 'files':
