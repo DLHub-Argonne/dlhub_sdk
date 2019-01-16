@@ -30,7 +30,6 @@ class TestModels(unittest.TestCase):
                              len(Dataset().add_directory(my_dir, recursive=True).list_files()))
 
     def test_dataset(self):
-        my_uuid = str(uuid.uuid1())
         m = Dataset().set_authors(["Ward, Logan"], ["University of Chicago"])\
             .set_title("Example dataset").add_alternate_identifier("10.11", "DOI")\
             .add_related_identifier("10.11", "DOI", 'IsDescribedBy')\
@@ -38,8 +37,7 @@ class TestModels(unittest.TestCase):
             .set_version(1)\
             .add_rights("https://www.gnu.org/licenses/gpl-3.0.en.html", "GPL v3.0")\
             .set_abstract("Abstract").set_methods("Methods")\
-            .set_visibility(['public']).set_domains(["materials science"])\
-            .set_dlhub_id(my_uuid).set_name("example_data")
+            .set_visibility(['public']).set_domains(["materials science"]).set_name("example_data")
         self.assertEqual(m.to_dict(),
                          {"datacite":
                               {"creators": [{"givenName": "Logan", "familyName": "Ward",
@@ -82,7 +80,6 @@ class TestModels(unittest.TestCase):
                               "version": __version__,
                               "visible_to": ["public"],
                               "domains": ["materials science"],
-                              "id": my_uuid,
                               "name": "example_data",
                               "files": {}
                           }, "dataset": {}})
@@ -118,7 +115,6 @@ class TestModels(unittest.TestCase):
                                        "dlhub": {"version": __version__,
                                                  "visible_to": ["public"],
                                                  "domains": [],
-                                                 "id": None,
                                                  "name": "example_dataset",
                                                  "files": {'data': data_path}},
                                        "dataset": {"columns": [

@@ -19,6 +19,7 @@ Source Code: https://github.com/DLHub-Argonne/dlhub_sdk
 
    quickstart
    servable-publication
+   client
    servable-types
    argument-types
    source/modules

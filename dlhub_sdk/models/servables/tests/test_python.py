@@ -38,7 +38,7 @@ class TestPythonModels(unittest.TestCase):
         # Add some requirements
         model.add_requirement('scikit-learn', 'detect')
         model.add_requirement('numpy', 'detect')
-        model.add_requirement('theano', 'latest')  # Deprecated project, version should stay same
+        model.add_requirement('sklearn', 'latest')  # Dummy project, version # shouldn't change
 
         # Check the model output
         output = model.to_dict()
@@ -58,7 +58,7 @@ class TestPythonModels(unittest.TestCase):
                                },
                           'dlhub': {'version': __version__, 'domains': [],
                                     'visible_to': ['public'],
-                                    "id": None, "name": "class_method",
+                                    "name": "class_method",
                                     'files': {'pickle': pickle_path}},
                           'servable': {'language': 'python', 'type': 'Python class method',
                                        'shim': 'python.PythonClassMethodServable',
@@ -77,7 +77,7 @@ class TestPythonModels(unittest.TestCase):
                                            'python': {
                                                'scikit-learn': skl_version,
                                                'numpy': numpy_version,
-                                               'theano': '1.0.3'
+                                               'sklearn': '0.0'
                                            }}
                           }})
         self.assertEqual([pickle_path], model.list_files())
@@ -111,8 +111,7 @@ class TestPythonModels(unittest.TestCase):
                                "rightsList": []
                            },
                           'dlhub': {'version': __version__, 'domains': [], 'visible_to': ['public'],
-                                    "id": None, "name": "static_method",
-                                    'files': {}},
+                                    "name": "static_method", 'files': {}},
                           'servable': {'language': 'python', 'type': 'Python static method',
                                        'shim': 'python.PythonStaticMethodServable',
                                        'methods': {'run': {'input': {'type': 'list',

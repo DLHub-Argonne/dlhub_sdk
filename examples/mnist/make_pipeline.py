@@ -38,15 +38,11 @@ resize_info.set_outputs("list", "List of images as ndarrays shaped for use in ke
                         item_type=compose_argument_block('ndarray', 'Image', shape=[28, 28, 1]))
 resize_info.add_requirement('scikit-image', 'detect')
 
-# Assign each step a DLHub ID
-read_info.assign_dlhub_id()
-resize_info.assign_dlhub_id()
-model_info.assign_dlhub_id()
 
 # Compile them into a Pipeline
 pipeline_info = PipelineModel().set_name('tiny_mnist_pipeline')
 pipeline_info.set_title("Image File to Digit Pipeline")
-pipeline_info.add_step(read_info.dlhub_id, "Read in images from disk into grayscale files")
-pipeline_info.add_step(resize_info.dlhub_id, "Reshape each image into a 28x28x1 image")
-pipeline_info.add_step(model_info.dlhub_id, "Determine which digit is present in the image")
+pipeline_info.add_step("username", read_info.name, "Read in images from disk into grayscale files")
+pipeline_info.add_step("username", resize_info.name, "Reshape each image into a 28x28x1 image")
+pipeline_info.add_step("username", model_info.name, "Determine which digit is present in the image")
 print(json.dumps(pipeline_info.to_dict(), indent=2))

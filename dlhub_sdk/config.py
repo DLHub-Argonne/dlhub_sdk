@@ -25,7 +25,7 @@ __all__ = (
 DLHUB_URL = "https://dlhub.org/"
 DLHUB_SERVICE_ADDRESS = "https://api.dlhub.org/api/v1"
 
-CONF_SECTION_NAME = 'dlhub-cli'
+CONF_SECTION_NAME = 'dlhub'
 
 CLIENT_ID = 'f47a891c-cfd0-443c-8db8-c72fb82fe3f7'
 DLHUB_RT_OPTNAME = 'dlhub_refresh_token'
@@ -44,7 +44,6 @@ if GLOBUS_ENV:
         'staging':      '0811fdd3-0d3e-4b5e-b634-8d6c91d87f21',
         'preview':      '988ff3e0-3bcf-495a-9f12-3b3a309bdb36',
     }.get(GLOBUS_ENV, CLIENT_ID)
-
 
 
 def get_config_obj(file_error=False):

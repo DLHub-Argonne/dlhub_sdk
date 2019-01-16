@@ -130,8 +130,6 @@ After publishing all associated file to GitHub, use the DLHub CLI to publish the
 Publication via Direct Upload
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-*Note: This feature is under development*
-
 It is also possible to submit servables directly from your computer to DLHub via HTTP::
 
     $ dlhub publish --local
