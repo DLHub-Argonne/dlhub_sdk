@@ -24,7 +24,7 @@ script:
   - cd .. # So that coveralls works
 deploy:
   provider: pypi
-  user: ward.logan.t@gmail.com
+  user: wardlt
   skip_existing: true
   distributions: "sdist bdist_wheel"
   password:
