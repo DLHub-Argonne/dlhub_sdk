@@ -1,35 +1,31 @@
 language: python
 python:
-  - "3.6"
+- '3.6'
 cache: pip
 env:
-  - KERAS_VERSION=2.1.3
-  - KERAS_VERSION=2.2.2
+- KERAS_VERSION=2.1.3
+- KERAS_VERSION=2.2.2
 before_install:
-  - openssl aes-256-cbc -K $encrypted_ac5a6dd41c09_key -iv $encrypted_ac5a6dd41c09_iv
-    -in test-files/.globus.cfg.enc -out test-files/.globus.cfg -d
-  - cp test-files/.globus.cfg ~/
+- openssl aes-256-cbc -K $encrypted_ac5a6dd41c09_key -iv $encrypted_ac5a6dd41c09_iv
+  -in test-files/.globus.cfg.enc -out test-files/.globus.cfg -d
+- cp test-files/.globus.cfg ~/
 install:
-  - pip install --upgrade pip setuptools wheel
-  - pip install -e .
-  - pip install coveralls
-  - pip install -r requirements.txt
-  - pip install -r example-requirements.txt
-  - pip install keras==$KERAS_VERSION
-  - pip list
+- pip install --upgrade pip setuptools wheel
+- pip install -e .
+- pip install coveralls
+- pip install -r requirements.txt
+- pip install -r example-requirements.txt
+- pip install keras==$KERAS_VERSION
+- pip list
 script:
-  - nosetests --with-coverage --cover-package=dlhub_sdk
-  - cd examples
-  - # ./run_examples.sh  # Problems with TravisCI, disabling for now
-  - cd .. # So that coveralls works
+- nosetests --with-coverage --cover-package=dlhub_sdk
 deploy:
   provider: pypi
   user: wardlt
   skip_existing: true
-  distributions: "sdist bdist_wheel"
+  distributions: sdist bdist_wheel
   password:
-    secure: "G5F6UIOYtI2qmlOPTp3Td9S067wQg4sv25mxFzeRf/DdC5auEeqkV0NucOlpVQ4ju4ZMIzWuzHvB9Ob8Nfih3Bzh4ube/ZlVZY7LgpGHLbTcDYsuu2M5f1iIil3a6yLd0XRNRXw/sqYC8DLR7AgXacEeQH92rL3wcJ7IXUYCwgnSN0ou4lMo+CQFbLnx5/IHOojJUFVAV8MpQVOGXyrfz2+QR0IUZkLza+rmE8z5HQOws4Iz7Wwa9OSUam5Tvm1awjmZTdEY/8VqY7PLZhLXJlLfOM19+OpySK/mYhgGSsfuZpG24bKVYKJ1xDkJudPsOk+Hk5lG9LnsE0/POHjOcl/bT1U02EcjrgFWnyllMtkJeBI9kt0k6ELo98fmq1LplbpPzdXPeUvRNuvB6ixhl/gAJ9Wx8tVR7lxSQ5gci2yQTF1nEQDpHi0Qsn5lnSh7VNYwk2FISjWP2bDqRD/CHKKg5uiIGZXGuTTXcAuu8/bYCYWzhg5kCTkDQvR/VXTnE9odl50qb6Z358vilvLNvAm/bVhb0EEsk6Yebi3gYgL4SmO2LP9L4HReM8dcMeAs92ULqpEC14HclM+bOY0bBI9+XRsUdphzVCdIkqWEG55c6BKJ/xPqmIE/cj7bpuCORxN9uFfft/jJ3nx7vDg0SChSsgQEc+CANpBsDMLhuxc="
+    secure: YUgONy8UjgchN4lCOMjsw4StF9Iq3PzZbeZqJP4/xhlRDIyLPViNSBFxfBiyjiKDzemceVzQyQpvsoe2Xq1mqoLBXXlTGnJL6nh6BXs1MRRY1CCYJmQpzetdhmtPnq6xp51R0FbYbv1Iifv/kL0NiHXh/Hw9HPjamzSO4X+4b01tyvt+cXNjGgGM06E73h8LMANIPecjUqdeLxDL//V1wB3An87Eu+YIVDoUzeApx/2GVIf7mH5tOnGjV4+5GhOUePsEQArVw7B4KngQ+B28Be07/GUTWd39DOmWJrZUKKQBrUpwjsusz0N5gQTxnhoPzIICaT2vnQoUruZMGN4or050gDW0apnvmpb/LQFkwmBj71XvX0hqN4NGLsN5pHW3lQAncMC61o1Ybm9I/RTzpnjTerdskMGBUwod3TVQz3m+H2LsvNPZsGyHVE/IZ700BQLw+qCjGXN8UcnmLcSsXjVuWpFgeB5YTtAwuueFz13A/0h4+Nwn1JUbg5x55ahs+KWXSfBybETuzxWpY2k/sq0ZOVT9FQbLONJdwO2PlRNAR25wMAFOH9/uTisJWxvmAItmlgGotXiZsu/tZGUDA5FgaU0XXs3QJivGcV4CrPyl+Wvx0ZZ25njq5d5JETi/vJHKgNsxcsQHVQiZRmak/oWEUW1jXDDTraVcxQ3mbPw=
   on:
     tags: true
-after_success:
-  coveralls
+after_success: coveralls
