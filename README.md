@@ -30,7 +30,7 @@ To create the client, call
 ```python
 from dlhub_sdk.client import DLHubClient
 
-client = DLHubClient()
+client = DLHubClient.login()
 ```
 
 The client makes it simple to find interesting machine learning models. 
@@ -76,8 +76,7 @@ That command will return a Pandas DataFrame of models, which looks something lik
 Once you get the name of a model, it can be run thorugh the client as well:
 
 ```python
-model = client.get_id_by_name('noop')
-client.run(model, 'my data')
+client.run(author='ryan_globusid' name='noop', inputs='my data')
 ```
 
 ### Publishing a Model
