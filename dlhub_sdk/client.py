@@ -130,12 +130,11 @@ class DLHubClient(BaseClient):
         serv = df_tmp.query('name={name} AND author={author}'.format(name=name, author=author))
         return serv.iloc[0]
 
-    def run(self, author, name, inputs, input_type='python'):
+    def run(self, name, inputs, input_type='python'):
         """Invoke a DLHub servable
 
         Args:
-            author (string): Username of the owner of a servable
-            name (string): Name of the servable
+            name (string): DLHub name of the model of the form <user>/<model_name>
             inputs: Data to be used as input to the function. Can be a string of file paths or URLs
             input_type (string): How to send the data to DLHub. Can be "python" (which pickles
                 the data), "json" (which uses JSON to serialize the data), or "files" (which
@@ -143,7 +142,7 @@ class DLHubClient(BaseClient):
         Returns:
             Reply from the service
         """
-        servable_path = 'servables/{author}/{name}/run'.format(author=author, name=name)
+        servable_path = 'servables/{name}/run'.format(name=name)
 
         # Prepare the data to be sent to DLHub
         if input_type == 'python':
