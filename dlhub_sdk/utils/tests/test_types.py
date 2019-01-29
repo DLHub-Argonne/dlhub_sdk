@@ -43,17 +43,35 @@ class TestTypes(unittest.TestCase):
         # Test tuple object
         with self.assertRaises(ValueError):
             compose_argument_block('tuple', 'Test')
-        self.assertEquals({'type': 'tuple', 'description': 'Test', 'element_types':
-            [{'type': 'string', 'description': 'Item 1'},
-             {'type': 'string', 'description': 'Item 2'}]},
-                          compose_argument_block('tuple', 'Test', element_types=[
-                                                 compose_argument_block('string', 'Item 1'),
-                                                 compose_argument_block('string', 'Item 2')]))
+        correct_block = {
+            'type': 'tuple',
+            'description': 'Test',
+            'element_types': [{
+                'type': 'string', 'description': 'Item 1'
+            }, {
+                'type': 'string', 'description': 'Item 2'
+            }]
+        },
+        self.assertEquals(correct_block, compose_argument_block(
+                                            'tuple', 'Test', element_types=[
+                                                compose_argument_block('string', 'Item 1'),
+                                                compose_argument_block('string', 'Item 2')]))
 
         # Test Python object
         with self.assertRaises(ValueError):
             compose_argument_block('dict', 'Test')
-        self.assertEquals({'type': 'dict', 'description': 'Test',
-                           'properties': {'test': {'type': 'string', 'description': 'A string'}}},
+        correct_block = {
+            'type': 'dict',
+            'description': 'Test',
+            'properties': {
+                'test': {
+                    'type': 'string',
+                    'description': 'A string'
+                }
+            }
+        }
+        self.assertEquals(correct_block,
                           compose_argument_block('dict', 'Test',
-                                                 properties={'test': compose_argument_block('string', 'A string')}))
+                                                 properties={
+                                                    'test': compose_argument_block('string',
+                                                                                   'A string')}))

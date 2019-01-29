@@ -12,13 +12,13 @@ before_install:
 install:
 - pip install --upgrade pip setuptools wheel
 - pip install -e .
-- pip install coveralls
+- pip install coveralls flake8
 - pip install -r requirements.txt
 - pip install -r example-requirements.txt
 - pip install keras==$KERAS_VERSION
 - pip list
 script:
-- nosetests --with-coverage --cover-package=dlhub_sdk
+- flake8 . && nosetests --with-coverage --cover-package=dlhub_sdk
 deploy:
   provider: pypi
   user: wardlt

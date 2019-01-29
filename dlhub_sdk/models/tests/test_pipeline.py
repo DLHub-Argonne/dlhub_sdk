@@ -27,22 +27,48 @@ class TestPipeline(unittest.TestCase):
 
         # Generate the pipeline metadata
         metadata = pipeline.to_dict()
-        self.assertEqual(metadata,
-            {'datacite': {'creators': [], 'titles': [{'title': 'Average of Column Maximums'}],
-                          'publisher': 'DLHub', 'publicationYear': _year,
-                          'identifier': {'identifier': '10.YET/UNASSIGNED',
-                                         'identifierType': 'DOI'},
-                          'resourceType': {'resourceTypeGeneral': 'InteractiveResource'},
-                          "descriptions": [],
-                          "fundingReferences": [],
-                          "relatedIdentifiers": [],
-                          "alternateIdentifiers": [],
-                          "rightsList": []},
-             'dlhub': {'version': __version__, 'domains': [], 'visible_to': ['public'],
-                       'name': 'numpy_test', 'files': {}},
-             'pipeline': {'steps': [{'author': 'username', 'name': step1.name,
-                                     'description': 'Maximum of each column',
-                                     'parameters': {'axis': 0}},
-                          {'author': 'username', 'name': step2.name,
-                           'description': 'Average of the maximums'}]}})
+        correct_metadata = {
+            'datacite': {
+                'creators': [],
+                'titles': [{
+                    'title': 'Average of Column Maximums'
+                }],
+                'publisher': 'DLHub',
+                'publicationYear': _year,
+                'identifier': {
+                    'identifier': '10.YET/UNASSIGNED',
+                    'identifierType': 'DOI'
+                },
+                'resourceType': {
+                    'resourceTypeGeneral': 'InteractiveResource'
+                },
+                "descriptions": [],
+                "fundingReferences": [],
+                "relatedIdentifiers": [],
+                "alternateIdentifiers": [],
+                "rightsList": []
+            },
+            'dlhub': {
+                'version': __version__,
+                'domains': [],
+                'visible_to': ['public'],
+                'name': 'numpy_test',
+                'files': {}
+            },
+            'pipeline': {
+                'steps': [{
+                    'author': 'username',
+                    'name': step1.name,
+                    'description': 'Maximum of each column',
+                    'parameters': {
+                        'axis': 0
+                    }
+                }, {
+                    'author': 'username',
+                    'name': step2.name,
+                    'description': 'Average of the maximums'
+                }]
+            }
+        }
+        self.assertEqual(metadata, correct_metadata)
         validate_against_dlhub_schema(metadata, 'pipeline')

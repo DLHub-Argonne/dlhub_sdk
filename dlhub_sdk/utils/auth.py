@@ -2,9 +2,9 @@
 
 
 import platform
+
 import globus_sdk
 
-from globus_sdk import RefreshTokenAuthorizer
 from dlhub_sdk.config import (internal_auth_client, safeprint, lookup_option, write_option,
                               remove_option, check_logged_in,
                               DLHUB_RT_OPTNAME, DLHUB_AT_OPTNAME, DLHUB_AT_EXPIRES_OPTNAME)
@@ -39,10 +39,10 @@ def do_login_flow():
 
 def make_authorizer():
     """
-    Make a RefreshTokenAuthorizer given the tokens stored on disk
+    Make a globus_sdk.RefreshTokenAuthorizer given the tokens stored on disk
 
     Returns:
-        (RefreshTokenAuthorizer): Tool to generate authorization credentials
+        (globus_sdk.RefreshTokenAuthorizer): Tool to generate authorization credentials
     """
 
     if not check_logged_in():
@@ -56,8 +56,8 @@ def make_authorizer():
     rf_token = lookup_option(DLHUB_RT_OPTNAME)
     at_token = lookup_option(DLHUB_AT_OPTNAME)
     at_expires = int(lookup_option(DLHUB_AT_EXPIRES_OPTNAME))
-    authorizer = RefreshTokenAuthorizer(rf_token, auth_client, access_token=at_token,
-                                        expires_at=at_expires)
+    authorizer = globus_sdk.RefreshTokenAuthorizer(rf_token, auth_client, access_token=at_token,
+                                                   expires_at=at_expires)
 
     return authorizer
 

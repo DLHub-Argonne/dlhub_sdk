@@ -4,7 +4,6 @@ from sklearn.pipeline import Pipeline
 from sklearn.externals import joblib
 import sklearn.base as sklbase
 import pickle as pkl
-import numpy as np
 import inspect
 
 
@@ -21,7 +20,7 @@ def _hijack_baseestimator_setstate(self, state):
     _sklearn_version_global = state.get("_sklearn_version", "pre-0.18")
     _original_set_state(self, state)
 
-sklbase.BaseEstimator.__setstate__ = _hijack_baseestimator_setstate
+    sklbase.BaseEstimator.__setstate__ = _hijack_baseestimator_setstate
 
 
 class ScikitLearnModel(BasePythonServableModel):
@@ -144,8 +143,8 @@ class ScikitLearnModel(BasePythonServableModel):
             if pipeline else type(model).__name__
 
         # Get a summary about the model
-        self._output["servable"]["model_summary"] = str(model)  # sklearn prints out a text summary of the model
-
+        # sklearn prints out a text summary of the model
+        self._output["servable"]["model_summary"] = str(model)
         # Determine whether the object is a classifier
         is_clfr = is_classifier(model)
         self["servable"]["options"]["is_classifier"] = is_clfr

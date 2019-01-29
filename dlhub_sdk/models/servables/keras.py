@@ -17,10 +17,10 @@ class KerasModel(BasePythonServableModel):
     def create_model(cls, model_path, output_names):
         """Initialize a Keras model.
 
-           Args:
-               model_path (string): Path to the hd5 file that describes a model and the weights
-               output_names ([string] or [[string]]): Names of output classes. If applicable, one list for
-                   each output layer
+        Args:
+            model_path (string): Path to the hd5 file that describes a model and the weights
+            output_names ([string] or [[string]]): Names of output classes.
+                If applicable, one list for each output layer.
        """
         output = super(KerasModel, cls).create_model('predict')
 
@@ -32,7 +32,8 @@ class KerasModel(BasePythonServableModel):
 
         # Get the inputs of the model
         output['servable']['methods']['run']['input'] = output.format_layer_spec(model.input_shape)
-        output['servable']['methods']['run']['output'] = output.format_layer_spec(model.output_shape)
+        output['servable']['methods']['run']['output'] = output.format_layer_spec(
+                                                                    model.output_shape)
         output['servable']['methods']['run']['method_details']['classes'] = output_names
 
         # Get a full description of the model

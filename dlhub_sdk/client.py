@@ -1,16 +1,15 @@
-# from dlhub_sdk.utils.auth import do_login_flow, make_authorizer, logout
-from dlhub_sdk.config import DLHUB_SERVICE_ADDRESS
-from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
-from globus_sdk.base import BaseClient, slash_join
-from tempfile import mkstemp
-import pickle as pkl
-import pandas as pd
-import jsonpickle
-import requests
-import codecs
 import json
 import os
+from tempfile import mkstemp
+
+from globus_sdk.base import BaseClient, slash_join
+import jsonpickle
 import mdf_toolbox
+import pandas as pd
+import requests
+
+from dlhub_sdk.config import DLHUB_SERVICE_ADDRESS
+from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 
 
 class DLHubClient(BaseClient):
@@ -23,7 +22,8 @@ class DLHubClient(BaseClient):
     This operation will check if you have saved any credentials to disk before using the CLI or SDK
     and, if not, get new credentials and save them for later use.
     For cases where disk access is unacceptable, you can create the client by creating an authorizer
-    following the `tutorial for the Globus SDK <https://globus-sdk-python.readthedocs.io/en/stable/tutorial/>_
+    following the
+    `tutorial for the Globus SDK <https://globus-sdk-python.readthedocs.io/en/stable/tutorial/>_
     and providing that authorizer to the initializer (e.g., ``DLHubClient(auth)``)"""
 
     def __init__(self, dlh_authorizer, search_client, http_timeout=None, **kwargs):
@@ -37,7 +37,7 @@ class DLHubClient(BaseClient):
             http_timeout (int): Timeout for any call to service in seconds. (default is no timeout)
         Keyword arguments are the same as for BaseClient
         """
-        __search_client = search_client
+        __search_client = search_client  # noqa: F841 (unused variable, will be used in future)
         super(DLHubClient, self).__init__("DLHub", environment='dlhub', authorizer=dlh_authorizer,
                                           http_timeout=http_timeout, base_url=DLHUB_SERVICE_ADDRESS,
                                           **kwargs)
@@ -56,8 +56,9 @@ class DLHubClient(BaseClient):
         Returns:
             (DLHubClient) A client complete with proper credentials
         """
-        auth_res = mdf_toolbox.login(services=["search", "dlhub_org"], app_name="DLHub_Client",
-                                     token_dir="~/.dlhub/credentials", clear_old_tokens=force)
+        auth_res = mdf_toolbox.login(services=["search", "dlhub"], app_name="DLHub_Client",
+                                     token_dir=os.path.expanduser("~/.dlhub/credentials"),
+                                     clear_old_tokens=force)
         '''
         # If not logged in or `force`, get credentials
         if force or not check_logged_in():
@@ -72,7 +73,7 @@ class DLHubClient(BaseClient):
         rf_authorizer = make_authorizer()
         '''
 
-        return DLHubClient(dlh_authorizer=auth_res["dlhub_org"], search_client=auth_res["search"],
+        return DLHubClient(dlh_authorizer=auth_res["dlhub"], search_client=auth_res["search"],
                            **kwargs)
 
     def _get_servables(self):

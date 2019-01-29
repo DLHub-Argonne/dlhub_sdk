@@ -1,17 +1,21 @@
-from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
-from dlhub_sdk.models.servables.keras import KerasModel
-from dlhub_sdk.version import __version__
-from keras import __version__ as keras_version
-from keras.models import Sequential, Model
-from keras.layers import Dense, Input
-from h5py import __version__ as h5py_version
-from unittest import TestCase
 from datetime import datetime
-from tempfile import mkdtemp
-import shutil
 import os
+import shutil
+from tempfile import mkdtemp
+
+from h5py import __version__ as h5py_version
+from keras import __version__ as keras_version
+from keras.layers import Dense, Input
+from keras.models import Sequential, Model
+from unittest import TestCase
+
+from dlhub_sdk.models.servables.keras import KerasModel
+from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
+from dlhub_sdk.version import __version__
+
 
 _year = str(datetime.now().year)
+
 
 class TestKeras(TestCase):
 
@@ -73,7 +77,7 @@ Total params: 49
 Trainable params: 49
 Non-trainable params: 0
 _________________________________________________________________
-""",
+""",  # noqa: W291 (trailing whitespace)
                     "dependencies": {"python": {
                         'keras': keras_version,
                         'h5py': h5py_version

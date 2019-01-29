@@ -32,7 +32,8 @@ class PipelineModel(BaseMetadataModel):
             author (string): DLHub username of the owner of the servable
             name (string): Name of the DLHub servable
             description (string): A short description of this step
-            parameters (dict): Any options for the servable. See the list of parameters for a servable
+            parameters (dict): Any options for the servable.
+                See the list of parameters for a servable
         """
 
         # Compose the block

@@ -41,7 +41,8 @@ def compose_argument_block(data_type, description, shape=(), item_type=None,
             can have any numbers of values
         item_type (string/dict): Description of the item type. Required for data_type = list.
             Can either be a string type, or a dict that is a valid type for an argument type block
-        python_type (string): Full path of a Python object type (e.g., :code:`pymatgen.core.Compostion`)
+        python_type (string): Full path of a Python object type
+            (e.g., :code:`pymatgen.core.Compostion`)
         properties (dict): Descriptions of the types in a dictionary
         element_types ([dict] or [list]): Types of elements in a tuple. List of type definition
             dictionaries or types as strings.

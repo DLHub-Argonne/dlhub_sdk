@@ -13,7 +13,8 @@ dataset_info = TabularDataset.create_model('data.pkl', format='pickle')
 data = pd.read_pickle('data.pkl')
 
 #   Add link to where this data was downloaded from
-dataset_info.add_alternate_identifier("https://github.com/hackingmaterials/matminer/blob/master/matminer/datasets/flla_2015.csv?raw=true", "URL")
+dataset_info.add_alternate_identifier("https://github.com/hackingmaterials/matminer/blob/master"
+                                      "/matminer/datasets/flla_2015.csv?raw=true", "URL")
 
 #   Add link to paper describing the dataset
 dataset_info.add_related_identifier("10.1002/qua.24917.", "DOI", "IsDescribedBy")
@@ -23,10 +24,13 @@ dataset_info.add_related_identifier("http://materialsproject.org", "URL", "IsDer
 dataset_info.set_domains(["materials science"])
 
 #   Describe the columns
-dataset_info.annotate_column("material_id", description="Materials Project ID number", data_type='string')
-dataset_info.annotate_column("e_above_hull", description="Energy above the T=0K convex hull, a measure of stability",
+dataset_info.annotate_column("material_id", description="Materials Project ID number",
+                             data_type='string')
+dataset_info.annotate_column("e_above_hull", description="Energy above the T=0K convex hull,"
+                                                         " a measure of stability",
                              units="eV/atom")
-dataset_info.annotate_column("formula", description="Chemical formula, as a dictionary", data_type='dict')
+dataset_info.annotate_column("formula", description="Chemical formula, as a dictionary",
+                             data_type='dict')
 dataset_info.annotate_column("nsites", description="Number of atoms in crystal structure")
 dataset_info.annotate_column("structure", description="Crystal structure",
                              data_type="pymatgen.core.Structure")
@@ -36,7 +40,8 @@ dataset_info.annotate_column('integer_formula', description='Composition as a st
                              data_type='string')
 dataset_info.annotate_column('formation_energy', description='Formation energy of the structure',
                              units='eV/unit-cell')
-dataset_info.annotate_column('formation_energy_per_atom', description='Formation energy of the structure',
+dataset_info.annotate_column('formation_energy_per_atom',
+                             description='Formation energy of the structure',
                              units='eV/atom')
 
 #   Mark which columns are inputs and outputs
@@ -70,7 +75,8 @@ feat_info.add_requirement('matminer', 'detect')
 
 #   Describe the inputs and outputs
 feat_info.set_inputs('list', 'List of pymtagen Composition objects',
-                     item_type={'type': 'python object', 'python_type': 'pymatgen.core.Composition'})
+                     item_type={'type': 'python object',
+                                'python_type': 'pymatgen.core.Composition'})
 feat_info.set_outputs('ndarray', 'List of features', shape=[None, len(featurizer.feature_labels())])
 
 # Make the model information

@@ -7,8 +7,8 @@ from dlhub_sdk.utils.types import simplify_numpy_dtype
 class Dataset(BaseMetadataModel):
     """Base class for describing a dataset
 
-    The Dataset class and any of its subclasses contain opreations 
-    for describing what a dataset is and how to use it. 
+    The Dataset class and any of its subclasses contain operations
+    for describing what a dataset is and how to use it.
     """
 
     def __init__(self):
@@ -23,12 +23,14 @@ class Dataset(BaseMetadataModel):
 
 class TabularDataset(Dataset):
     """Read a dataset stored as a single file in a tabular format.
-    
+
     Will read in the names of the columns, and allow users to associate
     column names with descriptions of the data provided.
-    
+
     This class is compatible with any data format readable by the Pandas
-    library. See the list of `read functions in Pandas <https://pandas.pydata.org/pandas-docs/stable/io.html>`_"""
+    library. See the list of
+    `read functions in Pandas <https://pandas.pydata.org/pandas-docs/stable/io.html>`_
+    """
 
     @classmethod
     def create_model(cls, path, format="csv", read_kwargs=None):
@@ -129,7 +131,7 @@ class TabularDataset(Dataset):
             self._get_column(c)
         self._output["dataset"]["inputs"] = list(column_names)
         return self
- 
+
     def mark_labels(self, column_names):
         """Mark a column as label
 

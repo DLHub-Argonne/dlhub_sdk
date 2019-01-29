@@ -1,8 +1,10 @@
+import json
 import os
 import sys
-import json
-import globus_sdk
+
 from configobj import ConfigObj
+import globus_sdk
+
 from dlhub_sdk import version
 
 __all__ = (
@@ -37,7 +39,7 @@ if GLOBUS_ENV:
     DLHUB_RT_OPTNAME = '{}_{}'.format(GLOBUS_ENV, DLHUB_RT_OPTNAME)
     DLHUB_AT_OPTNAME = '{}_{}'.format(GLOBUS_ENV, DLHUB_AT_OPTNAME)
     DLHUB_AT_EXPIRES_OPTNAME = '{}_{}'.format(GLOBUS_ENV,
-                                               DLHUB_AT_EXPIRES_OPTNAME)
+                                              DLHUB_AT_EXPIRES_OPTNAME)
     CLIENT_ID = {
         'sandbox':      'f9e36a20-2e1a-49e5-ba67-34cc82ca8b29',
         'test':         '2aa543de-b6c6-4aa5-9d7b-ef28e3a28cd8',
@@ -123,6 +125,7 @@ def check_logged_in():
     res = native_client.oauth2_validate_token(search_rt)
     return res['active']
 
+
 def safeprint(s):
     """
     Catch print errors.
@@ -135,6 +138,7 @@ def safeprint(s):
         sys.stdout.flush()
     except IOError:
         pass
+
 
 def format_output(dataobject):
     """
