@@ -33,6 +33,7 @@ CLIENT_ID = 'f47a891c-cfd0-443c-8db8-c72fb82fe3f7'
 DLHUB_RT_OPTNAME = 'dlhub_refresh_token'
 DLHUB_AT_OPTNAME = 'dlhub_access_token'
 DLHUB_AT_EXPIRES_OPTNAME = 'dlhub_access_token_expires'
+SEARCH_INDEX = "dlhub"
 
 GLOBUS_ENV = os.environ.get('GLOBUS_SDK_ENVIRONMENT')
 if GLOBUS_ENV:

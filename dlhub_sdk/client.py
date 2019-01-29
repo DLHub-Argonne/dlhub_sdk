@@ -4,11 +4,12 @@ from tempfile import mkstemp
 
 from globus_sdk.base import BaseClient, slash_join
 import jsonpickle
+import mdf_forge
 import mdf_toolbox
 import pandas as pd
 import requests
 
-from dlhub_sdk.config import DLHUB_SERVICE_ADDRESS, CLIENT_ID
+from dlhub_sdk.config import DLHUB_SERVICE_ADDRESS, CLIENT_ID, SEARCH_INDEX
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 
 
@@ -50,7 +51,9 @@ class DLHubClient(BaseClient):
                                          token_dir=os.path.expanduser("~/.dlhub/credentials"))
             dlh_authorizer = auth_res["dlhub"]
             search_client = auth_res["search"]
-        __search_client = search_client  # noqa: F841 (unused variable, will be used in future)
+        # Unused variable, will be used in future
+        self.__forge_client = mdf_forge.Forge(index=SEARCH_INDEX, services=[],  # noqa: F841
+                                              clients={"search": search_client})
         super(DLHubClient, self).__init__("DLHub", environment='dlhub', authorizer=dlh_authorizer,
                                           http_timeout=http_timeout, base_url=DLHUB_SERVICE_ADDRESS,
                                           **kwargs)
