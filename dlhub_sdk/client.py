@@ -169,7 +169,7 @@ class DLHubClient(BaseClient):
 
         # Send the data to DLHub
         r = self.post(servable_path, json_body=data)
-        if r.http_status is not 200:
+        if r.http_status != 200:
             raise Exception(r)
 
         # Return the result
@@ -221,7 +221,7 @@ class DLHubClient(BaseClient):
                 )
 
             # Return the task id
-            if reply.status_code is not 200:
+            if reply.status_code != 200:
                 raise Exception(reply.text)
             return reply.json()['task_id']
         finally:

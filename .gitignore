@@ -47,6 +47,9 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 
+# Files generated during tests
+dlhub_sdk/models/servables/tests/tf-model/*
+
 # Translations
 *.mo
 *.pot
