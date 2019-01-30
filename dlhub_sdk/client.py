@@ -138,7 +138,7 @@ class DLHubClient(BaseClient):
             inputs: Data to be used as input to the function. Can be a string of file paths or URLs
             input_type (string): How to send the data to DLHub. Can be "python" (which pickles
                 the data), "json" (which uses JSON to serialize the data), or "files" (which
-                sends the data as files).
+                must be a a URL or list of HTTP URLs).
         Returns:
             Reply from the service
         """
@@ -151,7 +151,7 @@ class DLHubClient(BaseClient):
         elif input_type == 'json':
             data = {'data': inputs}
         elif input_type == 'files':
-            raise NotImplementedError('Files support is not yet implemented')
+            data = {'files': inputs}
         else:
             raise ValueError('Input type not recognized: {}'.format(input_type))
 
