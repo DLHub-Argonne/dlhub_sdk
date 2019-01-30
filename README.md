@@ -76,7 +76,7 @@ That command will return a Pandas DataFrame of models, which looks something lik
 Once you get the name of a model, it can be run thorugh the client as well:
 
 ```python
-client.run(author='ryan_globusid' name='noop', inputs='my data')
+client.run('ryan_globusid/noop', inputs='my data')
 ```
 
 ### Publishing a Model

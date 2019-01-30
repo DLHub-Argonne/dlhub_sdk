@@ -24,11 +24,11 @@ class TestClient(TestCase):
         data = {"data": ["V", "Co", "Zr"]}
 
         # Test sending the data as JSON
-        res = self.dl.run(user, name, data, input_type='json')
+        res = self.dl.run("{}/{}".format(user, name), data, input_type='json')
         self.assertEqual({}, res)
 
         # Test sending the data as pickle
-        res = self.dl.run(user, name, data, input_type='python')
+        res = self.dl.run("{}/{}".format(user, name), data, input_type='python')
         self.assertEqual({}, res)
 
     def test_submit(self):
