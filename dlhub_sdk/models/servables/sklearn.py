@@ -20,7 +20,9 @@ def _hijack_baseestimator_setstate(self, state):
     _sklearn_version_global = state.get("_sklearn_version", "pre-0.18")
     _original_set_state(self, state)
 
-    sklbase.BaseEstimator.__setstate__ = _hijack_baseestimator_setstate
+
+# Define the override
+sklbase.BaseEstimator.__setstate__ = _hijack_baseestimator_setstate
 
 
 class ScikitLearnModel(BasePythonServableModel):
