@@ -7,6 +7,8 @@ from dlhub_sdk.utils.types import simplify_numpy_dtype, compose_argument_block
 
 class TestTypes(unittest.TestCase):
 
+    maxDiff = 2048
+
     def test_simplify(self):
         self.assertEqual(simplify_numpy_dtype(np.dtype('bool')), 'boolean')
         self.assertEqual(simplify_numpy_dtype(np.dtype('int32')), 'integer')
@@ -51,7 +53,7 @@ class TestTypes(unittest.TestCase):
             }, {
                 'type': 'string', 'description': 'Item 2'
             }]
-        },
+        }
         self.assertEquals(correct_block, compose_argument_block(
                                             'tuple', 'Test', element_types=[
                                                 compose_argument_block('string', 'Item 1'),
