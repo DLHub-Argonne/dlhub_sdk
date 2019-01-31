@@ -11,3 +11,4 @@ scipy>=0.19.1
 sphinx_rtd_theme>=0.4.2
 tensorflow>=1.8.0
 mdf_toolbox>=0.3.8
+mdf_forge>=0.6.5
