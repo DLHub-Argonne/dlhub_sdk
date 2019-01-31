@@ -93,7 +93,6 @@ class BaseMetadataModel:
         example, these could include options describing how to read a dataset from a CSV file or
         which class method to invoke on a Python pickle object.
         """
-        
         return cls()
 
     def read_codemeta_file(self, directory=None):
@@ -249,13 +248,13 @@ class BaseMetadataModel:
     def add_rights(self, uri=None, rights=None):
         """Any rights information for this resource. Provide a rights management statement for the
         resource or reference a service providing such information. Include embargo information if
-        applicable. Use the complete title of a license and include version information if applicable.
+        applicable. Use the complete title of a license and include
+        version information if applicable.
 
         Args:
             uri (string): URI of the rights
             rights (string): Description of the rights
         """
-
         if uri is None and rights is None:
             raise ValueError('You must defined either a URI or the rights')
 
@@ -325,7 +324,9 @@ class BaseMetadataModel:
         that describes a dataset).
 
         You must define both the identifier and how it relates to this resource. The possible types
-        of relations are listed in the `documentaiton for datacite <https://schema.datacite.org/meta/kernel-4.1/doc/DataCite-MetadataKernel_v4.1.pdf>_`
+        of relations are listed in the
+        `documentation for datacite
+        <https://schema.datacite.org/meta/kernel-4.1/doc/DataCite-MetadataKernel_v4.1.pdf>_`
         on Page 25. The most common one used in DLHub will likely be:
 
             - "IsDescribedBy": For a paper that describes a dataset or model

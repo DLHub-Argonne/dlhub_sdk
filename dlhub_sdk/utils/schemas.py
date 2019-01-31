@@ -25,6 +25,7 @@ def validate_against_dlhub_schema(document, schema_name):
     # Test the document
     validator.validate(document)
 
+
 def codemeta_to_datacite(metadata):
     """Generate datacite from codemeta metadata
 
@@ -34,7 +35,8 @@ def codemeta_to_datacite(metadata):
         (dict) datacite-compatabile metadata
     """
 
-    # Taken from: https://github.com/caltechlibrary/ames/blob/920c028f7fcceaa1baf3a645a37de587dd2dbc41/matchers/caltechdata.py#L61
+    # Taken from: https://github.com/caltechlibrary/ames/blob
+    #             /920c028f7fcceaa1baf3a645a37de587dd2dbc41/matchers/caltechdata.py#L61
 
     datacite = {}
     if 'author' in metadata:
@@ -48,7 +50,7 @@ def codemeta_to_datacite(metadata):
                 idv = a['@id']
                 split = idv.split('/')
                 idn = split[-1]
-                cre['nameIdentifiers'] = [{ \
+                cre['nameIdentifiers'] = [{
                     'nameIdentifier': idn, 'nameIdentifierScheme': 'ORCID',
                     'schemeURI': 'http://orcid.org'}]
                 # Should check for type and remove hard code URI
@@ -77,7 +79,7 @@ def codemeta_to_datacite(metadata):
             grant_info = metadata['funding'].split(',')
         if isinstance(metadata['funder'], list):
             count = 0
-            for f in metadata['funder']:
+            for funder in metadata['funder']:
                 entry = {'funderName': funder['name']}
                 if '@id' in funder:
                     element = {}

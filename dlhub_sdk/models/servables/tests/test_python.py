@@ -42,44 +42,71 @@ class TestPythonModels(unittest.TestCase):
 
         # Check the model output
         output = model.to_dict()
-        self.assertEqual(output,
-                         {'datacite':
-                              {'creators': [], 'titles': [{'title': 'Python example'}],
-                               'publisher': 'DLHub',
-                               'resourceType': {'resourceTypeGeneral': 'InteractiveResource'},
-                               'identifier': {'identifier': '10.YET/UNASSIGNED',
-                                              'identifierType': 'DOI'},
-                               'publicationYear': _year,
-                               "descriptions": [],
-                               "fundingReferences": [],
-                               "relatedIdentifiers": [],
-                               "alternateIdentifiers": [],
-                               "rightsList": []
-                               },
-                          'dlhub': {'version': __version__, 'domains': [],
-                                    'visible_to': ['public'],
-                                    "name": "class_method",
-                                    'files': {'pickle': pickle_path}},
-                          'servable': {'language': 'python', 'type': 'Python class method',
-                                       'shim': 'python.PythonClassMethodServable',
-                                       'methods': {'run': {'input': {'type': 'ndarray',
-                                                                     'description': 'Features for each entry',
-                                                                     'shape': [None, 4]},
-                                                           'output': {'type': 'ndarray',
-                                                                      'description': 'Predicted probabilities of being each iris species',
-                                                                      'shape': [None, 3]},
-                                                           'parameters': {'fake': 'kwarg'},
-                                                           'method_details': {
-                                                               'class_name': 'sklearn.svm.classes.SVC',
-                                                               'method_name': 'predict_proba'},
-                                                           }},
-                                       'dependencies': {
-                                           'python': {
-                                               'scikit-learn': skl_version,
-                                               'numpy': numpy_version,
-                                               'sklearn': '0.0'
-                                           }}
-                          }})
+        correct_output = {
+            'datacite': {
+                'creators': [],
+                'titles': [{
+                    'title': 'Python example'
+                }],
+                'publisher': 'DLHub',
+                'resourceType': {
+                    'resourceTypeGeneral': 'InteractiveResource'
+                },
+                'identifier': {
+                    'identifier': '10.YET/UNASSIGNED',
+                    'identifierType': 'DOI'
+                },
+                'publicationYear': _year,
+                "descriptions": [],
+                "fundingReferences": [],
+                "relatedIdentifiers": [],
+                "alternateIdentifiers": [],
+                "rightsList": []
+            },
+            'dlhub': {
+                'version': __version__,
+                'domains': [],
+                'visible_to': ['public'],
+                "name": "class_method",
+                'files': {
+                    'pickle': pickle_path
+                }
+            },
+            'servable': {
+                'language': 'python',
+                'type': 'Python class method',
+                'shim': 'python.PythonClassMethodServable',
+                'methods': {
+                    'run': {
+                        'input': {
+                            'type': 'ndarray',
+                            'description': 'Features for each entry',
+                            'shape': [None, 4]
+                        },
+                        'output': {
+                            'type': 'ndarray',
+                            'description': 'Predicted probabilities of being each iris species',
+                            'shape': [None, 3]
+                        },
+                        'parameters': {
+                            'fake': 'kwarg'
+                        },
+                        'method_details': {
+                            'class_name': 'sklearn.svm.classes.SVC',
+                            'method_name': 'predict_proba'
+                        },
+                    }
+                },
+                'dependencies': {
+                    'python': {
+                        'scikit-learn': skl_version,
+                        'numpy': numpy_version,
+                        'sklearn': '0.0'
+                    }
+                }
+            }
+        }
+        self.assertEqual(output, correct_output)
         self.assertEqual([pickle_path], model.list_files())
         validate_against_dlhub_schema(output, 'servable')
 
@@ -96,35 +123,63 @@ class TestPythonModels(unittest.TestCase):
 
         # Generate the output
         output = model.to_dict()
-        self.assertEqual(output,
-                         {'datacite':
-                              {'creators': [], 'titles': [{'title': 'Python example'}],
-                               'publisher': 'DLHub',
-                               'resourceType': {'resourceTypeGeneral': 'InteractiveResource'},
-                               'identifier': {'identifier': '10.YET/UNASSIGNED',
-                                              'identifierType': 'DOI'},
-                               'publicationYear': _year,
-                               "descriptions": [],
-                               "fundingReferences": [],
-                               "relatedIdentifiers": [],
-                               "alternateIdentifiers": [],
-                               "rightsList": []
-                           },
-                          'dlhub': {'version': __version__, 'domains': [], 'visible_to': ['public'],
-                                    "name": "static_method", 'files': {}},
-                          'servable': {'language': 'python', 'type': 'Python static method',
-                                       'shim': 'python.PythonStaticMethodServable',
-                                       'methods': {'run': {'input': {'type': 'list',
-                                                                     'description': 'List of numbers',
-                                                                     'item_type': {
-                                                                         'type': 'float'}},
-                                                           'output': {'type': 'float',
-                                                                      'description': 'Square root of the number'},
-                                                           'parameters': {},
-                                                           'method_details': {'module': 'math',
-                                                                              'method_name': 'sqrt',
-                                                                              'autobatch': True}}
-                                                   },
-                                       'dependencies': {'python': {}}}
-                          })
+        correct_output = {
+            'datacite': {
+                'creators': [],
+                'titles': [{
+                    'title': 'Python example'
+                }],
+                'publisher': 'DLHub',
+                'resourceType': {
+                    'resourceTypeGeneral': 'InteractiveResource'
+                },
+                'identifier': {
+                    'identifier': '10.YET/UNASSIGNED',
+                    'identifierType': 'DOI'
+                },
+                'publicationYear': _year,
+                "descriptions": [],
+                "fundingReferences": [],
+                "relatedIdentifiers": [],
+                "alternateIdentifiers": [],
+                "rightsList": []
+            },
+            'dlhub': {
+                'version': __version__,
+                'domains': [],
+                'visible_to': ['public'],
+                "name": "static_method",
+                'files': {}
+            },
+            'servable': {
+                'language': 'python',
+                'type': 'Python static method',
+                'shim': 'python.PythonStaticMethodServable',
+                'methods': {
+                    'run': {
+                        'input': {
+                            'type': 'list',
+                            'description': 'List of numbers',
+                            'item_type': {
+                                'type': 'float'
+                            }
+                        },
+                        'output': {
+                            'type': 'float',
+                            'description': 'Square root of the number'
+                        },
+                        'parameters': {},
+                        'method_details': {
+                            'module': 'math',
+                            'method_name': 'sqrt',
+                            'autobatch': True
+                        }
+                    }
+                },
+                'dependencies': {
+                    'python': {}
+                }
+            }
+        }
+        self.assertEqual(output, correct_output)
         validate_against_dlhub_schema(output, 'servable')

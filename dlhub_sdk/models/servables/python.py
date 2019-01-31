@@ -96,8 +96,7 @@ class PythonClassMethodModel(BasePythonServableModel):
         # Get the class name
         with open(path, 'rb') as fp:
             obj = pkl.load(fp)
-            class_name = '{}.{}'.format(obj.__class__.__module__,
-                                               obj.__class__.__name__)
+            class_name = '{}.{}'.format(obj.__class__.__module__, obj.__class__.__name__)
 
         output._output["servable"]["methods"]["run"]["method_details"].update({
             'class_name': class_name

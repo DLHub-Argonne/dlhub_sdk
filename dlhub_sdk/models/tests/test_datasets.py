@@ -1,15 +1,14 @@
-from dlhub_sdk.models.datasets import Dataset, TabularDataset
-from dlhub_sdk.version import __version__
-
 from datetime import datetime
+from glob import glob
+import os
 from tempfile import mkstemp
 from zipfile import ZipFile
-from glob import glob
-import unittest
-import uuid
-import os
 
+import unittest
+
+from dlhub_sdk.models.datasets import Dataset, TabularDataset
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
+from dlhub_sdk.version import __version__
 
 
 _year = str(datetime.now().year)
@@ -33,56 +32,73 @@ class TestModels(unittest.TestCase):
         m = Dataset().set_authors(["Ward, Logan"], ["University of Chicago"])\
             .set_title("Example dataset").add_alternate_identifier("10.11", "DOI")\
             .add_related_identifier("10.11", "DOI", 'IsDescribedBy')\
-            .add_funding_reference("ANL LDRD", '1', 'ISNI', '201801', 'DLHub', 'http://funding.uri')\
+            .add_funding_reference("ANL LDRD", '1', 'ISNI', '201801',
+                                   'DLHub', 'http://funding.uri')\
             .set_version(1)\
             .add_rights("https://www.gnu.org/licenses/gpl-3.0.en.html", "GPL v3.0")\
             .set_abstract("Abstract").set_methods("Methods")\
             .set_visibility(['public']).set_domains(["materials science"]).set_name("example_data")
-        self.assertEqual(m.to_dict(),
-                         {"datacite":
-                              {"creators": [{"givenName": "Logan", "familyName": "Ward",
-                                             "affiliations": "University of Chicago"}],
-                               "titles": [{'title': "Example dataset"}],
-                               "publisher": 'DLHub',
-                               "publicationYear": _year,
-                               "version": '1',
-                               "resourceType": {"resourceTypeGeneral": "Dataset"},
-                               "descriptions": [{
-                                   "description": "Abstract", "descriptionType": "Abstract"
-                               }, {
-                                   "description": "Methods", "descriptionType": "Methods"
-                               }],
-                               "fundingReferences": [{
-                                   "awardNumber": {"awardNumber": "201801",
-                                                   "awardURI": "http://funding.uri"},
-                                   "awardTitle": "DLHub",
-                                   "funderIdentifier": {'funderIdentifier': '1',
-                                                        'funderIdentifierType': 'ISNI'},
-                                   "funderName": "ANL LDRD"
-                               }],
-                               "relatedIdentifiers": [{
-                                   "relatedIdentifier": "10.11",
-                                   "relatedIdentifierType": "DOI",
-                                   "relationType": "IsDescribedBy"
-                               }],
-                               "alternateIdentifiers": [{
-                                   "alternateIdentifier": "10.11",
-                                   "alternateIdentifierType": "DOI"
-                               }],
-                               "rightsList": [{
-                                   "rightsURI": "https://www.gnu.org/licenses/gpl-3.0.en.html",
-                                   "rights": "GPL v3.0"
-                               }],
-                               'identifier': {'identifier': '10.YET/UNASSIGNED',
-                                              'identifierType': 'DOI'},
-                               },
-                          "dlhub": {
-                              "version": __version__,
-                              "visible_to": ["public"],
-                              "domains": ["materials science"],
-                              "name": "example_data",
-                              "files": {}
-                          }, "dataset": {}})
+        correct_entry = {
+            "datacite": {
+                "creators": [{
+                    "givenName": "Logan",
+                    "familyName": "Ward",
+                    "affiliations": "University of Chicago"
+                }],
+                "titles": [{
+                    'title': "Example dataset"
+                }],
+                "publisher": 'DLHub',
+                "publicationYear": _year,
+                "version": '1',
+                "resourceType": {
+                    "resourceTypeGeneral": "Dataset"
+                },
+                "descriptions": [{
+                   "description": "Abstract", "descriptionType": "Abstract"
+                }, {
+                   "description": "Methods", "descriptionType": "Methods"
+                }],
+                "fundingReferences": [{
+                    "awardNumber": {
+                        "awardNumber": "201801",
+                        "awardURI": "http://funding.uri"
+                    },
+                    "awardTitle": "DLHub",
+                    "funderIdentifier": {
+                        'funderIdentifier': '1',
+                        'funderIdentifierType': 'ISNI'
+                    },
+                    "funderName": "ANL LDRD"
+                }],
+                "relatedIdentifiers": [{
+                    "relatedIdentifier": "10.11",
+                    "relatedIdentifierType": "DOI",
+                    "relationType": "IsDescribedBy"
+                }],
+                "alternateIdentifiers": [{
+                    "alternateIdentifier": "10.11",
+                    "alternateIdentifierType": "DOI"
+                }],
+                "rightsList": [{
+                    "rightsURI": "https://www.gnu.org/licenses/gpl-3.0.en.html",
+                    "rights": "GPL v3.0"
+                }],
+                'identifier': {
+                    'identifier': '10.YET/UNASSIGNED',
+                    'identifierType': 'DOI'
+                },
+            },
+            "dlhub": {
+                "version": __version__,
+                "visible_to": ["public"],
+                "domains": ["materials science"],
+                "name": "example_data",
+                "files": {}
+            },
+            "dataset": {}
+        }
+        self.assertEqual(m.to_dict(), correct_entry)
         validate_against_dlhub_schema(m.to_dict(), "dataset")
 
     def test_tabular_dataset(self):
@@ -210,6 +226,7 @@ class TestModels(unittest.TestCase):
 
         # Check that it produces valid datacite
         validate_against_dlhub_schema(m['datacite'], 'datacite-v4.1')
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -101,7 +101,7 @@ class BaseServableModel(BaseMetadataModel):
             try:
                 module = importlib.import_module(library)
                 version = module.__version__
-            except:
+            except Exception:
                 version = pkg_resources.get_distribution(library).version
         elif version == "latest":
             pypi_req = requests.get('https://pypi.org/pypi/{}/json'.format(library))

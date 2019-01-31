@@ -14,5 +14,5 @@ print('Trained a SVC model')
 
 # Save the model using pickle
 with open('model.pkl', 'wb') as fp:
-      pkl.dump(model, fp)
+    pkl.dump(model, fp)
 print('Saved model to disk')
