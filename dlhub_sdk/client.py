@@ -241,3 +241,84 @@ class DLHubClient(BaseClient):
 
         task_id = response.data['task_id']
         return task_id
+
+    def search(self, q=None, index=None, advanced=False, limit=None, info=False,
+               reset_query=True):
+        """Execute a search and return the results.
+
+        Args:
+            q (str): The query to execute. **Default:** The current helper-formed query, if any.
+                    There must be some query to execute.
+            index (str): The Search index to search on. **Default:** The current index.
+            advanced (bool): If ``True``, will submit query in "advanced" mode
+                    to enable field matches and other advanced features.
+                    If ``False``, only basic fulltext term matches will be supported.
+                    **Default:** ``False`` if no helpers have been used to build the query, or
+                    ``True`` if helpers have been used.
+            limit (int): The maximum number of results to return.
+                    **Default:** ``None``, for no limit.
+            info (bool): If ``False``, search will return a list of the results.
+                    If ``True``, search will return a tuple containing the results list
+                    and other information about the query.
+                    **Default:** ``False``.
+            reset_query (bool): If ``True``, will destroy the current query after execution
+                    and start a fresh one.
+                    If ``False``, will keep the current query set.
+                    **Default:** ``True``.
+        Returns:
+            If ``info`` is ``False``, *list*: The search results.
+            If ``info`` is ``True``, *tuple*: The search results,
+            and a dictionary of query information.
+        """
+        return self.__forge_client.search(q=q, index=index, advanced=advanced, limit=limit,
+                                          info=info, reset_query=reset_query)
+
+    def match_authors(self, authors, match_all=True):
+        """Add authors to the query.
+
+        Args:
+            authors (str or list of str): The authors to match.
+            match_all (bool): If ``True``, will require all authors be on any results.
+                    If ``False``, will only require one author to be in results.
+                    Default ``True``.
+
+        Returns:
+            DLHubClient: Self
+        """
+        if not authors:
+            return self
+        if isinstance(authors, str):
+            authors = [authors]
+        # First author should be in new group and required
+        self.__forge_client.match_field(field="datacite.creators.creatorName", value=authors[0],
+                                        required=True, new_group=True)
+        # Other authors should stay in that group
+        for author in authors[1:]:
+            self.__forge_client.match_field(field="datacite.creators.creatorName", value=author,
+                                            required=match_all, new_group=False)
+        return self
+
+    def match_domains(self, domains, match_all=True):
+        """Add domains to the query.
+
+        Args:
+            domains (str or list of str): The domains to match.
+            match_all (bool): If ``True``, will require all domains be on any results.
+                    If ``False``, will only require one domain to be in results.
+                    Default ``True``.
+
+        Returns:
+            DLHubClient: Self
+        """
+        if not domains:
+            return self
+        if isinstance(domains, str):
+            domains = [domains]
+        # First domain should be in new group and required
+        self.__forge_client.match_field(field="dlhub.domains", value=domains[0],
+                                        required=True, new_group=True)
+        # Other domains should stay in that group
+        for domain in domains[1:]:
+            self.__forge_client.match_field(field="dlhub.domains", value=domain,
+                                            required=match_all, new_group=False)
+        return self
