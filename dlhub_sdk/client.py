@@ -322,3 +322,31 @@ class DLHubClient(BaseClient):
             self.__forge_client.match_field(field="dlhub.domains", value=domain,
                                             required=match_all, new_group=False)
         return self
+
+    def search_by_authors(self, authors, match_all=True, index=None, limit=None, info=False):
+        """Execute a search for the given authors.
+        This method is equivalent to ``.match_authors(...).search(...)``.
+
+        Note:
+            This method will use terms from the current query, and resets the current query.
+
+        Args:
+            authors (str or list of str): The authors to match.
+            match_all (bool): If ``True``, will require all authors be on any results.
+                    If ``False``, will only require one author to be in results.
+                    Default ``True``.
+            index (str): The Search index to search on. **Default:** The current index.
+            limit (int): The maximum number of results to return.
+                    **Default:** ``None``, for no limit.
+            info (bool): If ``False``, search will return a list of the results.
+                    If ``True``, search will return a tuple containing the results list
+                    and other information about the query.
+                    **Default:** ``False``.
+
+        Returns:
+            If ``info`` is ``False``, *list*: The search results.
+            If ``info`` is ``True``, *tuple*: The search results,
+            and a dictionary of query information.
+        """
+        return self.match_authors(authors, match_all=match_all).search(index=index,
+                                                                       limit=limit, info=info)
