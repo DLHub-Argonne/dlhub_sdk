@@ -53,6 +53,7 @@ class TestPipeline(unittest.TestCase):
                 'domains': [],
                 'visible_to': ['public'],
                 'name': 'numpy_test',
+                'type': 'pipeline',
                 'files': {}
             },
             'pipeline': {

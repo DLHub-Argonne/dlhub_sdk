@@ -20,6 +20,9 @@ class BaseServableModel(BaseMetadataModel):
         #   (which would fit the definition of software)
         self._output['datacite']['resourceType'] = {'resourceTypeGeneral': 'InteractiveResource'}
 
+        # Define artifact type
+        self._output['dlhub']['type'] = 'servable'
+
         # Initialize the model running-information
         self._output['servable'] = {
             'methods': {'run': {}},

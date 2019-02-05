@@ -67,7 +67,8 @@ class TestPythonModels(unittest.TestCase):
                 'version': __version__,
                 'domains': [],
                 'visible_to': ['public'],
-                "name": "class_method",
+                'name': 'class_method',
+                'type': 'servable',
                 'files': {
                     'pickle': pickle_path
                 }
@@ -149,6 +150,7 @@ class TestPythonModels(unittest.TestCase):
                 'domains': [],
                 'visible_to': ['public'],
                 "name": "static_method",
+                'type': 'servable',
                 'files': {}
             },
             'servable': {

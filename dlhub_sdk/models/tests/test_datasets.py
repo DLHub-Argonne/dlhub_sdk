@@ -94,6 +94,7 @@ class TestModels(unittest.TestCase):
                 "visible_to": ["public"],
                 "domains": ["materials science"],
                 "name": "example_data",
+                'type': 'dataset',
                 "files": {}
             },
             "dataset": {}
@@ -132,6 +133,7 @@ class TestModels(unittest.TestCase):
                                                  "visible_to": ["public"],
                                                  "domains": [],
                                                  "name": "example_dataset",
+                                                 "type": "dataset",
                                                  "files": {'data': data_path}},
                                        "dataset": {"columns": [
                                                        {"name": "x",

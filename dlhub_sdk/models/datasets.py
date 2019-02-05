@@ -20,6 +20,9 @@ class Dataset(BaseMetadataModel):
         # Initialize the "dataset" block
         self._output['dataset'] = {}
 
+        # Add dataset type to dlhub block
+        self._output['dlhub']['type'] = 'dataset'
+
 
 class TabularDataset(Dataset):
     """Read a dataset stored as a single file in a tabular format.
