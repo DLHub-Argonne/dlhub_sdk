@@ -25,6 +25,9 @@ class PipelineModel(BaseMetadataModel):
         # Add list of pipeline steps
         self._output['pipeline'] = {'steps': []}
 
+        # Define artifact type
+        self._output['dlhub']['type'] = 'pipeline'
+
     def add_step(self, author, name, description, parameters=None):
         """Add a step to the pipeline
 
