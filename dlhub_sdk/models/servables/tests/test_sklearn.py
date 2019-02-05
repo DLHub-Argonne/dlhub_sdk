@@ -46,6 +46,7 @@ class TestSklearn(unittest.TestCase):
                 "visible_to": ["public"],
                 'name': 'sklearn',
                 "domains": [],
+                'type': 'servable',
                 'files': {
                     'model': model_path
                 }

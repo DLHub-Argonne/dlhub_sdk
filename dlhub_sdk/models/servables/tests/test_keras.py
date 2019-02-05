@@ -53,6 +53,7 @@ class TestKeras(TestCase):
                              "rightsList": []},
                 "dlhub": {"version": __version__, "domains": [],
                           "visible_to": ["public"],
+                          'type': 'servable',
                           "name": "mlp", "files": {"model": model_path}},
                 "servable": {"methods": {"run": {
                     "input": {"type": "ndarray", "description": "Tensor", "shape": [None, 1]},
