@@ -242,8 +242,12 @@ class DLHubClient(BaseClient):
         task_id = response.data['task_id']
         return task_id
 
+    # ***********************************************
+    # * Search function
+    # ***********************************************
+
     def search(self, q=None, index=None, advanced=False, limit=None, info=False,
-               reset_query=True):
+               reset_query=True, only_functions=False):
         """Execute a search and return the results.
 
         Args:
@@ -265,13 +269,27 @@ class DLHubClient(BaseClient):
                     and start a fresh one.
                     If ``False``, will keep the current query set.
                     **Default:** ``True``.
+            only_functions (bool): If ``True``, will filter the result entries and only
+                    return the ``servable.methods`` information, if present.
+                    If ``False``, will return the full result entries.
+                    **Default**: ``False``.
         Returns:
             If ``info`` is ``False``, *list*: The search results.
             If ``info`` is ``True``, *tuple*: The search results,
             and a dictionary of query information.
         """
-        return self.__forge_client.search(q=q, index=index, advanced=advanced, limit=limit,
-                                          info=info, reset_query=reset_query)
+        res = self.__forge_client.search(q=q, index=index, advanced=advanced, limit=limit,
+                                         info=info, reset_query=reset_query)
+        # Filter out everything except servable.methods if requested
+        if only_functions:
+            entries = res[0] if info else res
+            res = [entry["servable"]["methods"] for entry in entries
+                   if entry.get("servable", {}).get("methods", None)]
+        return res
+
+    # ***********************************************
+    # * Match field functions
+    # ***********************************************
 
     def match_authors(self, authors, match_all=True):
         """Add authors to the query.
@@ -322,6 +340,10 @@ class DLHubClient(BaseClient):
             self.__forge_client.match_field(field="dlhub.domains", value=domain,
                                             required=match_all, new_group=False)
         return self
+
+    # ***********************************************
+    # * Premade search functions
+    # ***********************************************
 
     def search_by_authors(self, authors, match_all=True, index=None, limit=None, info=False):
         """Execute a search for the given authors.
