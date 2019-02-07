@@ -381,6 +381,42 @@ class DLHubClient(BaseClient):
     # * Match field functions
     # ***********************************************
 
+    def match_owner(self, owner):
+        """Add a model owner to the query.
+
+        Args:
+            owner (str): The name of the owner of the model.
+
+        Returns:
+            DLHubClient: Self
+        """
+        if owner:
+            self.match_field("dlhub.owner", owner)
+        return self
+
+    def match_model(self, model_name=None, owner=None, publication_date=None):
+        """Add identifying model information to the query.
+        If this method is called without any valid arguments, it will do nothing.
+
+        Args:
+            model_name (str): The name of the model. **Default**: None, to match
+                    all model names.
+            owner (str): The name of the owner of the model. **Default**: ``None``,
+                    to match all owners.
+            publication_date (int): The UNIX timestamp for when the model was published.
+                    **Default**: ``None``, to match all versions.
+
+        Returns:
+            DLHubClient: Self
+        """
+        if model_name:
+            self.match_field("dlhub.name", model_name)
+        if owner:
+            self.match_owner(owner)
+        if publication_date:
+            self.match_field("dlhub.publication_date", publication_date)
+        return self
+
     def match_authors(self, authors, match_all=True):
         """Add authors to the query.
 
@@ -388,7 +424,7 @@ class DLHubClient(BaseClient):
             authors (str or list of str): The authors to match.
             match_all (bool): If ``True``, will require all authors be on any results.
                     If ``False``, will only require one author to be in results.
-                    Default ``True``.
+                    **Default**: ``True``.
 
         Returns:
             DLHubClient: Self
@@ -413,7 +449,7 @@ class DLHubClient(BaseClient):
             domains (str or list of str): The domains to match.
             match_all (bool): If ``True``, will require all domains be on any results.
                     If ``False``, will only require one domain to be in results.
-                    Default ``True``.
+                    **Default**: ``True``.
 
         Returns:
             DLHubClient: Self
@@ -430,9 +466,57 @@ class DLHubClient(BaseClient):
                              new_group=False)
         return self
 
+    def match_doi(self, doi):
+        """Add a DOI to the query.
+
+        Args:
+            doi (str): The DOI to match.
+
+        Returns:
+            DLHubClient: Self
+        """
+        if doi:
+            self.match_field("datacite.doi", doi)
+        return self
+
     # ***********************************************
     # * Premade search functions
     # ***********************************************
+
+    def search_by_model(self, model_name=None, owner=None, publication_date=None, index=None,
+                        limit=None, info=False):
+        """Add identifying model information to the query.
+        If this method is called without at least one of ``model_name``, ``owner``,
+        or ``publication_date``, it will error.
+
+        Note:
+            This method will use terms from the current query, and resets the current query.
+
+        Args:
+            model_name (str): The name of the model. **Default**: None, to match
+                    all model names.
+            owner (str): The name of the owner of the model. **Default**: ``None``,
+                    to match all owners.
+            publication_date (int): The UNIX timestamp for when the model was published.
+                    **Default**: ``None``, to match all versions.
+            index (str): The Search index to search on. **Default:** The current index.
+            limit (int): The maximum number of results to return.
+                    **Default:** ``None``, for no limit.
+            info (bool): If ``False``, search will return a list of the results.
+                    If ``True``, search will return a tuple containing the results list
+                    and other information about the query.
+                    **Default:** ``False``.
+
+        Returns:
+            If ``info`` is ``False``, *list*: The search results.
+            If ``info`` is ``True``, *tuple*: The search results,
+            and a dictionary of query information.
+        """
+        if not model_name and not owner and not publication_date:
+            raise ValueError("One of 'model_name', 'owner', or 'publication_date' is required.")
+        return (self.match_model(model_name=model_name, owner=owner,
+                                 publication_date=publication_date)
+                    .search(index=index, limit=limit, info=info))
 
     def search_by_authors(self, authors, match_all=True, index=None, limit=None, info=False):
         """Execute a search for the given authors.
@@ -445,7 +529,7 @@ class DLHubClient(BaseClient):
             authors (str or list of str): The authors to match.
             match_all (bool): If ``True``, will require all authors be on any results.
                     If ``False``, will only require one author to be in results.
-                    Default ``True``.
+                    **Default**: ``True``.
             index (str): The Search index to search on. **Default:** The current index.
             limit (int): The maximum number of results to return.
                     **Default:** ``None``, for no limit.
