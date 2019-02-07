@@ -483,8 +483,8 @@ class DLHubClient(BaseClient):
     # * Premade search functions
     # ***********************************************
 
-    def search_by_model(self, model_name=None, owner=None, publication_date=None, index=None,
-                        limit=None, info=False):
+    def search_by_model(self, model_name=None, owner=None, publication_date=None,
+                        only_latest=False, index=None, limit=None, info=False):
         """Add identifying model information to the query.
         If this method is called without at least one of ``model_name``, ``owner``,
         or ``publication_date``, it will error.
@@ -499,6 +499,9 @@ class DLHubClient(BaseClient):
                     to match all owners.
             publication_date (int): The UNIX timestamp for when the model was published.
                     **Default**: ``None``, to match all versions.
+            only_latest (bool): When ``True``, will only return the latest version
+                    of each model. When ``False``, will return all matching versions.
+                    **Default**: ``False``.
             index (str): The Search index to search on. **Default:** The current index.
             limit (int): The maximum number of results to return.
                     **Default:** ``None``, for no limit.
@@ -514,9 +517,23 @@ class DLHubClient(BaseClient):
         """
         if not model_name and not owner and not publication_date:
             raise ValueError("One of 'model_name', 'owner', or 'publication_date' is required.")
-        return (self.match_model(model_name=model_name, owner=owner,
-                                 publication_date=publication_date)
-                    .search(index=index, limit=limit, info=info))
+        results = (self.match_model(model_name=model_name, owner=owner,
+                                    publication_date=publication_date)
+                       .search(index=index, limit=limit, info=info))
+        if only_latest:
+            latest_res = {}
+            for res in results:
+                ident = res["dlhub"]["owner"] + res["dlhub"]["name"]
+                # If res not in latest_res, or res version is newer than latest_res
+                if latest_res.get("ident", -1) < res["dlhub"]["publication_date"]:
+                    latest_res[ident] = res
+            # Overwrite original results with list of latest_res values
+            if info:
+                results[0] = [r for r in latest_res.values()]
+            else:
+                results = [r for r in latest_res.values()]
+
+        return results
 
     def search_by_authors(self, authors, match_all=True, index=None, limit=None, info=False):
         """Execute a search for the given authors.
