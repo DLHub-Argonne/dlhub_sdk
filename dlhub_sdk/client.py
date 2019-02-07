@@ -243,8 +243,69 @@ class DLHubClient(BaseClient):
         return task_id
 
     # ***********************************************
-    # * Search function
+    # * Core functions
     # ***********************************************
+
+    def match_field(self, field, value, required=True, new_group=False):
+        """Add a ``field:value`` term to the query.
+        Matches will have the ``value`` in the ``field``.
+
+        Arguments:
+            field (str): The field to check for the value.
+                    The field must be namespaced according to Elasticsearch rules
+                    using the dot syntax.
+                    For example, ``"dlhub.name"`` is the ``name`` field
+                    of the ``dlhub`` dictionary.
+            value (str): The value to match.
+            required (bool): If ``True``, will add term with ``AND``.
+                    If ``False``, will use ``OR``. **Default:** ``True``.
+            new_group (bool): If ``True``, will separate the term into a new parenthetical group.
+                    If ``False``, will not.
+                    **Default:** ``False``.
+
+        Returns:
+            DLHubClient: Self
+        """
+        self.__forge_client.match_field(field, value, required=required, new_group=new_group)
+        return self
+
+    def exclude_field(self, field, value, new_group=False):
+        """Exclude a ``field:value`` term from the query.
+        Matches will NOT have the ``value`` in the ``field``.
+
+        Arguments:
+            field (str): The field to check for the value.
+                    The field must be namespaced according to Elasticsearch rules
+                    using the dot syntax.
+                    For example, ``"dlhub.name"`` is the ``name`` field
+                    of the ``dlhub`` dictionary.
+            value (str): The value to exclude.
+            new_group (bool): If ``True``, will separate term the into a new parenthetical group.
+                    If ``False``, will not.
+                    **Default:** ``False``.
+
+        Returns:
+            DLHubClient: Self
+        """
+        self.__forge_client.exclude_field(field, value, new_group=new_group)
+        return self
+
+    def exclusive_match(self, field, value):
+        """Match exactly the given value(s), with no other data in the field.
+
+        Arguments:
+            field (str): The field to check for the value.
+                    The field must be namespaced according to Elasticsearch rules
+                    using the dot syntax.
+                    For example, ``"dlhub.name"`` is the ``name`` field
+                    of the ``dlhub`` dictionary.
+            value (str or list of str): The value(s) to match exactly.
+
+        Returns:
+            DLHubClient: Self
+        """
+        self.__forge_client.exclusive_match(field=field, value=value)
+        return self
 
     def search(self, q=None, index=None, advanced=False, limit=None, info=False,
                reset_query=True, only_functions=False):
@@ -273,6 +334,7 @@ class DLHubClient(BaseClient):
                     return the ``servable.methods`` information, if present.
                     If ``False``, will return the full result entries.
                     **Default**: ``False``.
+
         Returns:
             If ``info`` is ``False``, *list*: The search results.
             If ``info`` is ``True``, *tuple*: The search results,
@@ -286,6 +348,34 @@ class DLHubClient(BaseClient):
             res = [entry["servable"]["methods"] for entry in entries
                    if entry.get("servable", {}).get("methods", None)]
         return res
+
+    def show_fields(self, index=None):
+        """Retrieve and return the mapping for the given metadata block.
+
+        Arguments:
+            index (str): The Search index to map. **Default:** The current index.
+
+        Returns:
+            dict: ``field:datatype`` pairs.
+        """
+        return self.__forge_client.show_fields(block="all", index=index)
+
+    def current_query(self):
+        """Return the current query string.
+
+        Returns:
+            str: The current query.
+        """
+        return self.__forge_client.current_query()
+
+    def reset_query(self):
+        """Destroy the current query and create a fresh one.
+        This method should not be chained.
+
+        Returns:
+            None
+        """
+        return self.__forge_client.reset_query()
 
     # ***********************************************
     # * Match field functions
@@ -308,12 +398,12 @@ class DLHubClient(BaseClient):
         if isinstance(authors, str):
             authors = [authors]
         # First author should be in new group and required
-        self.__forge_client.match_field(field="datacite.creators.creatorName", value=authors[0],
-                                        required=True, new_group=True)
+        self.match_field(field="datacite.creators.creatorName", value=authors[0], required=True,
+                         new_group=True)
         # Other authors should stay in that group
         for author in authors[1:]:
-            self.__forge_client.match_field(field="datacite.creators.creatorName", value=author,
-                                            required=match_all, new_group=False)
+            self.match_field(field="datacite.creators.creatorName", value=author,
+                             required=match_all, new_group=False)
         return self
 
     def match_domains(self, domains, match_all=True):
@@ -333,12 +423,11 @@ class DLHubClient(BaseClient):
         if isinstance(domains, str):
             domains = [domains]
         # First domain should be in new group and required
-        self.__forge_client.match_field(field="dlhub.domains", value=domains[0],
-                                        required=True, new_group=True)
+        self.match_field(field="dlhub.domains", value=domains[0], required=True, new_group=True)
         # Other domains should stay in that group
         for domain in domains[1:]:
-            self.__forge_client.match_field(field="dlhub.domains", value=domain,
-                                            required=match_all, new_group=False)
+            self.match_field(field="dlhub.domains", value=domain, required=match_all,
+                             new_group=False)
         return self
 
     # ***********************************************

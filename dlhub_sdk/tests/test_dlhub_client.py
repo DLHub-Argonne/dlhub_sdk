@@ -8,7 +8,7 @@ from dlhub_sdk.client import DLHubClient
 class TestClient(TestCase):
 
     def setUp(self):
-        self.dl = DLHubClient.login(http_timeout=10)
+        self.dl = DLHubClient(http_timeout=10)
 
     def test_dlhub_init(self):
         self.assertIsInstance(self.dl, DLHubClient)
