@@ -7,7 +7,8 @@ env:
 - KERAS_VERSION=2.2.2
 before_install:
 - openssl aes-256-cbc -K $encrypted_ac5a6dd41c09_key -iv $encrypted_ac5a6dd41c09_iv
-  -in test-files/DLHub_Client_tokens.json.enc -out test-files/DLHub_Client_tokens.json -d
+  -in test-files/DLHub_Client_tokens.json.enc -out test-files/DLHub_Client_tokens.json
+  -d
 - mkdir -p ~/.dlhub/credentials
 - cp test-files/DLHub_Client_tokens.json ~/.dlhub/credentials
 install:
