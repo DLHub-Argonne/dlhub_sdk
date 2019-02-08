@@ -58,26 +58,6 @@ class DLHubClient(BaseClient):
                                           http_timeout=http_timeout, base_url=DLHUB_SERVICE_ADDRESS,
                                           **kwargs)
 
-    @classmethod
-    def login(cls, force=False, **kwargs):
-        """Create a DLHubClient with credentials
-
-        Either uses the credentials already saved on the system or, if no credentials are present
-        or ``force=True``, runs a login procedure to get new credentials
-
-        Keyword arguments are passed to the DLHubClient constructor
-
-        Args:
-            force (bool): Whether to force a login to get new credentials.
-        Returns:
-            (DLHubClient) A client complete with proper credentials.
-        """
-        auth_res = mdf_toolbox.login(services=["search", "dlhub"], app_name="DLHub_Client",
-                                     token_dir=os.path.expanduser("~/.dlhub/credentials"),
-                                     clear_old_tokens=force)
-        return DLHubClient(dlh_authorizer=auth_res["dlhub"], search_client=auth_res["search"],
-                           **kwargs)
-
     def _get_servables(self):
         """Get all of the servables available in the service
 
