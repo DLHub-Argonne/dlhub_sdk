@@ -32,7 +32,6 @@ class TestClient(TestCase):
         res = self.dl.run("{}/{}".format(user, name), data, input_type='python')
         self.assertEqual({}, res)
 
-    @skip
     def test_submit(self):
         # Make an example function
         model = PythonStaticMethodModel.create_model('numpy.linalg', 'norm')
