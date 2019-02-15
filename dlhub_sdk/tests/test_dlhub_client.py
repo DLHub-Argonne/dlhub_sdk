@@ -15,9 +15,15 @@ class TestClient(TestCase):
 
     def test_get_servables(self):
         r = self.dl.get_servables()
-        self.assertIsInstance(r, pd.DataFrame)
-        self.assertGreater(r.shape[-1], 0)
-        self.assertNotEqual(r.shape[0], 0)
+        self.assertIsInstance(r, list)
+        self.assertIn('dlhub', r[0])
+
+        # Make sure there are no duplicates
+        self.assertEqual(len(r), len(set(i['dlhub']['shorthand_name'] for i in r)))
+
+        # Get with all versions of the model
+        r = self.dl.get_servables(False)
+        self.assertNotEqual(len(r), len(set(i['dlhub']['shorthand_name'] for i in r)))
 
     def test_run(self):
         user = "ryan_globusid"

@@ -68,17 +68,35 @@ class DLHubClient(BaseClient):
         r = self.get("servables")
         return pd.DataFrame(r.data)
 
-    def get_servables(self):
+    def get_servables(self, only_latest_version=True):
         """Get all of the servables available in the service
 
-        This is for backwards compatibility. Previous demos relied on this function
-        prior to it being made an internal function.
-
+        Args:
+            only_latest_version (bool): Whether to only return the latest version of each model
         Returns:
             (pd.DataFrame) Summary of all the models available in the service
         """
 
-        return self._get_servables()
+        # Get all of the models
+        results, info = self.__forge_client.match_field('dlhub.type', 'servable')\
+            .add_sort('dlhub.owner', ascending=True).add_sort('dlhub.name', ascending=False)\
+            .add_sort('dlhub.publication_date', ascending=False).search(info=True)
+        if info['total_query_matches'] > info['query']['limit']:
+            raise RuntimeError('DLHub contains more servables than we can return in one entry. '
+                               'DLHub SDK needs to be updated.')
+
+        if only_latest_version:
+            # Sort out only the most recent versions (they come first in the sorted list
+            names = set()
+            output = []
+            for r in results:
+                name = r['dlhub']['shorthand_name']
+                if name not in names:
+                    names.add(name)
+                    output.append(r)
+            results = output
+
+        return results
 
     def list_servables(self):
         """Get a list of the servables available in the service
