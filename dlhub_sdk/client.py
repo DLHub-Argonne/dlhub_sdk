@@ -5,7 +5,6 @@ from tempfile import mkstemp
 from globus_sdk.base import BaseClient, slash_join
 from mdf_toolbox.search_helper import SEARCH_LIMIT
 from mdf_toolbox import login
-import pandas as pd
 import jsonpickle
 import requests
 
@@ -62,16 +61,6 @@ class DLHubClient(BaseClient):
         """Access a query of the DLHub Search repository"""
         return DLHubSearchHelper(search_client=self._search_client)
 
-    def _get_servables(self):
-        """Get all of the servables available in the service
-
-        Returns:
-            (pd.DataFrame) Summary of all the models available in the service
-        """
-
-        r = self.get("servables")
-        return pd.DataFrame(r.data)
-
     def get_servables(self, only_latest_version=True):
         """Get all of the servables available in the service
 
@@ -106,10 +95,11 @@ class DLHubClient(BaseClient):
         """Get a list of the servables available in the service
 
         Returns:
-            (pd.DataFrame) Summary of all the models available in the service
+            [string]: List of all servable names in username/servable_name format
         """
-        df_tmp = self._get_servables()
-        return df_tmp[['dlhub_name']]
+
+        servables = self.get_servables(only_latest_version=True)
+        return [x['dlhub']['shorthand_name'] for x in servables]
 
     def get_task_status(self, task_id):
         """Get the status of a DLHub task.
@@ -134,7 +124,7 @@ class DLHubClient(BaseClient):
         """
 
         # Create a query for a single model
-        query = self.query.match_field("dlhub.name", name)\
+        query = self.query.match_model("dlhub.name", name)\
             .match_field("dlhub.owner", owner).add_sort("dlhub.publication_date", False)\
             .search(limit=1)
 
@@ -259,6 +249,7 @@ class DLHubClient(BaseClient):
         task_id = response.data['task_id']
         return task_id
 
+    # TODO: Make everything "servable"
     def search_by_model(self, model_name=None, owner=None, version=None,
                         only_latest=True, limit=None, info=False):
         """Add identifying model information to the query.

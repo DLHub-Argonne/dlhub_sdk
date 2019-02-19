@@ -25,6 +25,12 @@ class TestClient(TestCase):
         r = self.dl.get_servables(False)
         self.assertNotEqual(len(r), len(set(i['dlhub']['shorthand_name'] for i in r)))
 
+        # Get all servable names
+        r = self.dl.list_servables()
+        self.assertIsInstance(r, list)
+        self.assertGreater(len(r), 0)
+        self.assertIn('dlhub.test_gmail/1d_norm', r)
+
     def test_run(self):
         user = "ryan_globusid"
         name = "noop"
