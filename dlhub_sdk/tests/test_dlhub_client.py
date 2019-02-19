@@ -38,6 +38,7 @@ class TestClient(TestCase):
         res = self.dl.run("{}/{}".format(user, name), data, input_type='python')
         self.assertEqual({}, res)
 
+    @skip
     def test_submit(self):
         # Make an example function
         model = PythonStaticMethodModel.create_model('numpy.linalg', 'norm')
@@ -59,3 +60,12 @@ class TestClient(TestCase):
         with self.assertRaises(AttributeError) as exc:
             self.dl.describe_servable('dlhub.test_gmail', 'nonexistant')
         self.assertIn('No such model', str(exc.exception))
+
+        # Get only the method details
+        expected = dict(description['servable']['methods'])
+        del expected['run']['method_details']
+        methods = self.dl.describe_methods('dlhub.test_gmail', '1d_norm')
+        self.assertEqual(expected, methods)
+
+        method = self.dl.describe_methods('dlhub.test_gmail', '1d_norm', 'run')
+        self.assertEqual(expected['run'], method)

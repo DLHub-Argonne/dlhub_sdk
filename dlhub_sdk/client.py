@@ -9,9 +9,9 @@ import pandas as pd
 import jsonpickle
 import requests
 
+from dlhub_sdk.utils.search import DLHubSearchHelper, get_method_details
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 from dlhub_sdk.config import DLHUB_SERVICE_ADDRESS, CLIENT_ID
-from dlhub_sdk.utils.search import DLHubSearchHelper
 
 
 class DLHubClient(BaseClient):
@@ -143,6 +143,21 @@ class DLHubClient(BaseClient):
             raise AttributeError('No such model: {}/{}'.format(owner, name))
         return query[0]
 
+    def describe_methods(self, owner, name, method=None):
+        """Get the description for the method(s) of a certain servable
+
+        Args:
+            owner (string): Username of the owner of the servable
+            name (string): Name of the servable
+            method (string): Optional: Name of the method
+        Returns:
+             dict: Description of a certain method if ``method`` provided, all methods
+                if the method name was not provided.
+        """
+
+        metadata = self.describe_servable(owner, name)
+        return get_method_details(metadata, method)
+
     def run(self, name, inputs, input_type='python'):
         """Invoke a DLHub servable
 
@@ -244,8 +259,8 @@ class DLHubClient(BaseClient):
         task_id = response.data['task_id']
         return task_id
 
-    def search_by_model(self, model_name=None, owner=None, publication_date=None,
-                        only_latest=False, index=None, limit=None, info=False):
+    def search_by_model(self, model_name=None, owner=None, version=None,
+                        only_latest=True, limit=None, info=False):
         """Add identifying model information to the query.
         If this method is called without at least one of ``model_name``, ``owner``,
         or ``publication_date``, it will error.
@@ -258,12 +273,11 @@ class DLHubClient(BaseClient):
                     all model names.
             owner (str): The name of the owner of the model. **Default**: ``None``,
                     to match all owners.
-            publication_date (int): The UNIX timestamp for when the model was published.
+            version (int): Model version, which corresponds to the date when the model was published
                     **Default**: ``None``, to match all versions.
             only_latest (bool): When ``True``, will only return the latest version
                     of each model. When ``False``, will return all matching versions.
                     **Default**: ``False``.
-            index (str): The Search index to search on. **Default:** The current index.
             limit (int): The maximum number of results to return.
                     **Default:** ``None``, for no limit.
             info (bool): If ``False``, search will return a list of the results.
@@ -276,11 +290,12 @@ class DLHubClient(BaseClient):
             If ``info`` is ``True``, *tuple*: The search results,
             and a dictionary of query information.
         """
-        if not model_name and not owner and not publication_date:
+        if not model_name and not owner and not version:
             raise ValueError("One of 'model_name', 'owner', or 'publication_date' is required.")
         results = (self.query.match_model(model_name=model_name, owner=owner,
-                                          publication_date=publication_date)
-                       .search(index=index, limit=limit, info=info))
+                                          publication_date=version)
+                       .search(limit=limit, info=info))
+
         if only_latest:
             latest_res = {}
             for res in results:
@@ -296,7 +311,7 @@ class DLHubClient(BaseClient):
 
         return results
 
-    def search_by_authors(self, authors, match_all=True, index=None, limit=None, info=False):
+    def search_by_authors(self, authors, match_all=True, limit=None, info=False):
         """Execute a search for the given authors.
         This method is equivalent to ``.match_authors(...).search(...)``.
 
@@ -308,7 +323,6 @@ class DLHubClient(BaseClient):
             match_all (bool): If ``True``, will require all authors be on any results.
                     If ``False``, will only require one author to be in results.
                     **Default**: ``True``.
-            index (str): The Search index to search on. **Default:** The current index.
             limit (int): The maximum number of results to return.
                     **Default:** ``None``, for no limit.
             info (bool): If ``False``, search will return a list of the results.
@@ -321,5 +335,4 @@ class DLHubClient(BaseClient):
             If ``info`` is ``True``, *tuple*: The search results,
             and a dictionary of query information.
         """
-        return self.match_authors(authors, match_all=match_all).search(index=index,
-                                                                       limit=limit, info=info)
+        return self.query.match_authors(authors, match_all=match_all).search(limit=limit, info=info)

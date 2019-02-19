@@ -3,6 +3,36 @@
 from mdf_toolbox.search_helper import SearchHelper
 
 
+def get_method_details(metadata, method_name=None):
+    """Get the method details for use by humans
+
+    Gets only the method fields out of the metadata record for an objecvt,
+    removes the "method_details" field, which is used only during construction
+    of the object.
+
+    Will either return the data for all methods or, if ``method_name`` is provided,
+    only a single function
+
+    Args:
+        metadata (dict): Metadata record for a servable
+        method_name (str): Optional: Name of the function to retrieve
+    Returns:
+        dict: Metadata for the servable method, or a single method of ``method_name`` is used
+    """
+
+    # Get the "methods" block
+    methods = metadata['servable']['methods']
+
+    # Remove "method_details"
+    for m in methods.values():
+        m.pop('method_details', None)
+
+    # If desired, return only a single method
+    if method_name is not None:
+        return methods[method_name]
+    return methods
+
+
 class DLHubSearchHelper(SearchHelper):
     """Helper class for building queries with DLHub"""
 
