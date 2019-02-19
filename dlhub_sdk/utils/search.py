@@ -52,12 +52,12 @@ class DLHubSearchHelper(SearchHelper):
             self.match_field("dlhub.owner", owner)
         return self
 
-    def match_model(self, model_name=None, owner=None, publication_date=None):
+    def match_servable(self, servable_name=None, owner=None, publication_date=None):
         """Add identifying model information to the query.
         If this method is called without any valid arguments, it will do nothing.
 
         Args:
-            model_name (str): The name of the model. **Default**: None, to match
+            servable_name (str): The name of the model. **Default**: None, to match
                     all model names.
             owner (str): The name of the owner of the model. **Default**: ``None``,
                     to match all owners.
@@ -67,8 +67,8 @@ class DLHubSearchHelper(SearchHelper):
         Returns:
             DLHubSearchHelper: Self
         """
-        if model_name:
-            self.match_field("dlhub.name", model_name)
+        if servable_name:
+            self.match_field("dlhub.name", servable_name)
         if owner:
             self.match_owner(owner)
         if publication_date:

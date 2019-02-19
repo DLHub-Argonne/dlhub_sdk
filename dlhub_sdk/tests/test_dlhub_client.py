@@ -65,7 +65,7 @@ class TestClient(TestCase):
         # Give it a bogus name, check the error
         with self.assertRaises(AttributeError) as exc:
             self.dl.describe_servable('dlhub.test_gmail', 'nonexistant')
-        self.assertIn('No such model', str(exc.exception))
+        self.assertIn('No such servable', str(exc.exception))
 
         # Get only the method details
         expected = dict(description['servable']['methods'])
@@ -75,3 +75,5 @@ class TestClient(TestCase):
 
         method = self.dl.describe_methods('dlhub.test_gmail', '1d_norm', 'run')
         self.assertEqual(expected['run'], method)
+
+

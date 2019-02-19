@@ -65,12 +65,12 @@ class DLHubClient(BaseClient):
         """Get all of the servables available in the service
 
         Args:
-            only_latest_version (bool): Whether to only return the latest version of each model
+            only_latest_version (bool): Whether to only return the latest version of each servable
         Returns:
-            (pd.DataFrame) Summary of all the models available in the service
+            (pd.DataFrame) Summary of all the servables available in the service
         """
 
-        # Get all of the models
+        # Get all of the servables
         results, info = self.query.match_field('dlhub.type', 'servable')\
             .add_sort('dlhub.owner', ascending=True).add_sort('dlhub.name', ascending=False)\
             .add_sort('dlhub.publication_date', ascending=False).search(info=True)
@@ -123,14 +123,14 @@ class DLHubClient(BaseClient):
             (dict) Summary of the servable
         """
 
-        # Create a query for a single model
-        query = self.query.match_model("dlhub.name", name)\
-            .match_field("dlhub.owner", owner).add_sort("dlhub.publication_date", False)\
+        # Create a query for a single servable
+        query = self.query.match_servable(name)\
+            .match_owner(owner).add_sort("dlhub.publication_date", False)\
             .search(limit=1)
 
-        # Raise error if model is not found
+        # Raise error if servable is not found
         if len(query) == 0:
-            raise AttributeError('No such model: {}/{}'.format(owner, name))
+            raise AttributeError('No such servable: {}/{}'.format(owner, name))
         return query[0]
 
     def describe_methods(self, owner, name, method=None):
@@ -152,7 +152,7 @@ class DLHubClient(BaseClient):
         """Invoke a DLHub servable
 
         Args:
-            name (string): DLHub name of the model of the form <user>/<model_name>
+            name (string): DLHub name of the servable of the form <user>/<servable_name>
             inputs: Data to be used as input to the function. Can be a string of file paths or URLs
             input_type (string): How to send the data to DLHub. Can be "python" (which pickles
                 the data), "json" (which uses JSON to serialize the data), or "files" (which
@@ -187,7 +187,7 @@ class DLHubClient(BaseClient):
         If this servable has not been published before, it will be assigned a unique identifier.
 
         If it has been published before (DLHub detects if it has an identifier), then DLHub
-        will update the model to the new version.
+        will update the servable to the new version.
 
         Args:
             model (BaseMetadataModel): Servable to be submitted
@@ -249,25 +249,24 @@ class DLHubClient(BaseClient):
         task_id = response.data['task_id']
         return task_id
 
-    # TODO: Make everything "servable"
-    def search_by_model(self, model_name=None, owner=None, version=None,
+    def search_by_servable(self, servable_name=None, owner=None, version=None,
                         only_latest=True, limit=None, info=False):
-        """Add identifying model information to the query.
-        If this method is called without at least one of ``model_name``, ``owner``,
+        """Add identifying servable information to the query.
+        If this method is called without at least one of ``servable_name``, ``owner``,
         or ``publication_date``, it will error.
 
         Note:
             This method will use terms from the current query, and resets the current query.
 
         Args:
-            model_name (str): The name of the model. **Default**: None, to match
-                    all model names.
-            owner (str): The name of the owner of the model. **Default**: ``None``,
+            servable_name (str): The name of the servable. **Default**: None, to match
+                    all servable names.
+            owner (str): The name of the owner of the servable. **Default**: ``None``,
                     to match all owners.
-            version (int): Model version, which corresponds to the date when the model was published
+            version (int): Model version, which corresponds to the date when the servable was published
                     **Default**: ``None``, to match all versions.
             only_latest (bool): When ``True``, will only return the latest version
-                    of each model. When ``False``, will return all matching versions.
+                    of each servable. When ``False``, will return all matching versions.
                     **Default**: ``False``.
             limit (int): The maximum number of results to return.
                     **Default:** ``None``, for no limit.
@@ -281,10 +280,10 @@ class DLHubClient(BaseClient):
             If ``info`` is ``True``, *tuple*: The search results,
             and a dictionary of query information.
         """
-        if not model_name and not owner and not version:
-            raise ValueError("One of 'model_name', 'owner', or 'publication_date' is required.")
-        results = (self.query.match_model(model_name=model_name, owner=owner,
-                                          publication_date=version)
+        if not servable_name and not owner and not version:
+            raise ValueError("One of 'servable_name', 'owner', or 'publication_date' is required.")
+        results = (self.query.match_servable(servable_name=servable_name, owner=owner,
+                                             publication_date=version)
                        .search(limit=limit, info=info))
 
         if only_latest:
