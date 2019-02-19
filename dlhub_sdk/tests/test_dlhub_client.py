@@ -44,7 +44,6 @@ class TestClient(TestCase):
         res = self.dl.run("{}/{}".format(user, name), data, input_type='python')
         self.assertEqual({}, res)
 
-    @skip
     def test_submit(self):
         # Make an example function
         model = PythonStaticMethodModel.create_model('numpy.linalg', 'norm')
@@ -76,4 +75,39 @@ class TestClient(TestCase):
         method = self.dl.describe_methods('dlhub.test_gmail', '1d_norm', 'run')
         self.assertEqual(expected['run'], method)
 
+    def test_search_by_servable(self):
+        with self.assertRaises(ValueError) as exc:
+            self.dl.search_by_servable()
+        self.assertTrue(str(exc.exception).startswith("One of"))
 
+        # Search for all models owned by "dlhub.test_gmail"
+        res = self.dl.search_by_servable(owner="dlhub.test_gmail", only_latest=False)
+        self.assertIsInstance(res, list)
+        self.assertGreater(len(res), 1)
+
+        # TODO: This test will break if we ever delete models after unit tests
+        # Get only those that are named 1d_norm
+        res = self.dl.search_by_servable(owner="dlhub.test_gmail", servable_name="1d_norm",
+                                         only_latest=False)
+        self.assertEqual({'1d_norm'}, set(x['dlhub']['name'] for x in res))
+        # TODO: Converting to int is a hack to deal with strings in Search
+        most_recent = max(int(x['dlhub']['publication_date']) for x in res)
+
+        # Get only the latest one
+        res = self.dl.search_by_servable(owner="dlhub.test_gmail", servable_name="1d_norm",
+                                         only_latest=True)
+        self.assertEqual(1, len(res))
+        self.assertEqual(most_recent, int(res[0]['dlhub']['publication_date']))
+
+        # Specify a version
+        res = self.dl.search_by_servable(owner="dlhub.test_gmail", servable_name="1d_norm",
+                                         version=most_recent)
+        self.assertEqual(1, len(res))
+        self.assertEqual(most_recent, int(res[0]['dlhub']['publication_date']))
+
+        # Get the latest one, and return search information
+        res, info = self.dl.search_by_servable(owner="dlhub.test_gmail", servable_name="1d_norm",
+                                               only_latest=False, info=True)
+        self.assertGreater(len(res), 0)
+        self.assertIsInstance(info, dict)
+        self.assertIn('dlhub', res[0])

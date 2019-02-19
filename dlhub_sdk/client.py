@@ -250,7 +250,7 @@ class DLHubClient(BaseClient):
         return task_id
 
     def search_by_servable(self, servable_name=None, owner=None, version=None,
-                        only_latest=True, limit=None, info=False):
+                           only_latest=True, limit=None, info=False):
         """Add identifying servable information to the query.
         If this method is called without at least one of ``servable_name``, ``owner``,
         or ``publication_date``, it will error.
@@ -288,16 +288,21 @@ class DLHubClient(BaseClient):
 
         if only_latest:
             latest_res = {}
+
+            # Loop over all results, get most recent publication for each servable
             for res in results:
                 ident = res["dlhub"]["owner"] + res["dlhub"]["name"]
+                pub_date = int(res["dlhub"]["publication_date"])
+
                 # If res not in latest_res, or res version is newer than latest_res
-                if latest_res.get("ident", -1) < res["dlhub"]["publication_date"]:
-                    latest_res[ident] = res
+                # TODO: Make publication_date an integer in Search
+                if latest_res.get(ident, ({}, -1))[1] < pub_date:
+                    latest_res[ident] = (res, pub_date)
             # Overwrite original results with list of latest_res values
             if info:
-                results[0] = [r for r in latest_res.values()]
+                results[0] = [r[0] for r in latest_res.values()]
             else:
-                results = [r for r in latest_res.values()]
+                results = [r[0] for r in latest_res.values()]
 
         return results
 
