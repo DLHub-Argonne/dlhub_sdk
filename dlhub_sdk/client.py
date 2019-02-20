@@ -2,15 +2,15 @@ import json
 import os
 from tempfile import mkstemp
 
-from globus_sdk.base import BaseClient, slash_join
-from mdf_toolbox.search_helper import SEARCH_LIMIT
-from mdf_toolbox import login
 import jsonpickle
 import requests
+from globus_sdk.base import BaseClient, slash_join
+from mdf_toolbox import login
+from mdf_toolbox.search_helper import SEARCH_LIMIT
 
-from dlhub_sdk.utils.search import DLHubSearchHelper, get_method_details
-from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 from dlhub_sdk.config import DLHUB_SERVICE_ADDRESS, CLIENT_ID
+from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
+from dlhub_sdk.utils.search import DLHubSearchHelper, get_method_details, filter_latest
 
 
 class DLHubClient(BaseClient):
@@ -267,7 +267,7 @@ class DLHubClient(BaseClient):
                     **Default**: ``None``, to match all versions.
             only_latest (bool): When ``True``, will only return the latest version
                     of each servable. When ``False``, will return all matching versions.
-                    **Default**: ``False``.
+                    **Default**: ``True``.
             limit (int): The maximum number of results to return.
                     **Default:** ``None``, for no limit.
             info (bool): If ``False``, search will return a list of the results.
@@ -282,31 +282,21 @@ class DLHubClient(BaseClient):
         """
         if not servable_name and not owner and not version:
             raise ValueError("One of 'servable_name', 'owner', or 'publication_date' is required.")
-        results = (self.query.match_servable(servable_name=servable_name, owner=owner,
-                                             publication_date=version)
-                       .search(limit=limit, info=info))
 
+        # Perform the query
+        results, info = (self.query.match_servable(servable_name=servable_name, owner=owner,
+                                                   publication_date=version)
+                         .search(limit=limit, info=True))
+
+        # Filter out the latest models
         if only_latest:
-            latest_res = {}
+            results = filter_latest(results)
 
-            # Loop over all results, get most recent publication for each servable
-            for res in results:
-                ident = res["dlhub"]["owner"] + res["dlhub"]["name"]
-                pub_date = int(res["dlhub"]["publication_date"])
-
-                # If res not in latest_res, or res version is newer than latest_res
-                # TODO: Make publication_date an integer in Search
-                if latest_res.get(ident, ({}, -1))[1] < pub_date:
-                    latest_res[ident] = (res, pub_date)
-            # Overwrite original results with list of latest_res values
-            if info:
-                results[0] = [r[0] for r in latest_res.values()]
-            else:
-                results = [r[0] for r in latest_res.values()]
-
+        if info:
+            return results, info
         return results
 
-    def search_by_authors(self, authors, match_all=True, limit=None, info=False):
+    def search_by_authors(self, authors, match_all=True, limit=None, only_latest=True):
         """Execute a search for the given authors.
         This method is equivalent to ``.match_authors(...).search(...)``.
 
@@ -314,20 +304,21 @@ class DLHubClient(BaseClient):
             This method will use terms from the current query, and resets the current query.
 
         Args:
-            authors (str or list of str): The authors to match.
+            authors (str or list of str): The authors to match. Names must be in
+                "Family Name, Given Name" format
             match_all (bool): If ``True``, will require all authors be on any results.
                     If ``False``, will only require one author to be in results.
                     **Default**: ``True``.
             limit (int): The maximum number of results to return.
                     **Default:** ``None``, for no limit.
-            info (bool): If ``False``, search will return a list of the results.
-                    If ``True``, search will return a tuple containing the results list
-                    and other information about the query.
-                    **Default:** ``False``.
+            only_latest (bool): When ``True``, will only return the latest version
+                    of each servable. When ``False``, will return all matching versions.
+                    **Default**: ``True``.
 
         Returns:
             If ``info`` is ``False``, *list*: The search results.
             If ``info`` is ``True``, *tuple*: The search results,
             and a dictionary of query information.
         """
-        return self.query.match_authors(authors, match_all=match_all).search(limit=limit, info=info)
+        results = self.query.match_authors(authors, match_all=match_all).search(limit=limit)
+        return filter_latest(results) if only_latest else results

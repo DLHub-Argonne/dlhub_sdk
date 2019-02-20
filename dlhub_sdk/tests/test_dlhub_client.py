@@ -111,3 +111,26 @@ class TestClient(TestCase):
         self.assertGreater(len(res), 0)
         self.assertIsInstance(info, dict)
         self.assertIn('dlhub', res[0])
+
+    def test_query_authors(self):
+        # Make sure we get at least one author
+        res = self.dl.search_by_authors('Cherukara')
+        self.assertGreater(len(res), 0)
+
+        # Search with firstname and last name
+        res = self.dl.search_by_authors('Cherukara, Mathew')
+        self.assertGreater(len(res), 0)
+
+        # Test with the middle initial
+        res = self.dl.search_by_authors(['Cherukara, Mathew J'])
+        self.assertGreater(len(res), 0)
+
+        # Test searching with multiple authors, allow partial matches
+        res = self.dl.search_by_authors(['Cherukara, Mathew J',
+                                         'Not, Aperson'], match_all=False)
+        self.assertGreater(len(res), 0)
+
+        # Test with authors from the paper, and require all
+        res = self.dl.search_by_authors(['Cherukara, Mathew J',
+                                         'Not, Aperson'], match_all=True)
+        self.assertEqual(len(res), 0)

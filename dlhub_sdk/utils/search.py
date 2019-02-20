@@ -91,13 +91,28 @@ class DLHubSearchHelper(SearchHelper):
             return self
         if isinstance(authors, str):
             authors = [authors]
-        # First author should be in new group and required
-        self.match_field(field="datacite.creators.creatorName", value=authors[0], required=True,
-                         new_group=True)
-        # Other authors should stay in that group
-        for author in authors[1:]:
-            self.match_field(field="datacite.creators.creatorName", value=author,
-                             required=match_all, new_group=False)
+
+        # Begin a new group in the query for an author list
+        if self.initialized:
+            self._and_join(True)
+
+        # TODO: Should we always generate creatorName when ingesting into Search or do it in SDK?
+        # TODO: Potential issues: Entries without family and given name specific
+        for i, author in enumerate(authors):
+            temp = author.split(",")
+
+            # Family name is mandatory
+            self.match_field(field="datacite.creators.familyName",
+                             value='"{}"'.format(temp[0]), required=True if i == 0 else match_all,
+                             new_group=True)
+
+            # Given name is optional
+            if len(temp) > 1:
+                # If provided, it should be matched with the surname
+                self.match_field(field="datacite.creators.givenName",
+                                 value='"{}"'.format(temp[1].strip()), required=True,
+                                 new_group=False)
+        print(self.current_query())
         return self
 
     def match_domains(self, domains, match_all=True):
@@ -136,3 +151,27 @@ class DLHubSearchHelper(SearchHelper):
         if doi:
             self.match_field("datacite.doi", doi)
         return self
+
+
+def filter_latest(results):
+    """Get only the models with the most recent publication date
+
+    Args:
+        results ([dict]): List of results to filter
+    Returns:
+        [dict]: Only the most recent results
+    """
+    latest_res = {}
+
+    # Loop over all results, get most recent publication for each servable
+    for res in results:
+        ident = res["dlhub"]["owner"] + res["dlhub"]["name"]
+        pub_date = int(res["dlhub"]["publication_date"])
+
+        # If res not in latest_res, or res version is newer than latest_res
+        # TODO: Make publication_date an integer in Search
+        if latest_res.get(ident, ({}, -1))[1] < pub_date:
+            latest_res[ident] = (res, pub_date)
+
+    # Return only the most recent models
+    return [r[0] for r in latest_res.values()]
