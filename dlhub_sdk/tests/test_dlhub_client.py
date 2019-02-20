@@ -107,7 +107,7 @@ class TestClient(TestCase):
 
         # Get the latest one, and return search information
         res, info = self.dl.search_by_servable(owner="dlhub.test_gmail", servable_name="1d_norm",
-                                               only_latest=False, info=True)
+                                               only_latest=False, get_info=True)
         self.assertGreater(len(res), 0)
         self.assertIsInstance(info, dict)
         self.assertIn('dlhub', res[0])
@@ -134,3 +134,7 @@ class TestClient(TestCase):
         res = self.dl.search_by_authors(['Cherukara, Mathew J',
                                          'Not, Aperson'], match_all=True)
         self.assertEqual(len(res), 0)
+
+    def test_query_by_paper(self):
+        res = self.dl.search_by_related_doi("10.1038/s41598-018-34525-1")
+        self.assertGreater(len(res), 0)

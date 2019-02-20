@@ -97,7 +97,8 @@ class DLHubSearchHelper(SearchHelper):
             self._and_join(True)
 
         # TODO: Should we always generate creatorName when ingesting into Search or do it in SDK?
-        # TODO: Potential issues: Entries without family and given name specific
+        # TODO: Potential issue: Entries without family and given name specific
+        # TODO: Potential issue: Does not require first/lastname to be associated with same author
         for i, author in enumerate(authors):
             temp = author.split(",")
 
@@ -112,7 +113,6 @@ class DLHubSearchHelper(SearchHelper):
                 self.match_field(field="datacite.creators.givenName",
                                  value='"{}"'.format(temp[1].strip()), required=True,
                                  new_group=False)
-        print(self.current_query())
         return self
 
     def match_domains(self, domains, match_all=True):
@@ -149,7 +149,7 @@ class DLHubSearchHelper(SearchHelper):
             DLHubClient: Self
         """
         if doi:
-            self.match_field("datacite.doi", doi)
+            self.match_field("datacite.relatedIdentifiers.relatedIdentifier", '"{}"'.format(doi))
         return self
 
 

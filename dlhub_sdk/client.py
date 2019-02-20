@@ -250,7 +250,7 @@ class DLHubClient(BaseClient):
         return task_id
 
     def search_by_servable(self, servable_name=None, owner=None, version=None,
-                           only_latest=True, limit=None, info=False):
+                           only_latest=True, limit=None, get_info=False):
         """Add identifying servable information to the query.
         If this method is called without at least one of ``servable_name``, ``owner``,
         or ``publication_date``, it will error.
@@ -270,7 +270,7 @@ class DLHubClient(BaseClient):
                     **Default**: ``True``.
             limit (int): The maximum number of results to return.
                     **Default:** ``None``, for no limit.
-            info (bool): If ``False``, search will return a list of the results.
+            get_info (bool): If ``False``, search will return a list of the results.
                     If ``True``, search will return a tuple containing the results list
                     and other information about the query.
                     **Default:** ``False``.
@@ -286,14 +286,14 @@ class DLHubClient(BaseClient):
         # Perform the query
         results, info = (self.query.match_servable(servable_name=servable_name, owner=owner,
                                                    publication_date=version)
-                         .search(limit=limit, info=True))
+                             .search(limit=limit, info=True))
 
         # Filter out the latest models
         if only_latest:
             results = filter_latest(results)
 
-        if info:
-            return results, info
+        if get_info:
+            return results, get_info
         return results
 
     def search_by_authors(self, authors, match_all=True, limit=None, only_latest=True):
@@ -316,9 +316,21 @@ class DLHubClient(BaseClient):
                     **Default**: ``True``.
 
         Returns:
-            If ``info`` is ``False``, *list*: The search results.
-            If ``info`` is ``True``, *tuple*: The search results,
-            and a dictionary of query information.
+            The search results
         """
         results = self.query.match_authors(authors, match_all=match_all).search(limit=limit)
+        return filter_latest(results) if only_latest else results
+
+    def search_by_related_doi(self, doi, limit=None, only_latest=True):
+        """Get all of the models associated with a certain publication
+
+        Return:
+            doi (string): DOI of related paper
+            limit (int): Maximum number of results to return
+            only_latest (bool): Whether to return only the most recent version of the model
+        Returns:
+            [dict]: Matching
+        """
+
+        results = self.query.match_doi(doi).search(limit=limit)
         return filter_latest(results) if only_latest else results
