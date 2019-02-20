@@ -1,12 +1,19 @@
-"""Utility classes for interacting with the DLHub Search Index"""
+"""Tools for interacting with the DLHub Search Index"""
 
 from mdf_toolbox.search_helper import SearchHelper
+from globus_sdk.search import SearchClient
+from warnings import warn
 
 
 class DLHubSearchHelper(SearchHelper):
     """Helper class for building queries with DLHub"""
 
-    def __init__(self, search_client):
+    def __init__(self, search_client: SearchClient):
+        """Initialize the Helper
+
+        Args:
+            search_client (SearchClient): Search client to use for authentication
+        """
         super(DLHubSearchHelper, self).__init__("dlhub", search_client=search_client)
 
     def match_owner(self, owner):
@@ -55,7 +62,7 @@ class DLHubSearchHelper(SearchHelper):
                     **Default**: ``True``.
 
         Returns:
-            DLHubClient: Self
+            DLHubSearchHelper: Self
         """
         if not authors:
             return self
@@ -91,7 +98,7 @@ class DLHubSearchHelper(SearchHelper):
                     **Default**: ``True``.
 
         Returns:
-            DLHubClient: Self
+            DLHubSearchHelper: Self
         """
         if not domains:
             return self
@@ -112,7 +119,7 @@ class DLHubSearchHelper(SearchHelper):
             doi (str): The DOI to match.
 
         Returns:
-            (DLHubClient) Self
+            DLHubSearchHelper: Self
         """
         if doi:
             self.match_field("datacite.relatedIdentifiers.relatedIdentifier", '"{}"'.format(doi))
@@ -131,7 +138,16 @@ def filter_latest(results):
 
     # Loop over all results, get most recent publication for each servable
     for res in results:
-        ident = res["dlhub"]["owner"] + res["dlhub"]["name"]
+        # TODO: Remove these warnings once search index is fixed
+        if 'shorthand_name' not in res['dlhub']:
+            warn('Found entries in DLHub index that lack shorthand_name. '
+                 'Please contact DLHub team', RuntimeWarning)
+            continue
+        if 'publication_date' not in res['dlhub']:
+            warn('Found entries in DLHub index that lack publication_date.'
+                 ' Please contact DLHub team', RuntimeWarning)
+            continue
+        ident = res["dlhub"]["shorthand_name"]
         pub_date = int(res["dlhub"]["publication_date"])
 
         # If res not in latest_res, or res version is newer than latest_res

@@ -24,7 +24,7 @@ class DLHubClient(BaseClient):
     and, if not, get new credentials and save them for later use.
     For cases where disk access is unacceptable, you can create the client by creating an authorizer
     following the
-    `tutorial for the Globus SDK <https://globus-sdk-python.readthedocs.io/en/stable/tutorial/>_
+    `tutorial for the Globus SDK <https://globus-sdk-python.readthedocs.io/en/stable/tutorial/>`_
     and providing that authorizer to the initializer (e.g., ``DLHubClient(auth)``)"""
 
     def __init__(self, dlh_authorizer=None, search_client=None, http_timeout=None,
@@ -249,6 +249,26 @@ class DLHubClient(BaseClient):
         task_id = response.data['task_id']
         return task_id
 
+    def search(self, query, advanced=False, limit=None, only_latest=True):
+        """Query the DLHub servable library
+
+        By default, the query is used as a simple plaintext search of all model metadata.
+        Optionally, you can provided an advanced query on any of the indexed fields in
+        the DLHub model metadata by setting advanced=True and following the guide for
+        constructing advanced queries found in the Globus Search documentation.
+
+        Args:
+             query (string): Query to be performed
+             advanced (bool): Whether to perform an advanced query
+             limit (int): Maximum number of entries to return
+             only_latest (bool): Whether to return only the latest version of the model
+        Returns:
+            ([dict]): All records matching the search query
+        """
+
+        results = self.query.search(query, advanced=advanced, limit=limit)
+        return filter_latest(results) if only_latest else results
+
     def search_by_servable(self, servable_name=None, owner=None, version=None,
                            only_latest=True, limit=None, get_info=False):
         """Add identifying servable information to the query.
@@ -293,7 +313,7 @@ class DLHubClient(BaseClient):
             results = filter_latest(results)
 
         if get_info:
-            return results, get_info
+            return results, info
         return results
 
     def search_by_authors(self, authors, match_all=True, limit=None, only_latest=True):

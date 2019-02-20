@@ -140,7 +140,7 @@ class TestClient(TestCase):
         self.assertEqual(0, len(res))
 
         # Make sure that passing no authors is a no-op function
-        res = self.dl.query.match_doi("10.1038/s41598-018-34525-1") \
+        res = self.dl.query.match_doi("10.1038/s41598-018-34525-1")\
             .match_authors([]).search()
         self.assertGreater(len(res), 0)
 
@@ -149,7 +149,7 @@ class TestClient(TestCase):
         self.assertGreater(len(res), 0)
 
     def test_query_domains(self):
-        # Must match at last the Cheruka model
+        # Must match at last the Cherukara model
         res = self.dl.query.match_domains('materials science').search()
         self.assertGreater(len(res), 0)
         res = self.dl.query.match_domains(['materials science']).search()
@@ -162,4 +162,13 @@ class TestClient(TestCase):
         # Not matching all should find something
         res = self.dl.query.match_domains(['materials science', 'not a domain'],
                                           match_all=False).search()
+        self.assertGreater(len(res), 0)
+
+    def test_basic_search(self):
+        # Should at least hit the Cherukara model
+        res = self.dl.search('"coherent"')
+        self.assertGreater(len(res), 0)
+
+        res = self.dl.search('servable.type:"Keras Model" AND '
+                             'dlhub.domains:"materials science"', advanced=True)
         self.assertGreater(len(res), 0)
