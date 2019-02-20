@@ -1,5 +1,4 @@
-import pandas as pd
-from unittest import TestCase, skip
+from unittest import TestCase
 
 from dlhub_sdk.models.servables.python import PythonStaticMethodModel
 from dlhub_sdk.client import DLHubClient
@@ -135,6 +134,32 @@ class TestClient(TestCase):
                                          'Not, Aperson'], match_all=True)
         self.assertEqual(len(res), 0)
 
+        # Advanced query to do both search by author and something else
+        res = self.dl.query.match_doi("10.1038/s41598-018-34525-1")\
+            .match_authors('Not, Aperson').search()
+        self.assertEqual(0, len(res))
+
+        # Make sure that passing no authors is a no-op function
+        res = self.dl.query.match_doi("10.1038/s41598-018-34525-1") \
+            .match_authors([]).search()
+        self.assertGreater(len(res), 0)
+
     def test_query_by_paper(self):
         res = self.dl.search_by_related_doi("10.1038/s41598-018-34525-1")
+        self.assertGreater(len(res), 0)
+
+    def test_query_domains(self):
+        # Must match at last the Cheruka model
+        res = self.dl.query.match_domains('materials science').search()
+        self.assertGreater(len(res), 0)
+        res = self.dl.query.match_domains(['materials science']).search()
+        self.assertGreater(len(res), 0)
+
+        # Match all means this will return nothing
+        res = self.dl.query.match_domains(['materials science', 'not a domain']).search()
+        self.assertEqual(len(res), 0)
+
+        # Not matching all should find something
+        res = self.dl.query.match_domains(['materials science', 'not a domain'],
+                                          match_all=False).search()
         self.assertGreater(len(res), 0)

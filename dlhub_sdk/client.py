@@ -263,8 +263,8 @@ class DLHubClient(BaseClient):
                     all servable names.
             owner (str): The name of the owner of the servable. **Default**: ``None``,
                     to match all owners.
-            version (int): Model version, which corresponds to the date when the servable was published
-                    **Default**: ``None``, to match all versions.
+            version (int): Model version, which corresponds to the date when the
+                servable was published. **Default**: ``None``, to match all versions.
             only_latest (bool): When ``True``, will only return the latest version
                     of each servable. When ``False``, will return all matching versions.
                     **Default**: ``True``.

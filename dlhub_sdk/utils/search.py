@@ -3,36 +3,6 @@
 from mdf_toolbox.search_helper import SearchHelper
 
 
-def get_method_details(metadata, method_name=None):
-    """Get the method details for use by humans
-
-    Gets only the method fields out of the metadata record for an objecvt,
-    removes the "method_details" field, which is used only during construction
-    of the object.
-
-    Will either return the data for all methods or, if ``method_name`` is provided,
-    only a single function
-
-    Args:
-        metadata (dict): Metadata record for a servable
-        method_name (str): Optional: Name of the function to retrieve
-    Returns:
-        dict: Metadata for the servable method, or a single method of ``method_name`` is used
-    """
-
-    # Get the "methods" block
-    methods = metadata['servable']['methods']
-
-    # Remove "method_details"
-    for m in methods.values():
-        m.pop('method_details', None)
-
-    # If desired, return only a single method
-    if method_name is not None:
-        return methods[method_name]
-    return methods
-
-
 class DLHubSearchHelper(SearchHelper):
     """Helper class for building queries with DLHub"""
 
@@ -92,10 +62,6 @@ class DLHubSearchHelper(SearchHelper):
         if isinstance(authors, str):
             authors = [authors]
 
-        # Begin a new group in the query for an author list
-        if self.initialized:
-            self._and_join(True)
-
         # TODO: Should we always generate creatorName when ingesting into Search or do it in SDK?
         # TODO: Potential issue: Entries without family and given name specific
         # TODO: Potential issue: Does not require first/lastname to be associated with same author
@@ -146,7 +112,7 @@ class DLHubSearchHelper(SearchHelper):
             doi (str): The DOI to match.
 
         Returns:
-            DLHubClient: Self
+            (DLHubClient) Self
         """
         if doi:
             self.match_field("datacite.relatedIdentifiers.relatedIdentifier", '"{}"'.format(doi))
@@ -175,3 +141,33 @@ def filter_latest(results):
 
     # Return only the most recent models
     return [r[0] for r in latest_res.values()]
+
+
+def get_method_details(metadata, method_name=None):
+    """Get the method details for use by humans
+
+    Gets only the method fields out of the metadata record for an objecvt,
+    removes the "method_details" field, which is used only during construction
+    of the object.
+
+    Will either return the data for all methods or, if ``method_name`` is provided,
+    only a single function
+
+    Args:
+        metadata (dict): Metadata record for a servable
+        method_name (str): Optional: Name of the function to retrieve
+    Returns:
+        dict: Metadata for the servable method, or a single method of ``method_name`` is used
+    """
+
+    # Get the "methods" block
+    methods = metadata['servable']['methods']
+
+    # Remove "method_details"
+    for m in methods.values():
+        m.pop('method_details', None)
+
+    # If desired, return only a single method
+    if method_name is not None:
+        return methods[method_name]
+    return methods
