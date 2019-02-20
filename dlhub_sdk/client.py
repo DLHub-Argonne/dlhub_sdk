@@ -61,6 +61,12 @@ class DLHubClient(BaseClient):
         """Access a query of the DLHub Search repository"""
         return DLHubSearchHelper(search_client=self._search_client)
 
+    def get_username(self):
+        """Get the username associated with the current credentials"""
+
+        res = self.get('/namespaces')
+        return res.data['namespace']
+
     def get_servables(self, only_latest_version=True):
         """Get all of the servables available in the service
 

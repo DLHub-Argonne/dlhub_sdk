@@ -1,7 +1,13 @@
-from unittest import TestCase
+from unittest import TestCase, skipUnless
+import os
 
 from dlhub_sdk.models.servables.python import PythonStaticMethodModel
 from dlhub_sdk.client import DLHubClient
+
+
+# Check if we are on travis
+#  See: https://blog.travis-ci.com/august-2012-upcoming-ci-environment-updates
+is_travis = 'HAS_JOSH_K_SEAL_OF_APPROVAL' in os.environ
 
 
 class TestClient(TestCase):
@@ -43,6 +49,7 @@ class TestClient(TestCase):
         res = self.dl.run("{}/{}".format(user, name), data, input_type='python')
         self.assertEqual({}, res)
 
+    @skipUnless(is_travis, 'Publish test only runs on Travis')
     def test_submit(self):
         # Make an example function
         model = PythonStaticMethodModel.create_model('numpy.linalg', 'norm')
@@ -177,3 +184,7 @@ class TestClient(TestCase):
         res = self.dl.query.match_term('servable.type', '"Keras Model"')\
             .match_domains('chemistry').search()
         self.assertIsInstance(res, list)
+
+    @skipUnless(is_travis, 'Namespace test is only valid with credentials used on Travis')
+    def test_namespace(self):
+        self.assertEqual(self.dl.get_username(), 'dlhub.test_gmail')
