@@ -67,7 +67,7 @@ class DLHubClient(BaseClient):
         Args:
             only_latest_version (bool): Whether to only return the latest version of each servable
         Returns:
-            (pd.DataFrame) Summary of all the servables available in the service
+            ([list]) Complete metadata for all servables found in DLHub
         """
 
         # Get all of the servables
@@ -107,7 +107,7 @@ class DLHubClient(BaseClient):
         Args:
             task_id (string): UUID of the task
         Returns:
-            (dict) status block containing "status" key.
+            dict: status block containing "status" key.
         """
 
         r = self.get("{task_id}/status".format(task_id=task_id))
@@ -120,7 +120,7 @@ class DLHubClient(BaseClient):
             owner (string): Username of the owner of the servable
             name (string): Name of the servable
         Returns:
-            (dict) Summary of the servable
+            dict: Summary of the servable
         """
 
         # Create a query for a single servable
@@ -158,7 +158,7 @@ class DLHubClient(BaseClient):
                 the data), "json" (which uses JSON to serialize the data), or "files" (which
                 sends the data as files).
         Returns:
-            Reply from the service
+            Results of running the servable
         """
         servable_path = 'servables/{name}/run'.format(name=name)
 
@@ -192,7 +192,7 @@ class DLHubClient(BaseClient):
         Args:
             model (BaseMetadataModel): Servable to be submitted
         Returns:
-            (string) Task ID of this submission, used for checking for success
+            (string): Task ID of this submission, used for checking for success
         """
 
         # Get the metadata
@@ -239,7 +239,7 @@ class DLHubClient(BaseClient):
         Args:
             repository (string): Repository to publish
         Returns:
-            (string) Task ID of this submission, used for checking for success
+            (string): Task ID of this submission, used for checking for success
         """
 
         # Publish to DLHub
@@ -254,8 +254,9 @@ class DLHubClient(BaseClient):
 
         By default, the query is used as a simple plaintext search of all model metadata.
         Optionally, you can provided an advanced query on any of the indexed fields in
-        the DLHub model metadata by setting advanced=True and following the guide for
-        constructing advanced queries found in the Globus Search documentation.
+        the DLHub model metadata by setting :code:`advanced=True` and following the guide for
+        constructing advanced queries found in the
+        `Globus Search documentation <https://docs.globus.org/api/search/search/#query_syntax>`_.
 
         Args:
              query (string): Query to be performed
@@ -271,12 +272,7 @@ class DLHubClient(BaseClient):
 
     def search_by_servable(self, servable_name=None, owner=None, version=None,
                            only_latest=True, limit=None, get_info=False):
-        """Add identifying servable information to the query.
-        If this method is called without at least one of ``servable_name``, ``owner``,
-        or ``publication_date``, it will error.
-
-        Note:
-            This method will use terms from the current query, and resets the current query.
+        """Search by the ownership, name, or version of a servable
 
         Args:
             servable_name (str): The name of the servable. **Default**: None, to match
@@ -317,11 +313,13 @@ class DLHubClient(BaseClient):
         return results
 
     def search_by_authors(self, authors, match_all=True, limit=None, only_latest=True):
-        """Execute a search for the given authors.
-        This method is equivalent to ``.match_authors(...).search(...)``.
+        """Execute a search for servables from certain authors.
 
-        Note:
-            This method will use terms from the current query, and resets the current query.
+        Authors in DLHub may be different than the owners of the servable and generally are
+        the people who developed functionality of a certain servable (e.g., the creators
+        of the machine learning model used in a servable).
+
+        If you want to search by ownership, see :meth:`search_by_servable`
 
         Args:
             authors (str or list of str): The authors to match. Names must be in
@@ -336,20 +334,20 @@ class DLHubClient(BaseClient):
                     **Default**: ``True``.
 
         Returns:
-            The search results
+            [dict]: List of servables from the desired authors
         """
         results = self.query.match_authors(authors, match_all=match_all).search(limit=limit)
         return filter_latest(results) if only_latest else results
 
     def search_by_related_doi(self, doi, limit=None, only_latest=True):
-        """Get all of the models associated with a certain publication
+        """Get all of the servables associated with a certain publication
 
         Return:
             doi (string): DOI of related paper
             limit (int): Maximum number of results to return
             only_latest (bool): Whether to return only the most recent version of the model
         Returns:
-            [dict]: Matching
+            [dict]: List of servables from the requested paper
         """
 
         results = self.query.match_doi(doi).search(limit=limit)

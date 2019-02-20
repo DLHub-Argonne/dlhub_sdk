@@ -20,6 +20,13 @@ dlhub\_sdk\.utils\.types module
     :undoc-members:
     :show-inheritance:
 
+dlhub\_sdk\.utils\.search module
+---------------------------------
+
+.. automodule:: dlhub_sdk.utils.search
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 Module contents
 ---------------

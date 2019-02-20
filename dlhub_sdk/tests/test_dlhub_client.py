@@ -172,3 +172,8 @@ class TestClient(TestCase):
         res = self.dl.search('servable.type:"Keras Model" AND '
                              'dlhub.domains:"materials science"', advanced=True)
         self.assertGreater(len(res), 0)
+
+        # Test another query from the documentation
+        res = self.dl.query.match_term('servable.type', '"Keras Model"')\
+            .match_domains('chemistry').search()
+        self.assertIsInstance(res, list)
