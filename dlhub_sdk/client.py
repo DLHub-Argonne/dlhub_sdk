@@ -5,12 +5,16 @@ from tempfile import mkstemp
 import jsonpickle
 import requests
 from globus_sdk.base import BaseClient, slash_join
-from mdf_toolbox import login
+from mdf_toolbox import login, logout
 from mdf_toolbox.search_helper import SEARCH_LIMIT
 
 from dlhub_sdk.config import DLHUB_SERVICE_ADDRESS, CLIENT_ID
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 from dlhub_sdk.utils.search import DLHubSearchHelper, get_method_details, filter_latest
+
+
+# Directory for authenticaation tokens
+_token_dir = os.path.expanduser("~/.dlhub/credentials")
 
 
 class DLHubClient(BaseClient):
@@ -46,15 +50,20 @@ class DLHubClient(BaseClient):
         Keyword arguments are the same as for BaseClient.
         """
         if force_login or not dlh_authorizer or not search_client:
+
             auth_res = login(services=["search", "dlhub"], app_name="DLHub_Client",
                              client_id=CLIENT_ID, clear_old_tokens=force_login,
-                             token_dir=os.path.expanduser("~/.dlhub/credentials"))
+                             token_dir=_token_dir)
             dlh_authorizer = auth_res["dlhub"]
             self._search_client = auth_res["search"]
 
         super(DLHubClient, self).__init__("DLHub", environment='dlhub', authorizer=dlh_authorizer,
                                           http_timeout=http_timeout, base_url=DLHUB_SERVICE_ADDRESS,
                                           **kwargs)
+
+    def logout(self):
+        """Remove credentials from your local system"""
+        logout()
 
     @property
     def query(self):
