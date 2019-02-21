@@ -18,7 +18,12 @@ setup(
                       "correct schema for DLHub, and discovering or using models "
                       "that other scientists have published."),
     install_requires=[
-        "pandas", "requests", "jsonschema", "globus_sdk", "jsonpickle", "mdf_toolbox", "mdf_forge"
+        "pandas",
+        "requests",
+        "jsonschema",
+        "globus_sdk",
+        "jsonpickle",
+        "mdf_toolbox>=0.4.0"
     ],
     python_requires=">=3.4",
     classifiers=[
