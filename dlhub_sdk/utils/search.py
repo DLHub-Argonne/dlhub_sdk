@@ -8,13 +8,15 @@ from warnings import warn
 class DLHubSearchHelper(SearchHelper):
     """Helper class for building queries with DLHub"""
 
-    def __init__(self, search_client: SearchClient):
+    def __init__(self, search_client: SearchClient, **kwargs):
         """Initialize the Helper
+
+        Keyword arguments are passed to the underlying SearchHelper
 
         Args:
             search_client (SearchClient): Search client to use for authentication
         """
-        super(DLHubSearchHelper, self).__init__("dlhub", search_client=search_client)
+        super(DLHubSearchHelper, self).__init__("dlhub", search_client=search_client, **kwargs)
 
     def match_owner(self, owner):
         """Add a model owner to the query.
