@@ -81,6 +81,10 @@ class TestClient(TestCase):
         method = self.dl.describe_methods('dlhub.test_gmail', '1d_norm', 'run')
         self.assertEqual(expected['run'], method)
 
+        with self.assertRaises(ValueError) as exc:
+            self.dl.describe_methods('dlhub.test_gmail', '1d_norm', 'notamethod')
+        self.assertIn('No such method', str(exc.exception))
+
     def test_search_by_servable(self):
         with self.assertRaises(ValueError) as exc:
             self.dl.search_by_servable()

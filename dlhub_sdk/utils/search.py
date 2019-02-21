@@ -187,5 +187,7 @@ def get_method_details(metadata, method_name=None):
 
     # If desired, return only a single method
     if method_name is not None:
+        if method_name not in methods:
+            raise ValueError('No such method: {}'.format(method_name))
         return methods[method_name]
     return methods
