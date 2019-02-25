@@ -117,11 +117,11 @@ class KerasModel(BasePythonServableModel):
         module = custom_layer.__module__
 
         # Add the layer to the model definition
-        if 'options' not in self._output:
-            self._output['options'] = {}
-        if 'custom_objects' not in self['options']:
-            self['options']['custom_objects'] = {}
-        self['options']['custom_objects'][name] = '{}.{}'.format(module, layer_name)
+        if 'options' not in self._output['servable']:
+            self['servable']['options'] = {}
+        if 'custom_objects' not in self['servable']['options']:
+            self['servable']['options']['custom_objects'] = {}
+        self['servable']['options']['custom_objects'][name] = '{}.{}'.format(module, layer_name)
 
     def _get_handler(self):
         return "keras.KerasServable"

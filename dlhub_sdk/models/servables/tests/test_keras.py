@@ -143,10 +143,14 @@ _________________________________________________________________
 
             # Create the metadata
             metadata = KerasModel.create_model(model_path, ['y'], custom_objects={'Dense': Dense})
+            metadata.set_title('test').set_name('test')
 
             # Make sure it has the custom object definitions
             self.assertEqual({'custom_objects': {'Dense': 'keras.layers.core.Dense'}},
-                             metadata['options'])
+                             metadata['servable']['options'])
+
+            # Validate it against DLHub schema
+            validate_against_dlhub_schema(metadata.to_dict(), 'servable')
         finally:
             shutil.rmtree(tmpdir)
 
