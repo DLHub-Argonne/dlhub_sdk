@@ -1,5 +1,5 @@
 from keras import __version__ as keras_version
-from keras.models import load_model
+from keras.models import load_model, model_from_json, model_from_yaml
 from keras.layers import Layer
 
 from dlhub_sdk.models.servables.python import BasePythonServableModel
@@ -46,7 +46,19 @@ class KerasModel(BasePythonServableModel):
         if arch_path is None:
             model = load_model(model_path, custom_objects=custom_objects)
         else:
-            model = load_model(arch_path, custom_objects=custom_objects, compile=False)
+            if arch_path.endswith('.h5') or arch_path.endswith('.hdf') \
+                    or arch_path.endswith('.hdf5') or arch_path.endswith('.hd5'):
+                model = load_model(arch_path, custom_objects=custom_objects, compile=False)
+            elif arch_path.endswith('.json'):
+                with open(arch_path) as fp:
+                    json_string = fp.read()
+                model = model_from_json(json_string, custom_objects=custom_objects)
+            elif arch_path.endswith('.yml') or arch_path.endswith('.yaml'):
+                with open(arch_path) as fp:
+                    yaml_string = fp.read()
+                model = model_from_yaml(yaml_string, custom_objects=custom_objects)
+            else:
+                raise ValueError('File type for architecture not recognized')
             model.load_weights(model_path)
 
         # Get the inputs of the model
