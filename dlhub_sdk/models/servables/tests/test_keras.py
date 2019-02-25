@@ -4,8 +4,8 @@ import shutil
 import os
 
 from keras import __version__ as keras_version
-from keras.layers import Dense, Input, Layer
 from keras.models import Sequential, Model
+from keras.layers import Dense, Input
 from h5py import __version__ as h5py_version
 from unittest import TestCase
 
@@ -83,7 +83,7 @@ Total params: 49
 Trainable params: 49
 Non-trainable params: 0
 _________________________________________________________________
-""",
+""",   # noqa: W291 (trailing whitespace needed for text match)
                     "dependencies": {"python": {
                         'keras': keras_version,
                         'h5py': h5py_version
@@ -154,3 +154,26 @@ _________________________________________________________________
         with self.assertRaises(ValueError) as exc:
             metadata.add_custom_object('BadLayer', float)
         self.assertIn('subclass', str(exc.exception))
+
+    def test_multi_file(self):
+        """Test adding the architecture in a different file """
+
+        # Make a simple model
+        model = _make_simple_model()
+
+        tmpdir = mkdtemp()
+        try:
+            # Save it
+            model_path = os.path.join(tmpdir, 'model.hd5')
+            model.save(model_path, include_optimizer=False)
+            weights_path = os.path.join(tmpdir, 'weights.hd5')
+            model.save_weights(weights_path)
+
+            # Create the metadata
+            metadata = KerasModel.create_model(weights_path, ['y'], arch_path=model_path)
+
+            # Make sure both files are included in the files list
+            self.assertEqual(metadata['dlhub']['files'],
+                             {'arch': model_path, 'model': weights_path })
+        finally:
+            shutil.rmtree(tmpdir)

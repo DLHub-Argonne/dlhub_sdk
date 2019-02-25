@@ -5,7 +5,6 @@ from keras.layers import Layer
 from dlhub_sdk.models.servables.python import BasePythonServableModel
 from dlhub_sdk.utils.types import compose_argument_block
 
-
 _keras_version_tuple = tuple(int(i) for i in keras_version.split("."))
 
 
@@ -53,7 +52,7 @@ class KerasModel(BasePythonServableModel):
         # Get the inputs of the model
         output['servable']['methods']['run']['input'] = output.format_layer_spec(model.input_shape)
         output['servable']['methods']['run']['output'] = output.format_layer_spec(
-                                                                    model.output_shape)
+            model.output_shape)
         output['servable']['methods']['run']['method_details']['classes'] = output_names
 
         # Get a full description of the model
@@ -61,6 +60,7 @@ class KerasModel(BasePythonServableModel):
 
         def capture_summary(x):
             output.summary += x + "\n"
+
         model.summary(print_fn=capture_summary)
         output['servable']['model_summary'] = output.summary
         output['servable']['model_type'] = 'Deep NN'
@@ -105,9 +105,9 @@ class KerasModel(BasePythonServableModel):
         module = custom_layer.__module__
 
         # Add the layer to the model definition
-        if not 'options' in self._output:
+        if 'options' not in self._output:
             self._output['options'] = {}
-        if not 'custom_objects' in self['options']:
+        if 'custom_objects' not in self['options']:
             self['options']['custom_objects'] = {}
         self['options']['custom_objects'][name] = '{}.{}'.format(module, layer_name)
 
