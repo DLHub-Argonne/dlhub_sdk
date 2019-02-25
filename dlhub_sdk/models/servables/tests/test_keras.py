@@ -174,6 +174,6 @@ _________________________________________________________________
 
             # Make sure both files are included in the files list
             self.assertEqual(metadata['dlhub']['files'],
-                             {'arch': model_path, 'model': weights_path })
+                             {'arch': model_path, 'model': weights_path})
         finally:
             shutil.rmtree(tmpdir)
