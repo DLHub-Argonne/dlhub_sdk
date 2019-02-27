@@ -99,15 +99,9 @@ class KerasModel(BasePythonServableModel):
     def add_custom_object(self, name, custom_layer):
         """Add a custom layer to the model specification
 
-        Keras allows users to add there own custom objects to there models for any custom operation
-        that have trainable weights. Use this when the Keras Lambda layer does not apply. In keras,
-        these layers can be added to the model by giving the load_model method an additional
-        parameter 'custom_objects' which is a dict of the layer names and class. 
-        Example: model = load_model('model.h5', custom_objects={'CustomLayer': CustomLayer})
-        In dlhub, the same thing can be achived with the add_custom_object method, which takes the
-        name and class of the custom layer.
-        Example: model.add_custom_object('CustomLayer', CustomLayer)
-        See info on creating custom layers here: <https://keras.io/layers/writing-your-own-keras-layers/>
+        See `Keras FAQs
+        <https://keras.io/getting-started/faq/#handling-custom-layers-or-other-custom-objects-in-saved-models>`
+        for details.
 
         Args:
               name (string): Name of the layer
