@@ -114,28 +114,28 @@ can be created from this model file and names for the output classes:
 
     model_info = KerasModel.create_model('model.h5', ["y"])
 
-Additionally, if the weights and architecture files are separate, you can specify it like so:
+Models with weights and architecture as separate files can be described using:
 
 .. code-block:: python
 
 	model_info = KerasModel.create_model('model.h5', ["y"], arch_path='arch.json')
 
-Keras also allows users to add there own custom objects to there models for any custom operation
-that have trainable weights. Use this when the Keras Lambda layer does not apply. In keras, 
+Keras also allows users to add their own custom layers to there models for any custom operation
+that has trainable weights. Use this when the Keras Lambda layer does not apply. In Keras, 
 these layers can be added when loading the model:
 
 .. code-block:: python
 
 	model = load_model('model.h5', custom_objects={'CustomLayer': CustomLayer})
 
-In dlhub, the same thing can be achived with the add_custom_object method, which takes the name
+Adding custom layers to a DLHub description can be achived with the add_custom_object method, which takes the name
 and class of the custom layer:
 
 .. code-block:: python
 
 	model_info.add_custom_object('CustomLayer', CustomLayer)
 
-See more info on creating custom keras layers `here <https://keras.io/layers/writing-your-own-keras-layers/>`_.
+See more info on creating custom Keras layers `here <https://keras.io/layers/writing-your-own-keras-layers/>`_.
 
 The DLHub SDK reads the architecture in the HDF5 file and determines the inputs
 and outputs automatically:
