@@ -120,7 +120,7 @@ Models with weights and architecture as separate files can be described using:
 
 	model_info = KerasModel.create_model('model.h5', ["y"], arch_path='arch.json')
 
-Keras also allows users to add their own custom layers to there models for any custom operation
+Keras also allows users to add their own custom layers to their models for any custom operation
 that has trainable weights. Use this when the Keras Lambda layer does not apply. In Keras, 
 these layers can be added when loading the model:
 
@@ -128,7 +128,7 @@ these layers can be added when loading the model:
 
 	model = load_model('model.h5', custom_objects={'CustomLayer': CustomLayer})
 
-Adding custom layers to a DLHub description can be achived with the add_custom_object method, which takes the name
+Adding custom layers to a DLHub description can be achived with the ``add_custom_object`` method, which takes the name
 and class of the custom layer:
 
 .. code-block:: python
