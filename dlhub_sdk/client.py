@@ -136,10 +136,13 @@ class DLHubClient(BaseClient):
         Returns:
             dict: Summary of the servable
         """
+        split_name = name.split('/')
+        if len(split_name) < 2:
+            raise AttributeError('Please enter name in the form <user>/<servable_name>')
 
         # Create a query for a single servable
-        query = self.query.match_servable(''.join(name.split("/")[(-1*(len(name.split("/"))-1)):]))\
-            .match_owner(name.split("/")[0]).add_sort("dlhub.publication_date", False)\
+        query = self.query.match_servable(''.join(split_name[(-1*(len(split_name)-1)):]))\
+            .match_owner(split_name[0]).add_sort("dlhub.publication_date", False)\
             .search(limit=1)
 
         # Raise error if servable is not found
