@@ -141,7 +141,7 @@ class DLHubClient(BaseClient):
             raise AttributeError('Please enter name in the form <user>/<servable_name>')
 
         # Create a query for a single servable
-        query = self.query.match_servable(''.join(split_name[(-1*(len(split_name)-1)):]))\
+        query = self.query.match_servable('/'.join(split_name[(-1*(len(split_name)-1)):]))\
             .match_owner(split_name[0]).add_sort("dlhub.publication_date", False)\
             .search(limit=1)
 
