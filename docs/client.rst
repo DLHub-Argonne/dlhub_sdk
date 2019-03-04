@@ -14,11 +14,11 @@ identities to each of our users.
 Before creating the DLHubClient, you must log in to Globus::
 
     from dlhub_sdk.client import DLHubClient
-    client = DLHubClient.login()
+    client = DLHubClient()
 
-The ``login`` class method stores your credentials in your home directory
-(``~/.globus.cfg``) so that you will only need to log in to Globus once when
-using the client or the DLHub CLI.
+The ``DLHubClient`` class stores your credentials in your home directory
+(``~/.dlhub/credentials/DLHub_Client_tokens.json``) so that you will only
+need to log in to Globus once when using the client or the DLHub CLI.
 
 
 Call the ``logout`` function to remove access to DLHub from your system::
