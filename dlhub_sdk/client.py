@@ -128,39 +128,37 @@ class DLHubClient(BaseClient):
         r = self.get("{task_id}/status".format(task_id=task_id))
         return r.json()
 
-    def describe_servable(self, owner, name):
+    def describe_servable(self, name):
         """Get the description for a certain servable
 
         Args:
-            owner (string): Username of the owner of the servable
-            name (string): Name of the servable
+            name (string): DLHub name of the servable of the form <user>/<servable_name>
         Returns:
             dict: Summary of the servable
         """
 
         # Create a query for a single servable
-        query = self.query.match_servable(name)\
-            .match_owner(owner).add_sort("dlhub.publication_date", False)\
+        query = self.query.match_servable(''.join(name.split("/")[(-1*(len(name.split("/"))-1)):]))\
+            .match_owner(name.split("/")[0]).add_sort("dlhub.publication_date", False)\
             .search(limit=1)
 
         # Raise error if servable is not found
         if len(query) == 0:
-            raise AttributeError('No such servable: {}/{}'.format(owner, name))
+            raise AttributeError('No such servable: {}'.format(name))
         return query[0]
 
-    def describe_methods(self, owner, name, method=None):
+    def describe_methods(self, name, method=None):
         """Get the description for the method(s) of a certain servable
 
         Args:
-            owner (string): Username of the owner of the servable
-            name (string): Name of the servable
+            name (string): DLHub name of the servable of the form <user>/<servable_name>
             method (string): Optional: Name of the method
         Returns:
              dict: Description of a certain method if ``method`` provided, all methods
                 if the method name was not provided.
         """
 
-        metadata = self.describe_servable(owner, name)
+        metadata = self.describe_servable(name)
         return get_method_details(metadata, method)
 
     def run(self, name, inputs, input_type='python'):
