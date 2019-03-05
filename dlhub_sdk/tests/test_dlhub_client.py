@@ -63,26 +63,26 @@ class TestClient(TestCase):
 
     def test_describe_model(self):
         # Find the 1d_norm function from the test user (should be there)
-        description = self.dl.describe_servable('dlhub.test_gmail', '1d_norm')
+        description = self.dl.describe_servable('dlhub.test_gmail/1d_norm')
         self.assertEqual('dlhub.test_gmail', description['dlhub']['owner'])
         self.assertEqual('1d_norm', description['dlhub']['name'])
 
         # Give it a bogus name, check the error
         with self.assertRaises(AttributeError) as exc:
-            self.dl.describe_servable('dlhub.test_gmail', 'nonexistant')
+            self.dl.describe_servable('dlhub.test_gmail/nonexistant')
         self.assertIn('No such servable', str(exc.exception))
 
         # Get only the method details
         expected = dict(description['servable']['methods'])
         del expected['run']['method_details']
-        methods = self.dl.describe_methods('dlhub.test_gmail', '1d_norm')
+        methods = self.dl.describe_methods('dlhub.test_gmail/1d_norm')
         self.assertEqual(expected, methods)
 
-        method = self.dl.describe_methods('dlhub.test_gmail', '1d_norm', 'run')
+        method = self.dl.describe_methods('dlhub.test_gmail/1d_norm', 'run')
         self.assertEqual(expected['run'], method)
 
         with self.assertRaises(ValueError) as exc:
-            self.dl.describe_methods('dlhub.test_gmail', '1d_norm', 'notamethod')
+            self.dl.describe_methods('dlhub.test_gmail/1d_norm', 'notamethod')
         self.assertIn('No such method', str(exc.exception))
 
     def test_search_by_servable(self):
