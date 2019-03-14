@@ -126,7 +126,7 @@ class DLHubClient(BaseClient):
         """
 
         r = self.get("{task_id}/status".format(task_id=task_id))
-        return r.json()
+        return r.data
 
     def describe_servable(self, name):
         """Get the description for a certain servable
