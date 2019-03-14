@@ -148,6 +148,9 @@ class TestModels(unittest.TestCase):
         metadata = m.to_dict(simplify_paths=True)
         self.assertEqual({'data': 'test.csv'}, metadata['dlhub']['files'])
 
+        # Make sure the paths saved in the object have not changed
+        self.assertEqual({'data': data_path}, m['dlhub']['files'])
+
     def test_zip(self):
         """Test generating a zip file with the requested files"""
 

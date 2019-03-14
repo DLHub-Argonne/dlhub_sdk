@@ -4,6 +4,7 @@ from itertools import zip_longest
 from datetime import datetime
 from six import string_types
 from zipfile import ZipFile
+from copy import deepcopy
 from glob import glob
 import json
 import sys
@@ -431,7 +432,7 @@ class BaseMetadataModel:
             raise ValueError('Name must be specified. Use `set_name`')
 
         # Make a copy of the output
-        out = dict(self._output)
+        out = deepcopy(self._output)
 
         # Add the name of the class to the output, if desired
         if save_class_data:
@@ -465,7 +466,7 @@ class BaseMetadataModel:
 
         # Create the object, overwrite data
         output = cls()
-        output._output = dict(data)
+        output._output = deepcopy(data)
 
         # Make sure the class information is removed
         if '@class' in output._output:
