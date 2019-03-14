@@ -195,5 +195,5 @@ class TestClient(TestCase):
 
     @skipUnless(is_travis, 'Status')
     def test_status(self):
-        self.assertEqual('SUCCEEDED', self.dl.get_task_status('9f37b474-0f9f-4f3c-846b-314fc4241fe2')['status'])
-
+        self.assertEqual('SUCCEEDED',
+                         self.dl.get_task_status('9f37b474-0f9f-4f3c-846b-314fc4241fe2')['status'])
