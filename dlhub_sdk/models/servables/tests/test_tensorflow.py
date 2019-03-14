@@ -28,9 +28,14 @@ class TestTensorflow(TestCase):
             # Make two simple graphs, both of which will be served by TF
             x = tf.placeholder('float', shape=(None, 3), name='Input')
             z = tf.placeholder('float', shape=(), name='ScalarMultiple')
-            y = x + 1
+            m = tf.Variable([1.0, 1.0, 1.0], name='Slopes')
+            y = m * x + 1
             len_fun = tf.reduce_sum(y - x)  # Returns the number of elements in the array
             scale_mult = tf.multiply(z, x, name='scale_mult')
+
+            # Initialize the variables
+            init = tf.global_variables_initializer()
+            sess.run(init)
 
             # Create the tool for saving the model to disk
             builder = tf.saved_model.builder.SavedModelBuilder(tf_export_path)
@@ -83,7 +88,10 @@ class TestTensorflow(TestCase):
         metadata = model.to_dict(simplify_paths=True)
 
         # Check whether the 'x' is listed first for the multiple-input model or second
-        self.assertEqual({'other': ['saved_model.pb']}, metadata['dlhub']['files'])
+        self.assertEqual({'other': ['saved_model.pb',
+                                    os.path.join('variables', 'variables.data-00000-of-00001'),
+                                    os.path.join('variables', 'variables.index')]},
+                         metadata['dlhub']['files'])
         self.assertEqual(metadata['servable'],
                          {'methods':
                              {'run': {

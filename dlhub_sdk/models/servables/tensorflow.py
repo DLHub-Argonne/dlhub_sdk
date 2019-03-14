@@ -116,6 +116,6 @@ class TensorFlowModel(BaseServableModel):
 
         # Add tensorflow version and files
         output.add_requirement('tensorflow', tf.__version__)
-        output.add_directory(export_directory)
+        output.add_directory(export_directory, recursive=True)
 
         return output
