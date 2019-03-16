@@ -328,11 +328,12 @@ class BaseMetadataModel:
         of relations are listed in the
         `documentation for datacite
         <https://schema.datacite.org/meta/kernel-4.1/doc/DataCite-MetadataKernel_v4.1.pdf>_`
-        on Page 25. The most common one used in DLHub will likely be:
+        on Page 25. The most common ones used in DLHub will likely be:
 
             - "IsDescribedBy": For a paper that describes a dataset or model
             - "IsDocumentedBy": For the software documentation for a model
             - "IsDerviedFrom": For the database a training set was pulled from
+            - "Requires": For any software libraries that are required for this module
 
         Args:
             identifier (string): Identifier
@@ -351,7 +352,7 @@ class BaseMetadataModel:
                                  "Compiles", "IsVariantFormOf", "IsOriginalFormOf",
                                  "IsIdenticalTo", "HasMetadata", "IsMetadataFor", "Reviews",
                                  "IsReviewedBy", "IsDerivedFrom", "IsSourceOf", "IsDescribedBy",
-                                 "Describes"]:
+                                 "Describes", "Requires", "IsRequiredBy"]:
             raise ValueError('Unknown relation type: ({})'.format(relation_type))
 
         self._output["datacite"]["relatedIdentifiers"].append({
