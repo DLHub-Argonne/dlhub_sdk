@@ -22,11 +22,14 @@ class TestModels(unittest.TestCase):
         # Get how many files in directory below this
         my_dir = os.path.dirname(__file__)
         my_count = sum([os.path.isfile(x) for x in glob(my_dir + '/*')])
+        my_py_files = sum([os.path.isfile(x) for x in glob(my_dir + '/*.py')])
 
         # Test it out
         self.assertEquals(my_count, len(Dataset().add_directory(my_dir).list_files()))
         self.assertLessEqual(my_count,
                              len(Dataset().add_directory(my_dir, recursive=True).list_files()))
+        self.assertEqual(my_py_files, len(Dataset().add_directory(my_dir, include='*.py').list_files()))
+        self.assertEqual(my_count - my_py_files, len(Dataset().add_directory(my_dir, exclude='*.py').list_files()))
 
     def test_dataset(self):
         m = Dataset().set_authors(["Ward, Logan"], ["University of Chicago"])\

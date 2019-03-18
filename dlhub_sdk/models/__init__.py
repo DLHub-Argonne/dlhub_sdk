@@ -6,6 +6,7 @@ from six import string_types
 from zipfile import ZipFile
 from copy import deepcopy
 from glob import glob
+import fnmatch
 import json
 import sys
 import os
@@ -380,13 +381,21 @@ class BaseMetadataModel:
             self._output["dlhub"]["files"][name] = file
         return self
 
-    def add_directory(self, directory, recursive=False):
+    def add_directory(self, directory, include=(), exclude=(), recursive=False):
         """Add all the files in a directory
 
         Args:
+            include (string or [string]): Only add files that match any of these patterns
+            exclude (string or [string]): Exclude all files that match any of these patterns
             directory (string): Path to a directory
             recursive (bool): Whether to add all files in a directory
         """
+
+        # Make sure include and exclude are lists
+        if isinstance(include, str):
+            include = [include]
+        if isinstance(exclude, str):
+            exclude = [exclude]
 
         # Get potential files
         if recursive:
@@ -396,8 +405,13 @@ class BaseMetadataModel:
         else:
             hits = glob('{}/*'.format(directory))
 
-        # Get only the files
+        # Get only the files that match the filters
         files = [x for x in hits if os.path.isfile(x)]
+        if len(include) > 0:  # Run inclusive filters
+            files = [f for f in files if any(fnmatch.fnmatch(os.path.basename(f), i) for i in include)]
+        if len(exclude) > 0:
+            files = [f for f in files if not any(fnmatch.fnmatch(os.path.basename(f), e) for e in exclude)]
+
         return self.add_files(files)
 
     def add_files(self, files):
