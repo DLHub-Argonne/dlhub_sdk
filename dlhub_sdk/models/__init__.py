@@ -408,9 +408,11 @@ class BaseMetadataModel:
         # Get only the files that match the filters
         files = [x for x in hits if os.path.isfile(x)]
         if len(include) > 0:  # Run inclusive filters
-            files = [f for f in files if any(fnmatch.fnmatch(os.path.basename(f), i) for i in include)]
+            files = [f for f in files
+                     if any(fnmatch.fnmatch(os.path.basename(f), i) for i in include)]
         if len(exclude) > 0:
-            files = [f for f in files if not any(fnmatch.fnmatch(os.path.basename(f), e) for e in exclude)]
+            files = [f for f in files
+                     if not any(fnmatch.fnmatch(os.path.basename(f), e) for e in exclude)]
 
         return self.add_files(files)
 
