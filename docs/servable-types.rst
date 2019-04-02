@@ -42,6 +42,21 @@ Each of these functions takes the type of input and a short description for that
 Certain types of inputs require further information (e.g., ndarrays require the shape of the array).
 See `Argument Types <argument-types.html>`_ for a complete listing of argument types.
 
+Functions that take more than one argument (e.g., ``f(x, y)``) require you to tell DLHub
+to unpack the inputs before running the function.
+As an example::
+
+    from dlhub_sdk.utils.types import compose_argument_block
+    model = PythonStaticMethodServable.from_function_pointer(f)
+    model.set_inputs('tuple', 'Two numbers', element_types=[
+        compose_argument_block('float', 'A number'),
+        compose_argument_block('float', 'A second number')
+    ])
+    model.set_unpack_inputs(True)
+
+Note that we used an input type of "tuple" to indicate that the function takes a fixed number of arguments.
+You can also use a type of "list" for functions that take a variable number of inputs.
+
 Using Static Functions to Create Special Interfaces
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -89,6 +104,8 @@ or adding the code that defines the class to a seperate file (e.g., ``example.py
 of files required by DLHub::
 
     model.add_file('example.py')
+
+As with the Python static methods, you can specify the functions with multiple arguments using ``set_unpack_inputs``.
 
 Keras Models
 ------------

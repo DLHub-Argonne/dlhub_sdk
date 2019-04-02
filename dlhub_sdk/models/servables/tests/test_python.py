@@ -195,7 +195,8 @@ class TestPythonModels(unittest.TestCase):
         """Test making descriptions with more than one argument"""
 
         # Initialize the model
-        model = PythonStaticMethodModel.from_function_pointer(max).set_name('test').set_title('test')
+        model = PythonStaticMethodModel.from_function_pointer(max)
+        model.set_name('test').set_title('test')
 
         # Define the inputs and outputs
         model.set_inputs('tuple', 'Two numbers',
