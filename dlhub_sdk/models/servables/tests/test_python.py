@@ -3,6 +3,7 @@
 from dlhub_sdk.models.servables.python import PythonClassMethodModel, \
     PythonStaticMethodModel
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
+from dlhub_sdk.utils.types import compose_argument_block
 from dlhub_sdk.version import __version__
 from sklearn import __version__ as skl_version
 from numpy import __version__ as numpy_version
@@ -34,6 +35,10 @@ class TestPythonModels(unittest.TestCase):
         model.set_inputs('ndarray', 'Features for each entry', shape=[None, 4])
         model.set_outputs('ndarray', 'Predicted probabilities of being each iris species',
                           shape=[None, 3])
+
+        # Make sure attempting to set "unpack" fails
+        with self.assertRaises(ValueError):
+            model.set_unpack_inputs(True)
 
         # Add some requirements
         model.add_requirement('scikit-learn', 'detect')
@@ -185,3 +190,46 @@ class TestPythonModels(unittest.TestCase):
         }
         self.assertEqual(output, correct_output)
         validate_against_dlhub_schema(output, 'servable')
+
+    def test_multiarg(self):
+        """Test making descriptions with more than one argument"""
+
+        # Initialize the model
+        model = PythonStaticMethodModel.from_function_pointer(max)
+        model.set_name('test').set_title('test')
+
+        # Define the inputs and outputs
+        model.set_inputs('tuple', 'Two numbers',
+                         element_types=[
+                             compose_argument_block('float', 'A number'),
+                             compose_argument_block('float', 'A second number')
+                         ])
+        model.set_outputs('float', 'Maximum of the two numbers')
+
+        # Mark that the inputs should be unpacked
+        model.set_unpack_inputs(True)
+
+        # Check the description
+        self.assertEqual(model['servable']['methods']['run'], {
+            'input': {
+                'type': 'tuple',
+                'description': 'Two numbers',
+                'element_types': [
+                    {'type': 'float', 'description': 'A number'},
+                    {'type': 'float', 'description': 'A second number'}
+                ]
+            },
+            'output': {
+                'type': 'float',
+                'description': 'Maximum of the two numbers'
+            },
+            'method_details': {
+                'module': 'builtins',
+                'method_name': 'max',
+                'unpack': True,
+                'autobatch': False
+            },
+            'parameters': {}
+        })
+
+        validate_against_dlhub_schema(model.to_dict(), 'servable')
