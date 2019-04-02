@@ -16,6 +16,23 @@ class BasePythonServableModel(BaseServableModel):
             'language': 'python',
         })
 
+    def set_unpack_inputs(self, x, method_name='run'):
+        """Define whether the inputs need to be unpacked before executing the function
+
+        Set to `true` if the function takes more than one input. Otherwise, the default is `False`
+
+        Args:
+            x (bool): Desired setting
+            method_name (str): Name of the method to modify
+        Returns:
+            (BasePythonServableModel): self
+        """
+
+        if self['servable']['methods'][method_name]['input']['type'] not in ['list', 'tuple']:
+            raise ValueError('Only "list" and "tuple" inputs are compatible with unpacking')
+        self['servable']['methods'][method_name]['method_details']['unpack'] = x
+        return self
+
     @classmethod
     def create_model(cls, method, function_kwargs=None):
         """Initialize a model for a python object

@@ -44,7 +44,7 @@ def compose_argument_block(data_type, description, shape=(), item_type=None,
         python_type (string): Full path of a Python object type
             (e.g., :code:`pymatgen.core.Compostion`)
         properties (dict): Descriptions of the types in a dictionary
-        element_types ([dict] or [list]): Types of elements in a tuple. List of type definition
+        element_types ([dict] or [str]): Types of elements in a tuple. List of type definition
             dictionaries or types as strings.
     Keyword Arguments: Any other details particular to this kind of data
     Returns:
