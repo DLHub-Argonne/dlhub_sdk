@@ -1,5 +1,5 @@
 """Utilities for validating against DLHub schemas"""
-from jsonschema import Draft4Validator, RefResolver
+from jsonschema import Draft7Validator, RefResolver
 import requests
 
 _schema_repo = "https://raw.githubusercontent.com/DLHub-Argonne/dlhub_schemas/master/schemas/"
@@ -20,7 +20,7 @@ def validate_against_dlhub_schema(document, schema_name):
 
     # Make the schema validator
     schema = requests.get("{}/{}.json".format(_schema_repo, schema_name)).json()
-    validator = Draft4Validator(schema, resolver=RefResolver(_schema_repo, schema))
+    validator = Draft7Validator(schema, resolver=RefResolver(_schema_repo, schema))
 
     # Test the document
     validator.validate(document)
