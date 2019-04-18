@@ -1,7 +1,10 @@
 """This module contains tools for describing objects being published to DLHub."""
-
+import importlib
 from itertools import zip_longest
 from datetime import datetime
+
+import pkg_resources
+import requests
 from six import string_types
 from zipfile import ZipFile
 from copy import deepcopy
@@ -24,7 +27,8 @@ class BaseMetadataModel:
     Covers information that goes in the :code:`datacite` block of the metadata file and
     some of the DLHub block.
 
-    --> Using a MetadataModel <--
+    Using a MetadataModel
+    ---------------------
 
     There are many kinds of MetadataModel classes that each describe a different kind of object.
     Each of these different types are created using the :code:`create_model` operation
@@ -71,7 +75,7 @@ class BaseMetadataModel:
             "domains": [],
             "visible_to": ["public"],
             'name': None,
-            'files': {}
+            'files': {},
         }}
 
     def __getitem__(self, item):
@@ -245,6 +249,75 @@ class BaseMetadataModel:
             year (string): Publication year
         """
         self._output["datacite"]["publicationYear"] = str(year)
+        return self
+
+    def add_requirement(self, library, version=None):
+        """Add a required Python library.
+
+        The name of the library should be either the name on PyPI, or a URL for the git repository
+        holding the code (e.g., ``git+https://github.com/DLHub-Argonne/dlhub_sdk.git``)
+
+        Args:
+            library (string): Name of library
+            version (string): Required version. 'latest' to use the most recent version on PyPi (if
+                available). 'detect' will attempt to find the version of the library installed on
+                the computer running this software. Default is ``None``
+        """
+
+        # Attempt to determine the version automatically
+        if version == "detect":
+            try:
+                module = importlib.import_module(library)
+                version = module.__version__
+            except Exception:
+                version = pkg_resources.get_distribution(library).version
+        elif version == "latest":
+            pypi_req = requests.get('https://pypi.org/pypi/{}/json'.format(library))
+            version = pypi_req.json()['info']['version']
+
+        # Set the requirements
+        if "dependencies" not in self["dlhub"]:
+            self["dlhub"]["dependencies"] = {"python": {}}
+        self._output["dlhub"]["dependencies"]["python"][library] = version
+        return self
+
+    def add_requirements(self, requirements):
+        """Add a dictionary of requirements
+
+        Utility wrapper for `add_requirement`
+
+        Args:
+            requirements (dict): Keys are names of library (str), values are the version
+        """
+        for p, v in requirements.items():
+            self.add_requirement(p, v)
+        return self
+
+    def parse_repo2docker_configuration(self, directory=None):
+        """Gathers information about required environment from repo2docker configuration files.
+
+        See https://repo2docker.readthedocs.io/en/latest/config_files.html for more details
+
+        Args:
+            directory (str): Path to directory containing configuration files
+                (default: current working directory)
+        """
+
+        # Get a list of all files
+        config_files = ['environment.yml', 'requirements.txt', 'setup.py', 'REQUIRE', 'install.R',
+                        'apt.txt', 'DESCRIPTION', 'manifest.xml', 'postBuild', 'start',
+                        'runtime.txt', 'default.nix', 'Dockerfile']
+
+        # Get the directory name if `None`
+        if directory is None:
+            directory = os.getcwd()
+
+        # Add every file we can find
+        for file in config_files:
+            path = os.path.join(directory, file)
+            if os.path.isfile(path):
+                self.add_file(path)
+
         return self
 
     def add_rights(self, uri=None, rights=None):

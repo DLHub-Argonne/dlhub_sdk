@@ -76,10 +76,16 @@ class TestPythonModels(unittest.TestCase):
                 'type': 'servable',
                 'files': {
                     'pickle': pickle_path
+                },
+                'dependencies': {
+                    'python': {
+                        'scikit-learn': skl_version,
+                        'numpy': numpy_version,
+                        'sklearn': '0.0'
+                    }
                 }
             },
             'servable': {
-                'language': 'python',
                 'type': 'Python class method',
                 'shim': 'python.PythonClassMethodServable',
                 'methods': {
@@ -101,13 +107,6 @@ class TestPythonModels(unittest.TestCase):
                             'class_name': 'sklearn.svm.classes.SVC',
                             'method_name': 'predict_proba'
                         },
-                    }
-                },
-                'dependencies': {
-                    'python': {
-                        'scikit-learn': skl_version,
-                        'numpy': numpy_version,
-                        'sklearn': '0.0'
                     }
                 }
             }
@@ -159,7 +158,6 @@ class TestPythonModels(unittest.TestCase):
                 'files': {}
             },
             'servable': {
-                'language': 'python',
                 'type': 'Python static method',
                 'shim': 'python.PythonStaticMethodServable',
                 'methods': {
@@ -182,9 +180,6 @@ class TestPythonModels(unittest.TestCase):
                             'autobatch': True
                         }
                     }
-                },
-                'dependencies': {
-                    'python': {}
                 }
             }
         }
