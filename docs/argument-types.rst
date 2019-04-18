@@ -62,6 +62,24 @@ For example, an ``Nx3`` array of integers can be represented by:
       "shape": [null, 3]
    }
 
+file
+----
+
+File inputs to a servable are supported by the ``file`` argument type.
+Users can specify what types are allowed using `MIME types <https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Complete_list_of_MIME_types>`_
+For example, an application that takes CSV files and Excel spreadsheets would represented as:
+
+.. code-block:: json
+
+   {
+      "type": "file",
+      "file_types": [
+         "text/csv",
+         "application/vnd.ms-excel",
+         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      ]
+   }
+
 list
 ----
 
