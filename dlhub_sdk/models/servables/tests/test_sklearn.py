@@ -49,16 +49,15 @@ class TestSklearn(unittest.TestCase):
                 'type': 'servable',
                 'files': {
                     'model': model_path
-                }
-            },
-            'servable': {
-                'language': 'python',
-                'type': 'Scikit-learn estimator',
+                },
                 'dependencies': {
                     'python': {
                         'scikit-learn': '0.19.1'
                     }
-                },
+                }
+            },
+            'servable': {
+                'type': 'Scikit-learn estimator',
                 'model_type': 'SVC',
                 'shim': 'sklearn.ScikitLearnServable',
                 'methods': {

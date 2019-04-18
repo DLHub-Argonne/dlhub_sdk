@@ -59,7 +59,11 @@ class TestKeras(TestCase):
                 "dlhub": {"version": __version__, "domains": [],
                           "visible_to": ["public"],
                           'type': 'servable',
-                          "name": "mlp", "files": {"model": model_path}},
+                          "name": "mlp", "files": {"model": model_path},
+                          "dependencies": {"python": {
+                              'keras': keras_version,
+                              'h5py': h5py_version
+                          }}},
                 "servable": {"methods": {"run": {
                     "input": {"type": "ndarray", "description": "Tensor", "shape": [None, 1]},
                     "output": {"type": "ndarray", "description": "Tensor",
@@ -70,7 +74,6 @@ class TestKeras(TestCase):
                     }}},
                     "type": "Keras Model",
                     "shim": "keras.KerasServable",
-                    "language": "python",
                     "model_type": "Deep NN",
                     "model_summary": """_________________________________________________________________
 Layer (type)                 Output Shape              Param #   
@@ -83,11 +86,7 @@ Total params: 49
 Trainable params: 49
 Non-trainable params: 0
 _________________________________________________________________
-""",   # noqa: W291 (trailing whitespace needed for text match)
-                    "dependencies": {"python": {
-                        'keras': keras_version,
-                        'h5py': h5py_version
-                    }}}})
+"""}})  # noqa: W291 (trailing whitespace needed for text match)
 
             # Validate against schema
             validate_against_dlhub_schema(output, 'servable')

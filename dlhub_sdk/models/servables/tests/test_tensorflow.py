@@ -92,6 +92,8 @@ class TestTensorflow(TestCase):
                                     os.path.join('variables', 'variables.data-00000-of-00001'),
                                     os.path.join('variables', 'variables.index')]},
                          metadata['dlhub']['files'])
+        self.assertEqual(metadata['dlhub']['dependencies'],
+                         {'python': {'tensorflow': tf.__version__}})
         self.assertEqual(metadata['servable'],
                          {'methods':
                              {'run': {
@@ -123,7 +125,6 @@ class TestTensorflow(TestCase):
                                                     'output_nodes': ['scale_mult:0']}
                              }},
                              'shim': 'tensorflow.TensorFlowServable',
-                             'type': 'TensorFlow Model',
-                             'dependencies': {'python': {'tensorflow': tf.__version__}}})
+                             'type': 'TensorFlow Model'})
 
         validate_against_dlhub_schema(metadata, 'servable')

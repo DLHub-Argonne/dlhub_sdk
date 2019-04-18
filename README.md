@@ -295,6 +295,11 @@ The SDK will inspect the pickle file to determine the type of the model and the 
     "files": {
         "model": "model.pkl",
         "other": []
+    },
+    "dependencies": {
+      "python": {
+        "scikit-learn": "0.19.1"
+      }
     }
   },
   "servable": {
@@ -329,12 +334,6 @@ The SDK will inspect the pickle file to determine the type of the model and the 
       }
     },
     "shim": "sklearn.ScikitLearnServable",
-    "language": "python",
-    "dependencies": {
-      "python": {
-        "scikit-learn": "0.19.1"
-      }
-    },
     "type": "Scikit-learn estimator",
     "model_type": "SVC",
     "model_summary": "SVC(C=1, cache_size=200, class_weight=None, coef0=0.0,\n  decision_function_shape='ovr', degree=3, gamma='auto', kernel='linear',\n  max_iter=-1, probability=True, random_state=None, shrinking=True,\n  tol=0.001, verbose=False)",

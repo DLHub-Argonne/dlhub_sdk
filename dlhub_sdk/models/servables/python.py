@@ -8,14 +8,6 @@ from dlhub_sdk.utils.types import compose_argument_block
 class BasePythonServableModel(BaseServableModel):
     """Describes a static python function to be run"""
 
-    def __init__(self):
-        super(BasePythonServableModel, self).__init__()
-
-        # Update some information about the servable
-        self._output['servable'].update({
-            'language': 'python',
-        })
-
     def set_unpack_inputs(self, x, method_name='run'):
         """Define whether the inputs need to be unpacked before executing the function
 
