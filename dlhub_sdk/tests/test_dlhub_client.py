@@ -42,11 +42,18 @@ class TestClient(TestCase):
         data = {"data": ["V", "Co", "Zr"]}
 
         # Test sending the data as JSON
-        res = self.dl.run("{}/{}".format(user, name), data, input_type='json')
+        model_id = "{}/{}".format(user, name)
+        res = self.dl.run(model_id, data, input_type='json')
         self.assertEqual({}, res)
 
         # Test sending the data as pickle
-        res = self.dl.run("{}/{}".format(user, name), data, input_type='python')
+        res = self.dl.run(model_id, data, input_type='python')
+        self.assertEqual({}, res)
+
+        # Test sending a file
+        #  TODO: Make an example servable that takes a file as input
+        res = self.dl.run(model_id, 'https://www.dlhub.org/images/dlhub-logo.png',
+                          input_type='files')
         self.assertEqual({}, res)
 
     @skipUnless(is_travis, 'Publish test only runs on Travis')
