@@ -14,7 +14,7 @@ class KerasModel(BasePythonServableModel):
     Assumes that the model has been saved to an hdf5 file"""
 
     @classmethod
-    def create_model(cls, model_path, output_names, arch_path=None,
+    def create_model(cls, model_path, output_names=None, arch_path=None,
                      custom_objects=None):
         """Initialize a Keras model.
 
@@ -22,7 +22,6 @@ class KerasModel(BasePythonServableModel):
             model_path (string): Path to the hd5 file that contains the weights and, optionally,
                 the architecture
             output_names ([string] or [[string]]): Names of output classes.
-                If applicable, one list for each output layer.
             arch_path (string): Path to the hd5 model containing the architecture, if not
                 available in the file at :code:`model_path`.
             custom_objects (dict): Map of layer names to custom layers. See
@@ -65,7 +64,8 @@ class KerasModel(BasePythonServableModel):
         output['servable']['methods']['run']['input'] = output.format_layer_spec(model.input_shape)
         output['servable']['methods']['run']['output'] = output.format_layer_spec(
             model.output_shape)
-        output['servable']['methods']['run']['method_details']['classes'] = output_names
+        if output_names is not None:
+            output['servable']['methods']['run']['method_details']['classes'] = output_names
 
         # Get a full description of the model
         output.summary = ""

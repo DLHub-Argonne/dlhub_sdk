@@ -125,17 +125,17 @@ As an example, the description for a Keras model created using:
     model.fit(X, y)
     model.save('model.h5')
 
-can be created from this model file and names for the output classes:
+can be generated from only the h5 model:
 
 .. code-block:: python
 
-    model_info = KerasModel.create_model('model.h5', ["y"])
+    model_info = KerasModel.create_model('model.h5')
 
 Models with weights and architecture as separate files can be described using:
 
 .. code-block:: python
 
-	model_info = KerasModel.create_model('model.h5', ["y"], arch_path='arch.json')
+	model_info = KerasModel.create_model('model.h5', arch_path='arch.json')
 
 Keras also allows users to add their own custom layers to their models for any custom operation
 that has trainable weights. Use this when the Keras Lambda layer does not apply. In Keras, 
@@ -170,8 +170,7 @@ and outputs automatically:
           },
           "parameters": {},
           "method_details": {
-            "method_name": "predict",
-            "classes": ["y"]
+            "method_name": "predict"
           }
         }
       }
