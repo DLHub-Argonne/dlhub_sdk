@@ -4,11 +4,13 @@ from tempfile import mkstemp
 
 import jsonpickle
 import requests
+from typing import Union, Any
 from globus_sdk.base import BaseClient, slash_join
 from mdf_toolbox import login, logout
 from mdf_toolbox.search_helper import SEARCH_LIMIT
 
 from dlhub_sdk.config import DLHUB_SERVICE_ADDRESS, CLIENT_ID
+from dlhub_sdk.utils.futures import DLHubFuture
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 from dlhub_sdk.utils.search import DLHubSearchHelper, get_method_details, filter_latest
 
@@ -164,7 +166,8 @@ class DLHubClient(BaseClient):
         metadata = self.describe_servable(name)
         return get_method_details(metadata, method)
 
-    def run(self, name, inputs, input_type='python', asynchronous=False):
+    def run(self, name, inputs, input_type='python',
+            asynchronous=False, async_wait=5) -> Union[Any, DLHubFuture]:
         """Invoke a DLHub servable
 
         Args:
@@ -175,6 +178,7 @@ class DLHubClient(BaseClient):
                 sends the data as files).
             asynchronous (bool): Whether to return from the function immediately or
                 wait for the execution to finish.
+            async_wait (float): How many sections wait between checking async status
         Returns:
             Results of running the servable. If asynchronous, then the task ID
         """
@@ -201,7 +205,7 @@ class DLHubClient(BaseClient):
             raise Exception(r)
 
         # Return the result
-        return r.data['task_id'] if asynchronous else r.data
+        return DLHubFuture(self, r.data['task_id'], async_wait) if asynchronous else r.data
 
     def publish_servable(self, model):
         """Submit a servable to DLHub
