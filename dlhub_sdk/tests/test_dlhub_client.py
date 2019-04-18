@@ -49,6 +49,10 @@ class TestClient(TestCase):
         res = self.dl.run("{}/{}".format(user, name), data, input_type='python')
         self.assertEqual({}, res)
 
+        # Test an asynchronous request
+        task_id = self.dl.run("{}/{}".format(user, name), data, asynchronous=True)
+        self.assertIsInstance(task_id, str)
+
     @skipUnless(is_travis, 'Publish test only runs on Travis')
     def test_submit(self):
         # Make an example function
