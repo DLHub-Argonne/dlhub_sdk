@@ -4,11 +4,13 @@ from tempfile import mkstemp
 
 import jsonpickle
 import requests
+from typing import Union, Any
 from globus_sdk.base import BaseClient, slash_join
 from mdf_toolbox import login, logout
 from mdf_toolbox.search_helper import SEARCH_LIMIT
 
 from dlhub_sdk.config import DLHUB_SERVICE_ADDRESS, CLIENT_ID
+from dlhub_sdk.utils.futures import DLHubFuture
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 from dlhub_sdk.utils.search import DLHubSearchHelper, get_method_details, filter_latest
 
@@ -164,7 +166,8 @@ class DLHubClient(BaseClient):
         metadata = self.describe_servable(name)
         return get_method_details(metadata, method)
 
-    def run(self, name, inputs, input_type='python'):
+    def run(self, name, inputs, input_type='python',
+            asynchronous=False, async_wait=5) -> Union[Any, DLHubFuture]:
         """Invoke a DLHub servable
 
         Args:
@@ -173,8 +176,11 @@ class DLHubClient(BaseClient):
             input_type (string): How to send the data to DLHub. Can be "python" (which pickles
                 the data), "json" (which uses JSON to serialize the data), or "files" (which
                 sends the data as files).
+            asynchronous (bool): Whether to return from the function immediately or
+                wait for the execution to finish.
+            async_wait (float): How many sections wait between checking async status
         Returns:
-            Results of running the servable
+            Results of running the servable. If asynchronous, then the task ID
         """
         servable_path = 'servables/{name}/run'.format(name=name)
 
@@ -189,13 +195,17 @@ class DLHubClient(BaseClient):
         else:
             raise ValueError('Input type not recognized: {}'.format(input_type))
 
+        # Set the asynchronous option
+        data['asynchronous'] = asynchronous
+
         # Send the data to DLHub
         r = self.post(servable_path, json_body=data)
-        if r.http_status != 200:
+        if (not asynchronous and r.http_status != 200) \
+                or (asynchronous and r.http_status != 202):
             raise Exception(r)
 
         # Return the result
-        return r.data
+        return DLHubFuture(self, r.data['task_id'], async_wait) if asynchronous else r.data
 
     def publish_servable(self, model):
         """Submit a servable to DLHub

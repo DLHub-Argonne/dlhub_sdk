@@ -2,6 +2,7 @@ from unittest import TestCase, skipUnless
 import os
 
 from dlhub_sdk.models.servables.python import PythonStaticMethodModel
+from dlhub_sdk.utils.futures import DLHubFuture
 from dlhub_sdk.client import DLHubClient
 
 
@@ -48,6 +49,11 @@ class TestClient(TestCase):
         # Test sending the data as pickle
         res = self.dl.run("{}/{}".format(user, name), data, input_type='python')
         self.assertEqual({}, res)
+
+        # Test an asynchronous request
+        task_future = self.dl.run("{}/{}".format(user, name), data, asynchronous=True)
+        self.assertIsInstance(task_future, DLHubFuture)
+        self.assertEqual({}, task_future.result(timeout=60))
 
     @skipUnless(is_travis, 'Publish test only runs on Travis')
     def test_submit(self):
