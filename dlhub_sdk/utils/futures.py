@@ -1,5 +1,4 @@
 """Tools for dealing with asynchronous execution"""
-from dlhub_sdk.client import DLHubClient
 from globus_sdk import GlobusAPIError
 from concurrent.futures import Future
 from threading import Thread
@@ -9,7 +8,7 @@ from time import sleep
 class DLHubFuture(Future):
     """Utility class for simplifying asynchronous execution in DLHub"""
 
-    def __init__(self, client: DLHubClient, task_id: str, ping_interval: float):
+    def __init__(self, client, task_id: str, ping_interval: float):
         """
         Args:
              client (DLHubClient): Already-initialized client, used to check
@@ -21,8 +20,12 @@ class DLHubFuture(Future):
         self.task_id = task_id
         self.ping_interval = ping_interval
 
+        # Forcing the ping interval to be no less than 1s
+        if ping_interval < 1:
+            assert AttributeError('Ping interval must be at least 1 second')
+
         # Start a thread that polls status
-        self._checker_thread = Thread(target=DLHubClient, args=(self,))
+        self._checker_thread = Thread(target=DLHubFuture._ping_server, args=(self,))
         self._checker_thread.start()
 
     def _ping_server(self):
