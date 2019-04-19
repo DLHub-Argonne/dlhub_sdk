@@ -53,7 +53,7 @@ class TestClient(TestCase):
         # Test an asynchronous request
         task_future = self.dl.run("{}/{}".format(user, name), data, asynchronous=True)
         self.assertIsInstance(task_future, DLHubFuture)
-        self.assertEqual({}, task_future.result())
+        self.assertEqual({}, task_future.result(timeout=60))
 
     @skipUnless(is_travis, 'Publish test only runs on Travis')
     def test_submit(self):

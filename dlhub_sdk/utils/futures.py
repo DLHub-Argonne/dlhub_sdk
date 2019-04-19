@@ -3,6 +3,7 @@ from globus_sdk import GlobusAPIError
 from concurrent.futures import Future
 from threading import Thread
 from time import sleep
+import json
 
 
 class DLHubFuture(Future):
@@ -19,6 +20,9 @@ class DLHubFuture(Future):
         self.client = client
         self.task_id = task_id
         self.ping_interval = ping_interval
+
+        # Once you create this, the task has already started
+        self.set_running_or_notify_cancel()
 
         # Forcing the ping interval to be no less than 1s
         if ping_interval < 1:
@@ -43,10 +47,11 @@ class DLHubFuture(Future):
             # If the task isn't already completed, check if it is still running
             status = self.client.get_task_status(self.task_id)
             # TODO (lw): What if the task fails on the server end? Do we have a "FAILURE" status?
-            if status['task'] == 'COMPLETED':
-                self.set_result(status['result'])
+            if status['status'] == 'COMPLETED':
+                self.set_result(json.loads(status['result']))
                 return False
             return True
+        return False
 
     def stop(self):
         """Stop the execution of the function"""
