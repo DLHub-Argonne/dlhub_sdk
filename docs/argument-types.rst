@@ -80,6 +80,16 @@ For example, an application that takes CSV files and Excel spreadsheets would re
       ]
    }
 
+Files can only be mixed with other types of inputs in a reduced number of ways.
+The only acceptable types of function signatures with files are:
+
+#. A single file is the sole input/output
+#. A list of files is the sole input/output
+#. Files or lists of files is one or more of the inputs or outputs to the function
+
+In other words, files may not be part of a dictionary or a tuple data structure, or
+as a list of list of files. 
+
 list
 ----
 
