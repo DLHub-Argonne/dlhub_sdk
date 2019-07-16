@@ -86,11 +86,11 @@ class TestSklearn(unittest.TestCase):
                     }
                 },
                 'model_summary': ("SVC(C=1, cache_size=200, class_weight=None, coef0=0.0,\n"
-                                  "  decision_function_shape='ovr', degree=3, gamma='auto', "
+                                  "    decision_function_shape='ovr', degree=3, gamma='auto', "
                                   "kernel='linear',\n"
-                                  "  max_iter=-1, probability=True, random_state=None, "
-                                  "shrinking=True,\n"
-                                  "  tol=0.001, verbose=False)"),
+                                  "    max_iter=-1, probability=True, random_state=None,"
+                                  " shrinking=True, tol=0.001,\n"
+                                  "    verbose=False)"),
                 'options': {
                     'is_classifier': True,
                     'serialization_method': 'pickle',
