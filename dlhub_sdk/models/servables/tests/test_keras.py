@@ -3,6 +3,7 @@ from tempfile import mkdtemp
 import shutil
 import os
 
+from tensorflow import __version__ as tf_version
 from keras import __version__ as keras_version
 from keras.models import Sequential, Model
 from keras.layers import Dense, Input
@@ -62,7 +63,8 @@ class TestKeras(TestCase):
                           "name": "mlp", "files": {"model": model_path},
                           "dependencies": {"python": {
                               'keras': keras_version,
-                              'h5py': h5py_version
+                              'h5py': h5py_version,
+                              'tensorflow': tf_version
                           }}},
                 "servable": {"methods": {"run": {
                     "input": {"type": "ndarray", "description": "Tensor", "shape": [None, 1]},
