@@ -170,7 +170,7 @@ class DLHubClient(BaseClient):
         return get_method_details(metadata, method)
 
     def run(self, name, inputs, input_type='json',
-            asynchronous=False, async_wait=5) -> Union[Any, FuncxFuture]:
+            asynchronous=False, async_wait=5):
         """Invoke a DLHub servable
 
         Args:

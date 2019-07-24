@@ -7,8 +7,8 @@ with open(os.path.join("dlhub_sdk", "version.py")) as f:
     exec(f.read(), version_ns)
 version = version_ns['__version__']
 
-with open('requirements.txt') as f:
-    install_requires = f.readlines()
+#with open('requirements.txt') as f:
+#    install_requires = f.readlines()
 
 setup(
     name='dlhub_sdk',
@@ -20,7 +20,7 @@ setup(
                       "include functions for quickly describing a model in the "
                       "correct schema for DLHub, and discovering or using models "
                       "that other scientists have published."),
-    install_requires=install_requires,
+ #   install_requires=install_requires,
     python_requires=">=3.4",
     classifiers=[
         "Development Status :: 3 - Alpha",
