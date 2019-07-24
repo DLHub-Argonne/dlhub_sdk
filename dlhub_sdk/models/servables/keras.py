@@ -1,11 +1,26 @@
 from keras import __version__ as keras_version
 from keras.models import load_model, model_from_json, model_from_yaml
 from keras.layers import Layer
+from keras import backend
 
 from dlhub_sdk.models.servables.python import BasePythonServableModel
 from dlhub_sdk.utils.types import compose_argument_block
 
 _keras_version_tuple = tuple(int(i) for i in keras_version.split("."))
+
+
+def _detect_backend(output):
+    """Add the backend
+
+    Args:
+        output (KerasModel): Current description of Keras model, will be modified
+    """
+
+    # Determine the name of the object
+    my_backend = backend.backend().lower()
+
+    # Add it as a requirement
+    output.add_requirement(my_backend, 'detect')
 
 
 class KerasModel(BasePythonServableModel):
@@ -80,6 +95,10 @@ class KerasModel(BasePythonServableModel):
         # Add keras as a dependency
         output.add_requirement('keras', keras_version)
         output.add_requirement('h5py', 'detect')
+
+        # Detect backend and get its version
+        _detect_backend(output)
+
         return output
 
     def format_layer_spec(self, layers):
