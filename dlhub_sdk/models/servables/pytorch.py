@@ -11,7 +11,15 @@ class TorchModel(BasePythonServableModel):
 
     @classmethod
     def create_model(cls, model_path, input_shape, output_shape):
-        output = super(TorchModel, cls).create_model('predict')
+        """Initialize a PyTorch model.
+
+        Args:
+            model_path (string): Path to the pt or pth file that contains the weights and
+                the architecture
+            input_shape (list): Shape of input matrix to model
+            output_shape (list): Shape of output matrix from model
+       """
+        output = super(TorchModel, cls).create_model('__call__')
 
         # Add model as a file to be sent
         output.add_file(model_path, 'model')
