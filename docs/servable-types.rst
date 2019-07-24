@@ -185,6 +185,59 @@ but the model is ready to be served without any modifications.
 
 The SDK also determines the version of Keras on your system, and saves that in the requirements.
 
+PyTorch Models
+--------------
+
+**Model Class**: `TorchModel <source/dlhub_sdk.models.servables.html#dlhub_sdk.models.servables.pytorch.TorchModel>`_
+
+DLHub serves PyTorch models using the .pt file saved using the ``torch.save`` function
+(see `PyTorch FAQs <https://pytorch.org/tutorials/beginner/saving_loading_models.html>`_).
+As an example, the description for a PyTorch model created using:
+
+.. code-block:: python
+
+    class Net(nn.Module):
+      def __init__(self):
+        super(Net, self).__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5, 1)
+        self.conv2 = nn.Conv2d(20, 50, 5, 1)
+        self.fc1 = nn.Linear(4*4*50, 500)
+        self.fc2 = nn.Linear(500, 10)
+
+      def forward(self, x):
+        x = F.relu(self.conv1(x))
+        x = F.max_pool2d(x, 2, 2)
+        x = F.relu(self.conv2(x))
+        x = F.max_pool2d(x, 2, 2)
+        x = x.view(-1, 4*4*50)
+        x = F.relu(self.fc1(x))
+        x = self.fc2(x)
+        return F.log_softmax(x, dim=1)
+
+    model = Net()
+    torch.save(model, model_path)
+
+can be generated from the pt model as well as specified input and output shapes:
+
+.. code-block:: python
+
+    model_info = TorchModel.create_model('model.pt', (1, 2), (3, 4))
+
+PyTorch requires custom classes so a class file is required:
+
+.. code-block:: python
+
+    model_info.add_file('Net.py')
+
+We recommended changing the descriptions for the inputs and outputs from their
+default values::
+
+    model_info['servable']['methods']['run']['output']['description'] = 'Response'
+
+but the model is ready to be served without any modifications.
+
+The SDK also determines the version of Torch on your system, and saves that in the requirements.
+
 TensorFlow Graphs
 -----------------
 
