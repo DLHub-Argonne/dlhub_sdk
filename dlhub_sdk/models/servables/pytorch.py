@@ -1,9 +1,8 @@
 import torch
-import sys
-import io
 
 from dlhub_sdk.models.servables.python import BasePythonServableModel
 from dlhub_sdk.utils.types import compose_argument_block
+
 
 class TorchModel(BasePythonServableModel):
     """Servable based on a Torch Model object.
@@ -19,13 +18,6 @@ class TorchModel(BasePythonServableModel):
 
         # Get the model details
         if model_path.endswith('.pt') or model_path.endswith('.pth'):
-            '''
-            model_module = __import__(module_name)
-            model_class = getattr(model_module, class_name)
-            model  = model_class()
-            model.load_state_dict(torch.load(model_path))
-            model.eval()
-            '''
             model = torch.load(model_path)
         else:
             raise ValueError('File type for architecture not recognized')
@@ -33,14 +25,13 @@ class TorchModel(BasePythonServableModel):
         # Get the inputs of the model
         output['servable']['methods']['run']['input'] = output.format_layer_spec(input_shape)
         output['servable']['methods']['run']['output'] = output.format_layer_spec(output_shape)
-        
+
         output['servable']['model_summary'] = str(model)
-        output['servable']['model_type'] = 'Deep NN' 
+        output['servable']['model_type'] = 'Deep NN'
 
         # Add torch as a dependency
         output.add_requirement('torch', torch.__version__)
 
-        #print(output['servable'])
         return output
 
     def format_layer_spec(self, layers):
@@ -62,8 +53,3 @@ class TorchModel(BasePythonServableModel):
 
     def _get_type(self):
         return "Torch Model"
-'''
-if __name__ == '__main__':
-    test = TorchModel()
-    test.create_model('mnist_cnn.pt', 'Net', 'Net', (20, 5, 1), (2, 1))
-'''

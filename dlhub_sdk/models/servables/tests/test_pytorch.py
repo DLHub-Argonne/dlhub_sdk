@@ -6,11 +6,6 @@ import os
 from unittest import TestCase
 
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-
-import pprint as pprint
-
 from Net import Net
 
 from dlhub_sdk.models.servables.pytorch import TorchModel
@@ -19,9 +14,11 @@ from dlhub_sdk.version import __version__
 
 _year = str(datetime.now().year)
 
+
 def _make_simple_model():
     model = Net()
     return model
+
 
 class TestTorch(TestCase):
     maxDiff = 4096
