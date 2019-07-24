@@ -14,6 +14,7 @@ from dlhub_sdk.utils.futures import DLHubFuture
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 from dlhub_sdk.utils.search import DLHubSearchHelper, get_method_details, filter_latest
 
+from funcx.sdk.client import FuncXClient
 
 # Directory for authenticaation tokens
 _token_dir = os.path.expanduser("~/.dlhub/credentials")
@@ -51,6 +52,8 @@ class DLHubClient(BaseClient):
                 are not provided.
         Keyword arguments are the same as for BaseClient.
         """
+
+        self.fxc = FuncXClient()
         if force_login or not dlh_authorizer or not search_client:
 
             auth_res = login(services=["search", "dlhub"], app_name="DLHub_Client",
@@ -166,8 +169,8 @@ class DLHubClient(BaseClient):
         metadata = self.describe_servable(name)
         return get_method_details(metadata, method)
 
-    def run(self, name, inputs, input_type='python',
-            asynchronous=False, async_wait=5) -> Union[Any, DLHubFuture]:
+    def run(self, name, inputs, input_type='json',
+            asynchronous=False, async_wait=5) -> Union[Any, FuncxFuture]:
         """Invoke a DLHub servable
 
         Args:
@@ -182,30 +185,15 @@ class DLHubClient(BaseClient):
         Returns:
             Results of running the servable. If asynchronous, then the task ID
         """
-        servable_path = 'servables/{name}/run'.format(name=name)
+        # Send the data to funcx endpoint
+        endpoint_uuid = 'a92945a1-2778-4417-8cd1-4957bc35ce66'
+        func_uuid = self.search(name)[0]['dlhub']['funcx_id']
+        r = self.fxc.run(inputs, endpoint_uuid, func_uuid, 
+                         input_type=input_type,
+                         asynchronous=asynchronous, async_poll=async_wait
+                         )
 
-        # Prepare the data to be sent to DLHub
-        if input_type == 'python':
-            # data = {'python': codecs.encode(pkl.dumps(inputs), 'base64').decode()}
-            data = {'python': jsonpickle.encode(inputs)}
-        elif input_type == 'json':
-            data = {'data': inputs}
-        elif input_type == 'files':
-            raise NotImplementedError('Files support is not yet implemented')
-        else:
-            raise ValueError('Input type not recognized: {}'.format(input_type))
-
-        # Set the asynchronous option
-        data['asynchronous'] = asynchronous
-
-        # Send the data to DLHub
-        r = self.post(servable_path, json_body=data)
-        if (not asynchronous and r.http_status != 200) \
-                or (asynchronous and r.http_status != 202):
-            raise Exception(r)
-
-        # Return the result
-        return DLHubFuture(self, r.data['task_id'], async_wait) if asynchronous else r.data
+        return r
 
     def publish_servable(self, model):
         """Submit a servable to DLHub

@@ -1,7 +1,7 @@
 globus-sdk>=1.7.0
 h5py>=2.8.0
 jsonpickle>=1.0
-jsonschema>=3.0.0
+jsonschema
 keras>=2.2.0
 nbsphinx
 pandas>=0.22.0
@@ -11,3 +11,4 @@ scipy>=0.19.1
 sphinx_rtd_theme>=0.4.2
 tensorflow>=1.8.0
 mdf_toolbox>=0.4.0
+git+https://github.com/funcx-faas/funcx.git
