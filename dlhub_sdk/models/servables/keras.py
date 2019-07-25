@@ -9,6 +9,7 @@ from dlhub_sdk.utils.types import compose_argument_block
 _keras_version_tuple = tuple(int(i) for i in keras_version.split("."))
 _summary_limit = 10000
 
+
 def _detect_backend(output):
     """Add the backend
 
@@ -90,7 +91,7 @@ class KerasModel(BasePythonServableModel):
 
         model.summary(print_fn=capture_summary)
         output.summary = (output.summary[:_summary_limit] + '<<TRUNCATED>>') \
-                            if  len(output.summary) > _summary_limit else output.summary
+            if len(output.summary) > _summary_limit else output.summary
 
         output['servable']['model_summary'] = output.summary
         output['servable']['model_type'] = 'Deep NN'

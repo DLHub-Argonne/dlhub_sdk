@@ -105,16 +105,19 @@ class TestTorch(TestCase):
             # Test the output shapes
             self.assertEqual(metadata['servable']['methods']['run']['input'],
                              {'type': 'tuple', 'description': 'Tuple of tensors',
-                              'element_types': [{'type': 'ndarray', 'description': 'Tensor', 'shape': [None, 4],
+                              'element_types': [{'type': 'ndarray',
+                                                 'description': 'Tensor', 'shape': [None, 4],
                                                  'item_type': {'type': 'float'}},
-                                                {'type': 'ndarray', 'description': 'Tensor', 'shape': [None, 4],
+                                                {'type': 'ndarray',
+                                                 'description': 'Tensor', 'shape': [None, 4],
                                                  'item_type': {'type': 'float'}}]})
             self.assertEqual(metadata['servable']['methods']['run']['output'],
                              {'type': 'tuple', 'description': 'Tuple of tensors',
-                              'element_types': [{'type': 'ndarray', 'description': 'Tensor', 'shape': [None, 1],
+                              'element_types': [{'type': 'ndarray',
+                                                 'description': 'Tensor', 'shape': [None, 1],
                                                  'item_type': {'type': 'float'}},
-                                                {'type': 'ndarray', 'description': 'Tensor', 'shape': [None, 1],
+                                                {'type': 'ndarray',
+                                                 'description': 'Tensor', 'shape': [None, 1],
                                                  'item_type': {'type': 'float'}}]})
 
             validate_against_dlhub_schema(metadata.to_dict(), 'servable')
-
