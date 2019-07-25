@@ -53,11 +53,11 @@ class TorchModel(BasePythonServableModel):
         Return:
             (dict) Description of the inputs / outputs
         """
-        if isinstance(layers, (tuple, list)):
+        if isinstance(layers, tuple):
             return compose_argument_block("ndarray", "Tensor", shape=list(layers), item_type=datatypes)
         else:
             if isinstance(datatypes, str):
-                return [datatypes] * len(layers)
+                datatypes = [datatypes] * len(layers)
             return compose_argument_block("tuple", "Tuple of tensors",
                                           element_types=[self.format_layer_spec(i, t)
                                                          for i, t in zip(layers, datatypes)])
