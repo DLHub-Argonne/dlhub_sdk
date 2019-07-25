@@ -58,9 +58,10 @@ class TestTorch(TestCase):
                               'torch': torch.__version__
                           }}},
                 "servable": {"methods": {"run": {
-                    "input": {"type": "ndarray", "description": "Tensor", "shape": [2, 4]},
+                    "input": {"type": "ndarray", "description": "Tensor", "shape": [2, 4],
+                              "item_type": {"type": "float"}},
                     "output": {"type": "ndarray", "description": "Tensor",
-                               "shape": [3, 5]}, "parameters": {},
+                               "shape": [3, 5], "item_type": {"type": "float"}}, "parameters": {},
                     "method_details": {
                         "method_name": "__call__"
                     }}},
