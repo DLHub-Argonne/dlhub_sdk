@@ -215,28 +215,30 @@ As an example, the description for a PyTorch model created using:
         return F.log_softmax(x, dim=1)
 
     model = Net()
-    torch.save(model, model_path)
+    torch.save(model, 'model.pt')
 
-can be generated from the pt model as well as specified input and output shapes:
+can be generated from the .pt file and the shapes of the input and output arrays.
 
 .. code-block:: python
 
-    model_info = TorchModel.create_model('model.pt', (1, 2), (3, 4))
+    model_info = TorchModel.create_model('model.pt', (None, 1, 28, 28), (None, 10))
 
-PyTorch requires custom classes so a class file is required:
+DLHub will need the definition for the ``Net`` module in order to load and run it.
+You must add the Python libraries containing the module definitions as requirements,
+or add the files defining the modules to the servable definition.
 
 .. code-block:: python
 
     model_info.add_file('Net.py')
 
-We recommended changing the descriptions for the inputs and outputs from their
+As with Keras, we recommended changing the descriptions for the inputs and outputs from their
 default values::
 
     model_info['servable']['methods']['run']['output']['description'] = 'Response'
 
 but the model is ready to be served without any modifications.
 
-The SDK also determines the version of Torch on your system, and saves that in the requirements.
+The SDK also determines the version of Torch on your system, and saves that in the requirements.cd
 
 TensorFlow Graphs
 -----------------
