@@ -238,7 +238,11 @@ default values::
 
 but the model is ready to be served without any modifications.
 
-The SDK also determines the version of Torch on your system, and saves that in the requirements.cd
+In some cases, you may need to specify the data types of your input array(s) using the keyword arguments of ``create_model``.
+The type specifications are needed because PyTorch does not do type casting automatically.
+If in doubt, the data type is ``float`` and you can use the default settings.
+
+The SDK also determines the version of Torch on your system, and saves that in the requirements.
 
 TensorFlow Graphs
 -----------------
