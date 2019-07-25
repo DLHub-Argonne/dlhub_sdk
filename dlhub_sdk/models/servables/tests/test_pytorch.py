@@ -62,7 +62,7 @@ class TestTorch(TestCase):
                     "output": {"type": "ndarray", "description": "Tensor",
                                "shape": [3, 5]}, "parameters": {},
                     "method_details": {
-                        "method_name": "predict"
+                        "method_name": "__call__"
                     }}},
                     "type": "Torch Model",
                     "shim": "torch.TorchServable",
