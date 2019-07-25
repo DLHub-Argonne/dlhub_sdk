@@ -17,6 +17,14 @@ dlhub\_sdk\.models\.servables\.keras module
     :undoc-members:
     :show-inheritance:
 
+dlhub\_sdk\.models\.servables\.pytorch module
+---------------------------------------------
+
+.. automodule:: dlhub_sdk.models.servables.pytorch
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 dlhub\_sdk\.models\.servables\.python module
 --------------------------------------------
 

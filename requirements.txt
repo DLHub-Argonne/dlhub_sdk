@@ -12,3 +12,4 @@ sphinx_rtd_theme>=0.4.2
 tensorflow>=1.8.0
 mdf_toolbox>=0.4.0
 git+https://github.com/funcx-faas/funcx.git
+torch>=1.1.0
