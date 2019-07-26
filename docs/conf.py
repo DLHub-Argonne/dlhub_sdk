@@ -190,3 +190,5 @@ intersphinx_mapping = {
     'python': ('https://docs.python.org/', None),
     'globus_sdk': ('https://globus-sdk-python.readthedocs.io/en/stable/', None),
 }
+
+autodoc_mock_imports = ['torch', 'tensorflow', 'sklearn']

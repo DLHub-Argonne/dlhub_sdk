@@ -1,14 +1,5 @@
 globus-sdk>=1.7.0
-h5py>=2.8.0
 jsonpickle>=1.0
-jsonschema>=3.0.0
-keras>=2.2.0
-nbsphinx
-pandas>=0.22.0
 requests>=2.20.0
-scikit-learn>=0.19.1
-scipy>=0.19.1
-sphinx_rtd_theme>=0.4.2
-tensorflow>=1.8.0
 mdf_toolbox>=0.4.0
-torch>=1.1.0
+jsonschema>=3.0.0
