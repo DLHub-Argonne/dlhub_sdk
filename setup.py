@@ -20,7 +20,7 @@ setup(
     install_requires=[
         "pandas",
         "requests",
-        "jsonschema",
+        "jsonschema>=3.0.0",
         "globus_sdk",
         "jsonpickle",
         "mdf_toolbox>=0.4.0"
