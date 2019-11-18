@@ -30,7 +30,7 @@ To create the client, call
 ```python
 from dlhub_sdk.client import DLHubClient
 
-client = DLHubClient.login()
+client = DLHubClient()
 ```
 
 The client makes it simple to find interesting machine learning models. 
