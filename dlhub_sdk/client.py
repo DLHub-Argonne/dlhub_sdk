@@ -55,7 +55,7 @@ class DLHubClient(BaseClient):
 
             auth_res = login(services=["search", "dlhub"], app_name="DLHub_Client",
                              client_id=CLIENT_ID, clear_old_tokens=force_login,
-                             token_dir=_token_dir)
+                             token_dir=_token_dir, no_local_server=True, no_browser=True)
             dlh_authorizer = auth_res["dlhub"]
             self._search_client = auth_res["search"]
 
