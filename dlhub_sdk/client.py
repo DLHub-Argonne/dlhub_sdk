@@ -49,13 +49,22 @@ class DLHubClient(BaseClient):
             force_login (bool): Whether to force a login to get new credentials.
                 A login will always occur if ``dlh_authorizer`` or ``search_client``
                 are not provided.
+            no_local_server (bool): Disable spinning up a local server to automatically
+                copy-paste the auth code. THIS IS REQUIRED if you are on a remote server.
+                When used locally with no_local_server=False, the domain is localhost with
+                a randomly chosen open port number.
+                **Default**: ``True``.
+            no_browser (bool): Do not automatically open the browser for the Globus Auth URL.
+                Display the URL instead and let the user navigate to that location manually.
+                **Default**: ``True``.
         Keyword arguments are the same as for BaseClient.
         """
         if force_login or not dlh_authorizer or not search_client:
 
             auth_res = login(services=["search", "dlhub"], app_name="DLHub_Client",
                              client_id=CLIENT_ID, clear_old_tokens=force_login,
-                             token_dir=_token_dir, no_local_server=True, no_browser=True)
+                             token_dir=_token_dir, no_local_server=kwargs.get("no_local_server", True),
+                             no_browser=kwargs.get("no_browser", True))
             dlh_authorizer = auth_res["dlhub"]
             self._search_client = auth_res["search"]
 
