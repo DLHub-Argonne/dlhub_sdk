@@ -3,3 +3,4 @@ jsonpickle>=1.0
 requests>=2.20.0
 mdf_toolbox>=0.4.0
 jsonschema>=3.0.0
+funcx

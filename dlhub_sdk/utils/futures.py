@@ -47,8 +47,8 @@ class DLHubFuture(Future):
             # If the task isn't already completed, check if it is still running
             status = self.client.get_task_status(self.task_id)
             # TODO (lw): What if the task fails on the server end? Do we have a "FAILURE" status?
-            if status['status'] == 'COMPLETED':
-                self.set_result(json.loads(status['result']))
+            if 'result' in status:
+                self.set_result(self.client.fx_serializer.deserialize(status['result']))
                 return False
             return True
         return False

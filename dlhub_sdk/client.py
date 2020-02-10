@@ -9,6 +9,9 @@ from globus_sdk.base import BaseClient, slash_join
 from mdf_toolbox import login, logout
 from mdf_toolbox.search_helper import SEARCH_LIMIT
 
+from funcx.sdk.client import FuncXClient
+from funcx.serialize import FuncXSerializer
+
 from dlhub_sdk.config import DLHUB_SERVICE_ADDRESS, CLIENT_ID
 from dlhub_sdk.utils.futures import DLHubFuture
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
@@ -34,7 +37,7 @@ class DLHubClient(BaseClient):
     and providing that authorizer to the initializer (e.g., ``DLHubClient(auth)``)"""
 
     def __init__(self, dlh_authorizer=None, search_client=None, http_timeout=None,
-                 force_login=False, **kwargs):
+                 force_login=False, fx_authorizer=None, **kwargs):
         """Initialize the client
 
         Args:
@@ -54,20 +57,30 @@ class DLHubClient(BaseClient):
                 When used locally with no_local_server=False, the domain is localhost with
                 a randomly chosen open port number.
                 **Default**: ``True``.
+            fx_authorizer (:class:`GlobusAuthorizer
+                            <globus_sdk.authorizers.base.GlobusAuthorizer>`):
+                An authorizer instance used to communicate with funcX.
+                If ``None``, will be created.
             no_browser (bool): Do not automatically open the browser for the Globus Auth URL.
                 Display the URL instead and let the user navigate to that location manually.
                 **Default**: ``True``.
         Keyword arguments are the same as for BaseClient.
         """
-        if force_login or not dlh_authorizer or not search_client:
+        if force_login or not dlh_authorizer or not search_client or not fx_authorizer:
 
-            auth_res = login(services=["search", "dlhub"], app_name="DLHub_Client",
+            fx_scope = "https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/all"
+            auth_res = login(services=["search", "dlhub",
+                                       fx_scope],
+                             app_name="DLHub_Client",
                              client_id=CLIENT_ID, clear_old_tokens=force_login,
                              token_dir=_token_dir, no_local_server=kwargs.get("no_local_server", True),
                              no_browser=kwargs.get("no_browser", True))
             dlh_authorizer = auth_res["dlhub"]
+            fx_authorizer = auth_res["funcx_service"]
             self._search_client = auth_res["search"]
+            self._fx_client = FuncXClient(fx_authorizer=fx_authorizer)
 
+        self.fx_serializer = FuncXSerializer()
         super(DLHubClient, self).__init__("DLHub", environment='dlhub', authorizer=dlh_authorizer,
                                           http_timeout=http_timeout, base_url=DLHUB_SERVICE_ADDRESS,
                                           **kwargs)
@@ -136,8 +149,8 @@ class DLHubClient(BaseClient):
             dict: status block containing "status" key.
         """
 
-        r = self.get("{task_id}/status".format(task_id=task_id))
-        return r.data
+        r = self._fx_client.get_task_status(task_id)
+        return r
 
     def describe_servable(self, name):
         """Get the description for a certain servable
@@ -175,6 +188,7 @@ class DLHubClient(BaseClient):
         metadata = self.describe_servable(name)
         return get_method_details(metadata, method)
 
+
     def run(self, name, inputs, input_type='python',
             asynchronous=False, async_wait=5) -> Union[Any, DLHubFuture]:
         """Invoke a DLHub servable
@@ -191,30 +205,28 @@ class DLHubClient(BaseClient):
         Returns:
             Results of running the servable. If asynchronous, then the task ID
         """
-        servable_path = 'servables/{name}/run'.format(name=name)
 
-        # Prepare the data to be sent to DLHub
-        if input_type == 'python':
-            # data = {'python': codecs.encode(pkl.dumps(inputs), 'base64').decode()}
-            data = {'python': jsonpickle.encode(inputs)}
-        elif input_type == 'json':
-            data = {'data': inputs}
-        elif input_type == 'files':
-            raise NotImplementedError('Files support is not yet implemented')
-        else:
-            raise ValueError('Input type not recognized: {}'.format(input_type))
+        function_id = '27e02510-4144-4ef9-a910-89bed68e8d2a'
+        endpoint_id = '4b116d3c-1703-4f8f-9f6f-39921e5864df'
+        task_id = self._fx_client.run(inputs, endpoint_id=endpoint_id, function_id=function_id)
 
-        # Set the asynchronous option
-        data['asynchronous'] = asynchronous
-
-        # Send the data to DLHub
-        r = self.post(servable_path, json_body=data)
-        if (not asynchronous and r.http_status != 200) \
-                or (asynchronous and r.http_status != 202):
-            raise Exception(r)
+        #r = self.post(servable_path, json_body=data)
+        # if (not asynchronous and r.http_status != 200) \
+        #         or (asynchronous and r.http_status != 202):
+        #     raise Exception(r)
 
         # Return the result
-        return DLHubFuture(self, r.data['task_id'], async_wait) if asynchronous else r.data
+        return DLHubFuture(self, task_id, async_wait) if asynchronous else task_id
+
+    def get_result(self, task_id):
+        """Get the result of a task_id
+
+        Args:
+            task_id str: The task's uuid
+        Returns:
+            Reult of running the servable
+        """
+        return self._fx_client.get_result(task_id)
 
     def publish_servable(self, model):
         """Submit a servable to DLHub
