@@ -21,7 +21,6 @@ from dlhub_sdk.utils.search import DLHubSearchHelper, get_method_details, filter
 # Directory for authenticaation tokens
 _token_dir = os.path.expanduser("~/.dlhub/credentials")
 
-
 class DLHubClient(BaseClient):
     """Main class for interacting with the DLHub service
 
@@ -80,6 +79,8 @@ class DLHubClient(BaseClient):
             self._search_client = auth_res["search"]
             self._fx_client = FuncXClient(fx_authorizer=fx_authorizer)
 
+        # funcX endpoint to use
+        self.fx_endpoint = '2c92a06a-015d-4bfa-924c-b3d0c36bdad7'
         self.fx_serializer = FuncXSerializer()
         super(DLHubClient, self).__init__("DLHub", environment='dlhub', authorizer=dlh_authorizer,
                                           http_timeout=http_timeout, base_url=DLHUB_SERVICE_ADDRESS,
@@ -188,27 +189,23 @@ class DLHubClient(BaseClient):
         metadata = self.describe_servable(name)
         return get_method_details(metadata, method)
 
-
-    def run(self, name, inputs, input_type='python',
+    def run(self, name, inputs,
             asynchronous=False, async_wait=5) -> Union[Any, DLHubFuture]:
         """Invoke a DLHub servable
 
         Args:
             name (string): DLHub name of the servable of the form <user>/<servable_name>
             inputs: Data to be used as input to the function. Can be a string of file paths or URLs
-            input_type (string): How to send the data to DLHub. Can be "python" (which pickles
-                the data), "json" (which uses JSON to serialize the data), or "files" (which
-                sends the data as files).
             asynchronous (bool): Whether to return from the function immediately or
                 wait for the execution to finish.
             async_wait (float): How many sections wait between checking async status
         Returns:
             Results of running the servable. If asynchronous, then the task ID
         """
+        serv = self.describe_servable(name)
+        funcx_id = serv['dlhub']['funcx_id']
 
-        function_id = '27e02510-4144-4ef9-a910-89bed68e8d2a'
-        endpoint_id = '4b116d3c-1703-4f8f-9f6f-39921e5864df'
-        task_id = self._fx_client.run(inputs, endpoint_id=endpoint_id, function_id=function_id)
+        task_id = self._fx_client.run(inputs, endpoint_id=self.fx_endpoint, function_id=funcx_id)
 
         #r = self.post(servable_path, json_body=data)
         # if (not asynchronous and r.http_status != 200) \
