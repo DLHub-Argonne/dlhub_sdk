@@ -80,7 +80,7 @@ class DLHubClient(BaseClient):
             self._fx_client = FuncXClient(fx_authorizer=fx_authorizer)
 
         # funcX endpoint to use
-        self.fx_endpoint = '2c92a06a-015d-4bfa-924c-b3d0c36bdad7'
+        self.fx_endpoint = '86a47061-f3d9-44f0-90dc-56ddc642c000'
         self.fx_serializer = FuncXSerializer()
         super(DLHubClient, self).__init__("DLHub", environment='dlhub', authorizer=dlh_authorizer,
                                           http_timeout=http_timeout, base_url=DLHUB_SERVICE_ADDRESS,
