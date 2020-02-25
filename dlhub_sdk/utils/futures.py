@@ -45,7 +45,11 @@ class DLHubFuture(Future):
     def running(self):
         if super().running():
             # If the task isn't already completed, check if it is still running
-            status = self.client.get_task_status(self.task_id)
+            try:
+                status = self.client.get_task_status(self.task_id)
+            except Exception as e:
+                print(e)
+
             # TODO (lw): What if the task fails on the server end? Do we have a "FAILURE" status?
             if 'result' in status:
                 self.set_result(self.client.fx_serializer.deserialize(status['result']))
