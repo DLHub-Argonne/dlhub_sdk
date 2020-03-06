@@ -75,7 +75,7 @@ class DLHubClient(BaseClient):
                              token_dir=_token_dir, no_local_server=kwargs.get("no_local_server", True),
                              no_browser=kwargs.get("no_browser", True))
             dlh_authorizer = auth_res["dlhub"]
-            fx_authorizer = auth_res["funcx_service"]
+            fx_authorizer = auth_res[fx_scope]
             self._search_client = auth_res["search"]
             self._fx_client = FuncXClient(fx_authorizer=fx_authorizer)
 
