@@ -83,6 +83,7 @@ class DLHubClient(BaseClient):
         self.fx_endpoint = '86a47061-f3d9-44f0-90dc-56ddc642c000'
         # self.fx_endpoint = '2c92a06a-015d-4bfa-924c-b3d0c36bdad7'
         self.fx_serializer = FuncXSerializer()
+        self.fx_cache = {}
         super(DLHubClient, self).__init__("DLHub", environment='dlhub', authorizer=dlh_authorizer,
                                           http_timeout=http_timeout, base_url=DLHUB_SERVICE_ADDRESS,
                                           **kwargs)
@@ -129,6 +130,10 @@ class DLHubClient(BaseClient):
                     names.add(name)
                     output.append(r)
             results = output
+
+        # Add these to the cache
+        for r in results:
+            self.fx_cache[r['dlhub']['shorthand_name']] = r['dlhub']['funcx_id']
 
         return results
 
@@ -203,8 +208,12 @@ class DLHubClient(BaseClient):
         Returns:
             Results of running the servable. If asynchronous, then the task ID
         """
-        serv = self.describe_servable(name)
-        funcx_id = serv['dlhub']['funcx_id']
+
+        if name not in self.fx_cache:
+            # Look it up and add it to the cache
+            serv = self.describe_servable(name)
+            self.fx_cache[name] = serv['dlhub']['funcx_id']
+        funcx_id = self.fx_cache[name]
 
         task_id = self._fx_client.run(inputs, endpoint_id=self.fx_endpoint, function_id=funcx_id)
 
@@ -249,6 +258,9 @@ class DLHubClient(BaseClient):
         # Validate against the servable schema
         validate_against_dlhub_schema(metadata, 'servable')
 
+        # Wipe the fx cache so we don't keep reusing an old servable
+        self.clear_funcx_cache()
+
         # Get the data to be submitted as a ZIP file
         fp, zip_filename = mkstemp('.zip')
         os.close(fp)
@@ -289,6 +301,10 @@ class DLHubClient(BaseClient):
 
         # Publish to DLHub
         metadata = {"repository": repository}
+
+        # Wipe the fx cache so we don't keep reusing an old servable
+        self.clear_funcx_cache()
+
         response = self.post('publish_repo', json_body=metadata)
 
         task_id = response.data['task_id']
@@ -387,7 +403,7 @@ class DLHubClient(BaseClient):
     def search_by_related_doi(self, doi, limit=None, only_latest=True):
         """Get all of the servables associated with a certain publication
 
-        Return:
+        Args:
             doi (string): DOI of related paper
             limit (int): Maximum number of results to return
             only_latest (bool): Whether to return only the most recent version of the model
@@ -397,3 +413,16 @@ class DLHubClient(BaseClient):
 
         results = self.query.match_doi(doi).search(limit=limit)
         return filter_latest(results) if only_latest else results
+
+    def clear_funcx_cache(self, servable=None):
+        """Remove functions from the cache. Either remove a specific servable or wipe the whole cache.
+
+        Args:
+            Servable: str
+                The name of the servable to remove. Default None
+        """
+
+        if servable:
+            del(self.fx_cache[servable])
+        else:
+            self.fx_cache = {}
