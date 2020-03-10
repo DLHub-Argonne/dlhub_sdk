@@ -77,7 +77,7 @@ class DLHubClient(BaseClient):
             dlh_authorizer = auth_res["dlhub"]
             fx_authorizer = auth_res[fx_scope]
             self._search_client = auth_res["search"]
-            self._fx_client = FuncXClient(fx_authorizer=fx_authorizer)
+            self._fx_client = FuncXClient(fx_authorizer=fx_authorizer, funcx_service_address='https://dev.funcx.org/api/v1')
 
         # funcX endpoint to use
         self.fx_endpoint = '86a47061-f3d9-44f0-90dc-56ddc642c000'
@@ -210,13 +210,13 @@ class DLHubClient(BaseClient):
         """
 
         if name not in self.fx_cache:
-            # Look it up and add it to the cache
+            # Look it up and add it to the cache, this will raise an exception if not found.
             serv = self.describe_servable(name)
-            self.fx_cache[name] = serv['dlhub']['funcx_id']
+            self.fx_cache.update({name: serv['dlhub']['funcx_id']})
+
         funcx_id = self.fx_cache[name]
-
-        task_id = self._fx_client.run(inputs, endpoint_id=self.fx_endpoint, function_id=funcx_id)
-
+        payload = {'data': inputs}
+        task_id = self._fx_client.run(payload, endpoint_id=self.fx_endpoint, function_id=funcx_id)
         #r = self.post(servable_path, json_body=data)
         # if (not asynchronous and r.http_status != 200) \
         #         or (asynchronous and r.http_status != 202):
@@ -233,7 +233,11 @@ class DLHubClient(BaseClient):
         Returns:
             Reult of running the servable
         """
-        return self._fx_client.get_result(task_id)
+
+        result = self._fx_client.get_result(task_id)
+        if isinstance(result, tuple):
+            result = result[0]
+        return result
 
     def publish_servable(self, model):
         """Submit a servable to DLHub
@@ -426,3 +430,5 @@ class DLHubClient(BaseClient):
             del(self.fx_cache[servable])
         else:
             self.fx_cache = {}
+
+        return self.fx_cache
