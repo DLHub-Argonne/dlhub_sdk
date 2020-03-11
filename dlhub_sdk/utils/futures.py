@@ -48,11 +48,14 @@ class DLHubFuture(Future):
             try:
                 status = self.client.get_task_status(self.task_id)
             except Exception as e:
-                print(e)
+                return True
 
             # TODO (lw): What if the task fails on the server end? Do we have a "FAILURE" status?
             if 'result' in status:
-                self.set_result(self.client.fx_serializer.deserialize(status['result']))
+                if isinstance(status['result'], tuple):
+                    self.set_result(self.client.fx_serializer.deserialize(status['result'][0]))
+                else:
+                    self.set_result(self.client.fx_serializer.deserialize(status['result']))
                 return False
             return True
         return False

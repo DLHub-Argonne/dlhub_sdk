@@ -77,7 +77,7 @@ class DLHubClient(BaseClient):
             dlh_authorizer = auth_res["dlhub"]
             fx_authorizer = auth_res[fx_scope]
             self._search_client = auth_res["search"]
-            self._fx_client = FuncXClient(fx_authorizer=fx_authorizer, funcx_service_address='https://dev.funcx.org/api/v1')
+            self._fx_client = FuncXClient(force_login=True,fx_authorizer=fx_authorizer, funcx_service_address='https://dev.funcx.org/api/v1')
 
         # funcX endpoint to use
         self.fx_endpoint = '86a47061-f3d9-44f0-90dc-56ddc642c000'
@@ -204,7 +204,7 @@ class DLHubClient(BaseClient):
             inputs: Data to be used as input to the function. Can be a string of file paths or URLs
             asynchronous (bool): Whether to return from the function immediately or
                 wait for the execution to finish.
-            async_wait (float): How many sections wait between checking async status
+            async_wait (float): How many seconds to wait between checking async status
         Returns:
             Results of running the servable. If asynchronous, then the task ID
         """
@@ -223,19 +223,20 @@ class DLHubClient(BaseClient):
         #     raise Exception(r)
 
         # Return the result
-        return DLHubFuture(self, task_id, async_wait) if asynchronous else task_id
+        return DLHubFuture(self, task_id, async_wait) if not asynchronous else task_id
 
-    def get_result(self, task_id):
+    def get_result(self, task_id, verbose=False):
         """Get the result of a task_id
 
         Args:
             task_id str: The task's uuid
+            verbose bool: whether or not to return the full dlhub response
         Returns:
             Reult of running the servable
         """
 
         result = self._fx_client.get_result(task_id)
-        if isinstance(result, tuple):
+        if isinstance(result, tuple) and not verbose:
             result = result[0]
         return result
 
