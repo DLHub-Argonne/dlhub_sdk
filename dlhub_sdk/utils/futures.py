@@ -48,7 +48,9 @@ class DLHubFuture(Future):
             try:
                 status = self.client.get_task_status(self.task_id)
             except Exception as e:
-                return True
+                # Check if it is "Task pending"
+                if e.args[0] == "Task pending":
+                    return True
 
             # TODO (lw): What if the task fails on the server end? Do we have a "FAILURE" status?
             if 'result' in status:
@@ -56,6 +58,9 @@ class DLHubFuture(Future):
                     self.set_result(self.client.fx_serializer.deserialize(status['result'][0]))
                 else:
                     self.set_result(self.client.fx_serializer.deserialize(status['result']))
+                return False
+            elif 'exception' in status:
+                self.set_exception(Exception(self.client.fx_serializer.deserialize(status['exception'])))
                 return False
             return True
         return False
