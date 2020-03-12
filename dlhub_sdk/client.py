@@ -77,7 +77,8 @@ class DLHubClient(BaseClient):
             dlh_authorizer = auth_res["dlhub"]
             fx_authorizer = auth_res[fx_scope]
             self._search_client = auth_res["search"]
-            self._fx_client = FuncXClient(force_login=True,fx_authorizer=fx_authorizer, funcx_service_address='https://dev.funcx.org/api/v1')
+            self._fx_client = FuncXClient(force_login=True,fx_authorizer=fx_authorizer,
+                                          funcx_service_address='https://funcx.org/api/v1')
 
         # funcX endpoint to use
         self.fx_endpoint = '86a47061-f3d9-44f0-90dc-56ddc642c000'
