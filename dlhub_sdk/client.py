@@ -223,7 +223,7 @@ class DLHubClient(BaseClient):
         #     raise Exception(r)
 
         # Return the result
-        return DLHubFuture(self, task_id, async_wait) if not asynchronous else task_id
+        return DLHubFuture(self, task_id, async_wait).result() if not asynchronous else task_id
 
     def get_result(self, task_id, verbose=False):
         """Get the result of a task_id
