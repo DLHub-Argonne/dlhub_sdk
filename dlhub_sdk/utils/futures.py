@@ -45,12 +45,21 @@ class DLHubFuture(Future):
     def running(self):
         if super().running():
             # If the task isn't already completed, check if it is still running
-            status = self.client.get_task_status(self.task_id)
-            # TODO (lw): What if the task fails on the server end? Do we have a "FAILURE" status?
-            if status['status'] == 'COMPLETED':
-                self.set_result(json.loads(status['result']))
+            try:
+                status = self.client.get_result(self.task_id, verbose=True)
+            except Exception as e:
+                # Check if it is "Task pending". funcX throws an exception on pending.
+                if e.args[0] == "Task pending":
+                    return True
+                else:
+                    self.set_exception(e)
+                    return False
+
+            if isinstance(status, tuple):
+                # TODO pass in verbose setting?
+                self.set_result(status[0])
                 return False
-            return True
+
         return False
 
     def stop(self):
