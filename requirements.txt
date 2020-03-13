@@ -2,5 +2,5 @@ globus-sdk>=1.7.0
 jsonpickle>=1.0
 requests>=2.20.0
 mdf_toolbox>=0.4.0
-funcx
+git+git://github.com/funcx-faas/funcx.git#a66b6d20177879864c268e67945764e0abd8b0e0
 jsonschema>=3.0.0
