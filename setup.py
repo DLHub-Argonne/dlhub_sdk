@@ -24,7 +24,7 @@ setup(
         "globus_sdk",
         "jsonpickle",
         "mdf_toolbox>=0.4.0",
-        "funcx @ git+git://github.com/funcx-faas/funcx.git#a66b6d20177879864c268e67945764e0abd8b0e0"
+        "funcx==0.0.1a4"
     ],
     python_requires=">=3.4",
     classifiers=[

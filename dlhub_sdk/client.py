@@ -218,13 +218,29 @@ class DLHubClient(BaseClient):
         funcx_id = self.fx_cache[name]
         payload = {'data': inputs}
         task_id = self._fx_client.run(payload, endpoint_id=self.fx_endpoint, function_id=funcx_id)
-        #r = self.post(servable_path, json_body=data)
-        # if (not asynchronous and r.http_status != 200) \
-        #         or (asynchronous and r.http_status != 202):
-        #     raise Exception(r)
 
         # Return the result
         return DLHubFuture(self, task_id, async_wait).result() if not asynchronous else task_id
+
+    def run_serial(self, servables, inputs, async_wait=5):
+        """Invoke each servable in a serial pipeline.
+        This function accepts a list of servables and will run each one,
+        passing the output of one as the input to the next.
+
+        Args:
+             servables (list): A list of servable strings
+             inputs: Data to pass to the first servable
+             asycn_wait (float): Seconds to wait between status checks
+        Returns:
+            Results of running the servable
+        """
+        if not isinstance(servables, list):
+            print("run_serial requires a list of servables to invoke.")
+
+        serv_data = inputs
+        for serv in servables:
+            serv_data = self.run(serv, serv_data, async_wait=async_wait)
+        return serv_data
 
     def get_result(self, task_id, verbose=False):
         """Get the result of a task_id
