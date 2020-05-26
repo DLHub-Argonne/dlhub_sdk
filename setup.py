@@ -24,7 +24,7 @@ setup(
         "globus_sdk",
         "jsonpickle",
         "mdf_toolbox>=0.4.0",
-        "funcx==0.0.1a4"
+        "funcx>=0.0.1a5"
     ],
     python_requires=">=3.4",
     classifiers=[
