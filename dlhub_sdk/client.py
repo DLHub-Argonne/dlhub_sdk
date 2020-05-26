@@ -71,13 +71,18 @@ class DLHubClient(BaseClient):
             auth_res = login(services=["search", "dlhub",
                                        fx_scope],
                              app_name="DLHub_Client",
-                             client_id=CLIENT_ID, clear_old_tokens=force_login,
-                             token_dir=_token_dir, no_local_server=kwargs.get("no_local_server", True),
+                             client_id=CLIENT_ID,
+                             clear_old_tokens=force_login,
+                             token_dir=_token_dir,
+                             no_local_server=kwargs.get("no_local_server", True),
                              no_browser=kwargs.get("no_browser", True))
             dlh_authorizer = auth_res["dlhub"]
             fx_authorizer = auth_res[fx_scope]
             self._search_client = auth_res["search"]
-            self._fx_client = FuncXClient(force_login=True,fx_authorizer=fx_authorizer,
+            self._fx_client = FuncXClient(force_login=force_login,
+                                          fx_authorizer=fx_authorizer,
+                                          no_local_server=kwargs.get("no_local_server", True),
+                                          no_browser=kwargs.get("no_browser", True),
                                           funcx_service_address='https://funcx.org/api/v1')
 
         # funcX endpoint to use
