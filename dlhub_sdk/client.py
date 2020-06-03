@@ -21,6 +21,7 @@ from dlhub_sdk.utils.search import DLHubSearchHelper, get_method_details, filter
 # Directory for authenticaation tokens
 _token_dir = os.path.expanduser("~/.dlhub/credentials")
 
+
 class DLHubClient(BaseClient):
     """Main class for interacting with the DLHub service
 
@@ -35,8 +36,15 @@ class DLHubClient(BaseClient):
     `tutorial for the Globus SDK <https://globus-sdk-python.readthedocs.io/en/stable/tutorial/>`_
     and providing that authorizer to the initializer (e.g., ``DLHubClient(auth)``)"""
 
-    def __init__(self, dlh_authorizer=None, search_client=None, http_timeout=None,
-                 force_login=False, fx_authorizer=None, **kwargs):
+    def __init__(
+        self,
+        dlh_authorizer=None,
+        search_client=None,
+        http_timeout=None,
+        force_login=False,
+        fx_authorizer=None,
+        **kwargs
+    ):
         """Initialize the client
 
         Args:
@@ -68,31 +76,39 @@ class DLHubClient(BaseClient):
         if force_login or not dlh_authorizer or not search_client or not fx_authorizer:
 
             fx_scope = "https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/all"
-            auth_res = login(services=["search", "dlhub",
-                                       fx_scope],
-                             app_name="DLHub_Client",
-                             client_id=CLIENT_ID,
-                             clear_old_tokens=force_login,
-                             token_dir=_token_dir,
-                             no_local_server=kwargs.get("no_local_server", True),
-                             no_browser=kwargs.get("no_browser", True))
+            auth_res = login(
+                services=["search", "dlhub", fx_scope],
+                app_name="DLHub_Client",
+                client_id=CLIENT_ID,
+                clear_old_tokens=force_login,
+                token_dir=_token_dir,
+                no_local_server=kwargs.get("no_local_server", True),
+                no_browser=kwargs.get("no_browser", True),
+            )
             dlh_authorizer = auth_res["dlhub"]
             fx_authorizer = auth_res[fx_scope]
             self._search_client = auth_res["search"]
-            self._fx_client = FuncXClient(force_login=True,
-                                          fx_authorizer=fx_authorizer,
-                                          no_local_server=kwargs.get("no_local_server", True),
-                                          no_browser=kwargs.get("no_browser", True),
-                                          funcx_service_address='https://funcx.org/api/v1')
+            self._fx_client = FuncXClient(
+                force_login=force_login,
+                fx_authorizer=fx_authorizer,
+                no_local_server=kwargs.get("no_local_server", True),
+                no_browser=kwargs.get("no_browser", True),
+                funcx_service_address="https://funcx.org/api/v1",
+            )
 
         # funcX endpoint to use
-        self.fx_endpoint = '86a47061-f3d9-44f0-90dc-56ddc642c000'
+        self.fx_endpoint = "86a47061-f3d9-44f0-90dc-56ddc642c000"
         # self.fx_endpoint = '2c92a06a-015d-4bfa-924c-b3d0c36bdad7'
         self.fx_serializer = FuncXSerializer()
         self.fx_cache = {}
-        super(DLHubClient, self).__init__("DLHub", environment='dlhub', authorizer=dlh_authorizer,
-                                          http_timeout=http_timeout, base_url=DLHUB_SERVICE_ADDRESS,
-                                          **kwargs)
+        super(DLHubClient, self).__init__(
+            "DLHub",
+            environment="dlhub",
+            authorizer=dlh_authorizer,
+            http_timeout=http_timeout,
+            base_url=DLHUB_SERVICE_ADDRESS,
+            **kwargs
+        )
 
     def logout(self):
         """Remove credentials from your local system"""
@@ -106,8 +122,8 @@ class DLHubClient(BaseClient):
     def get_username(self):
         """Get the username associated with the current credentials"""
 
-        res = self.get('/namespaces')
-        return res.data['namespace']
+        res = self.get("/namespaces")
+        return res.data["namespace"]
 
     def get_servables(self, only_latest_version=True):
         """Get all of the servables available in the service
@@ -119,19 +135,25 @@ class DLHubClient(BaseClient):
         """
 
         # Get all of the servables
-        results, info = self.query.match_field('dlhub.type', 'servable')\
-            .add_sort('dlhub.owner', ascending=True).add_sort('dlhub.name', ascending=False)\
-            .add_sort('dlhub.publication_date', ascending=False).search(info=True)
-        if info['total_query_matches'] > SEARCH_LIMIT:
-            raise RuntimeError('DLHub contains more servables than we can return in one entry. '
-                               'DLHub SDK needs to be updated.')
+        results, info = (
+            self.query.match_field("dlhub.type", "servable")
+            .add_sort("dlhub.owner", ascending=True)
+            .add_sort("dlhub.name", ascending=False)
+            .add_sort("dlhub.publication_date", ascending=False)
+            .search(info=True)
+        )
+        if info["total_query_matches"] > SEARCH_LIMIT:
+            raise RuntimeError(
+                "DLHub contains more servables than we can return in one entry. "
+                "DLHub SDK needs to be updated."
+            )
 
         if only_latest_version:
             # Sort out only the most recent versions (they come first in the sorted list
             names = set()
             output = []
             for r in results:
-                name = r['dlhub']['shorthand_name']
+                name = r["dlhub"]["shorthand_name"]
                 if name not in names:
                     names.add(name)
                     output.append(r)
@@ -139,7 +161,7 @@ class DLHubClient(BaseClient):
 
         # Add these to the cache
         for r in results:
-            self.fx_cache[r['dlhub']['shorthand_name']] = r['dlhub']['funcx_id']
+            self.fx_cache[r["dlhub"]["shorthand_name"]] = r["dlhub"]["funcx_id"]
 
         return results
 
@@ -151,7 +173,7 @@ class DLHubClient(BaseClient):
         """
 
         servables = self.get_servables(only_latest_version=True)
-        return [x['dlhub']['shorthand_name'] for x in servables]
+        return [x["dlhub"]["shorthand_name"] for x in servables]
 
     def get_task_status(self, task_id):
         """Get the status of a DLHub task.
@@ -173,18 +195,21 @@ class DLHubClient(BaseClient):
         Returns:
             dict: Summary of the servable
         """
-        split_name = name.split('/')
+        split_name = name.split("/")
         if len(split_name) < 2:
-            raise AttributeError('Please enter name in the form <user>/<servable_name>')
+            raise AttributeError("Please enter name in the form <user>/<servable_name>")
 
         # Create a query for a single servable
-        query = self.query.match_servable('/'.join(split_name[1:]))\
-            .match_owner(split_name[0]).add_sort("dlhub.publication_date", False)\
+        query = (
+            self.query.match_servable("/".join(split_name[1:]))
+            .match_owner(split_name[0])
+            .add_sort("dlhub.publication_date", False)
             .search(limit=1)
+        )
 
         # Raise error if servable is not found
         if len(query) == 0:
-            raise AttributeError('No such servable: {}'.format(name))
+            raise AttributeError("No such servable: {}".format(name))
         return query[0]
 
     def describe_methods(self, name, method=None):
@@ -201,8 +226,9 @@ class DLHubClient(BaseClient):
         metadata = self.describe_servable(name)
         return get_method_details(metadata, method)
 
-    def run(self, name, inputs,
-            asynchronous=False, async_wait=5) -> Union[Any, DLHubFuture]:
+    def run(
+        self, name, inputs, asynchronous=False, async_wait=5
+    ) -> Union[Any, DLHubFuture]:
         """Invoke a DLHub servable
 
         Args:
@@ -218,14 +244,20 @@ class DLHubClient(BaseClient):
         if name not in self.fx_cache:
             # Look it up and add it to the cache, this will raise an exception if not found.
             serv = self.describe_servable(name)
-            self.fx_cache.update({name: serv['dlhub']['funcx_id']})
+            self.fx_cache.update({name: serv["dlhub"]["funcx_id"]})
 
         funcx_id = self.fx_cache[name]
-        payload = {'data': inputs}
-        task_id = self._fx_client.run(payload, endpoint_id=self.fx_endpoint, function_id=funcx_id)
+        payload = {"data": inputs}
+        task_id = self._fx_client.run(
+            payload, endpoint_id=self.fx_endpoint, function_id=funcx_id
+        )
 
         # Return the result
-        return DLHubFuture(self, task_id, async_wait).result() if not asynchronous else task_id
+        return (
+            DLHubFuture(self, task_id, async_wait).result()
+            if not asynchronous
+            else task_id
+        )
 
     def run_serial(self, servables, inputs, async_wait=5):
         """Invoke each servable in a serial pipeline.
@@ -262,7 +294,7 @@ class DLHubClient(BaseClient):
             result = result[0]
         return result
 
-    def publish_servable(self, model):
+    def publish_servable(self, model, test=False):
         """Submit a servable to DLHub
 
         If this servable has not been published before, it will be assigned a unique identifier.
@@ -272,6 +304,7 @@ class DLHubClient(BaseClient):
 
         Args:
             model (BaseMetadataModel): Servable to be submitted
+            test (bool): Whether the servable is a test (True) or a production submission (False-default)
         Returns:
             (string): Task ID of this submission, used for checking for success
         """
@@ -280,16 +313,19 @@ class DLHubClient(BaseClient):
         metadata = model.to_dict(simplify_paths=True)
 
         # Mark the method used to submit the model
-        metadata['dlhub']['transfer_method'] = {'POST': 'file'}
+        metadata["dlhub"]["transfer_method"] = {"POST": "file"}
+
+        # Mark the model as test if needed
+        metadata["dlhub"]["test"] = test
 
         # Validate against the servable schema
-        validate_against_dlhub_schema(metadata, 'servable')
+        validate_against_dlhub_schema(metadata, "servable")
 
         # Wipe the fx cache so we don't keep reusing an old servable
         self.clear_funcx_cache()
 
         # Get the data to be submitted as a ZIP file
-        fp, zip_filename = mkstemp('.zip')
+        fp, zip_filename = mkstemp(".zip")
         os.close(fp)
         os.unlink(zip_filename)
         try:
@@ -300,20 +336,24 @@ class DLHubClient(BaseClient):
             self.authorizer.set_authorization_header(headers)
 
             # Submit data to DLHub service
-            with open(zip_filename, 'rb') as zf:
+            with open(zip_filename, "rb") as zf:
                 reply = requests.post(
-                    slash_join(self.base_url, 'publish'),
+                    slash_join(self.base_url, "publish"),
                     headers=headers,
                     files={
-                        'json': ('dlhub.json', json.dumps(metadata), 'application/json'),
-                        'file': ('servable.zip', zf, 'application/octet-stream')
-                    }
+                        "json": (
+                            "dlhub.json",
+                            json.dumps(metadata),
+                            "application/json",
+                        ),
+                        "file": ("servable.zip", zf, "application/octet-stream"),
+                    },
                 )
 
             # Return the task id
             if reply.status_code != 200:
                 raise Exception(reply.text)
-            return reply.json()['task_id']
+            return reply.json()["task_id"]
         finally:
             os.unlink(zip_filename)
 
@@ -332,9 +372,9 @@ class DLHubClient(BaseClient):
         # Wipe the fx cache so we don't keep reusing an old servable
         self.clear_funcx_cache()
 
-        response = self.post('publish_repo', json_body=metadata)
+        response = self.post("publish_repo", json_body=metadata)
 
-        task_id = response.data['task_id']
+        task_id = response.data["task_id"]
         return task_id
 
     def search(self, query, advanced=False, limit=None, only_latest=True):
@@ -358,8 +398,15 @@ class DLHubClient(BaseClient):
         results = self.query.search(query, advanced=advanced, limit=limit)
         return filter_latest(results) if only_latest else results
 
-    def search_by_servable(self, servable_name=None, owner=None, version=None,
-                           only_latest=True, limit=None, get_info=False):
+    def search_by_servable(
+        self,
+        servable_name=None,
+        owner=None,
+        version=None,
+        only_latest=True,
+        limit=None,
+        get_info=False,
+    ):
         """Search by the ownership, name, or version of a servable
 
         Args:
@@ -385,12 +432,14 @@ class DLHubClient(BaseClient):
             and a dictionary of query information.
         """
         if not servable_name and not owner and not version:
-            raise ValueError("One of 'servable_name', 'owner', or 'publication_date' is required.")
+            raise ValueError(
+                "One of 'servable_name', 'owner', or 'publication_date' is required."
+            )
 
         # Perform the query
-        results, info = (self.query.match_servable(servable_name=servable_name, owner=owner,
-                                                   publication_date=version)
-                             .search(limit=limit, info=True))
+        results, info = self.query.match_servable(
+            servable_name=servable_name, owner=owner, publication_date=version
+        ).search(limit=limit, info=True)
 
         # Filter out the latest models
         if only_latest:
@@ -424,7 +473,9 @@ class DLHubClient(BaseClient):
         Returns:
             [dict]: List of servables from the desired authors
         """
-        results = self.query.match_authors(authors, match_all=match_all).search(limit=limit)
+        results = self.query.match_authors(authors, match_all=match_all).search(
+            limit=limit
+        )
         return filter_latest(results) if only_latest else results
 
     def search_by_related_doi(self, doi, limit=None, only_latest=True):
@@ -450,7 +501,7 @@ class DLHubClient(BaseClient):
         """
 
         if servable:
-            del(self.fx_cache[servable])
+            del self.fx_cache[servable]
         else:
             self.fx_cache = {}
 
