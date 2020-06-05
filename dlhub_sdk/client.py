@@ -125,11 +125,12 @@ class DLHubClient(BaseClient):
         res = self.get("/namespaces")
         return res.data["namespace"]
 
-    def get_servables(self, only_latest_version=True):
+    def get_servables(self, only_latest_version=True, test=False):
         """Get all of the servables available in the service
 
         Args:
             only_latest_version (bool): Whether to only return the latest version of each servable
+            test (bool): Whether to get test servables
         Returns:
             ([list]) Complete metadata for all servables found in DLHub
         """
@@ -137,6 +138,7 @@ class DLHubClient(BaseClient):
         # Get all of the servables
         results, info = (
             self.query.match_field("dlhub.type", "servable")
+            .match_field("dlhub.test", test)
             .add_sort("dlhub.owner", ascending=True)
             .add_sort("dlhub.name", ascending=False)
             .add_sort("dlhub.publication_date", ascending=False)
@@ -165,14 +167,17 @@ class DLHubClient(BaseClient):
 
         return results
 
-    def list_servables(self):
+    def list_servables(self, test=False):
         """Get a list of the servables available in the service
+
+        Args:
+            test (bool): Whether or not to include test servables.
 
         Returns:
             [string]: List of all servable names in username/servable_name format
         """
 
-        servables = self.get_servables(only_latest_version=True)
+        servables = self.get_servables(only_latest_version=True, test=test)
         return [x["dlhub"]["shorthand_name"] for x in servables]
 
     def get_task_status(self, task_id):
@@ -406,6 +411,7 @@ class DLHubClient(BaseClient):
         only_latest=True,
         limit=None,
         get_info=False,
+        test=False,
     ):
         """Search by the ownership, name, or version of a servable
 
@@ -425,6 +431,7 @@ class DLHubClient(BaseClient):
                     If ``True``, search will return a tuple containing the results list
                     and other information about the query.
                     **Default:** ``False``.
+            test (bool): Whether to include test servalbes
 
         Returns:
             If ``info`` is ``False``, *list*: The search results.
@@ -439,7 +446,7 @@ class DLHubClient(BaseClient):
         # Perform the query
         results, info = self.query.match_servable(
             servable_name=servable_name, owner=owner, publication_date=version
-        ).search(limit=limit, info=True)
+        ).match_field("dlhub.test", test).search(limit=limit, info=True)
 
         # Filter out the latest models
         if only_latest:
@@ -449,7 +456,7 @@ class DLHubClient(BaseClient):
             return results, info
         return results
 
-    def search_by_authors(self, authors, match_all=True, limit=None, only_latest=True):
+    def search_by_authors(self, authors, match_all=True, limit=None, only_latest=True, test=False):
         """Execute a search for servables from certain authors.
 
         Authors in DLHub may be different than the owners of the servable and generally are
@@ -469,13 +476,16 @@ class DLHubClient(BaseClient):
             only_latest (bool): When ``True``, will only return the latest version
                     of each servable. When ``False``, will return all matching versions.
                     **Default**: ``True``.
+            test (bool): Whether to include test servables.
 
         Returns:
             [dict]: List of servables from the desired authors
         """
-        results = self.query.match_authors(authors, match_all=match_all).search(
-            limit=limit
-        )
+        results = (
+                    self.query.match_authors(authors, match_all=match_all)
+                              .match_field("dlhub.test", test)
+                              .search(limit=limit)
+                   )
         return filter_latest(results) if only_latest else results
 
     def search_by_related_doi(self, doi, limit=None, only_latest=True):
