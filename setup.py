@@ -19,12 +19,12 @@ setup(
                       "that other scientists have published."),
     install_requires=[
         "pandas",
-        "requests==2.20.0",
+        "requests>=2.20.0",
         "jsonschema>=3.0.0",
         "globus_sdk",
         "jsonpickle",
         "mdf_toolbox>=0.4.0",
-        "funcx>=0.0.1a5"
+        "funcx>=0.0.2a0"
     ],
     python_requires=">=3.4",
     classifiers=[
