@@ -115,7 +115,11 @@ class ScikitLearnModel(BasePythonServableModel):
         elif serialization_method == "joblib":
             if joblib is None:
                 raise ImportError('joblib was not installed')
-            model = joblib.load(path)
+            try:
+                model = joblib.load(path)
+            except ModuleNotFoundError:
+                raise ValueError('Model saved with sklearn.external.joblib. '
+                                 'Please install sklearn version 0.19.2 or earlier')
         else:
             raise Exception('Unknown serialization method: {}'.format(serialization_method))
 
