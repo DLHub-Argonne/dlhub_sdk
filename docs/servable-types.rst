@@ -114,6 +114,8 @@ Keras Models
 
 DLHub serves Keras models using the HDF5 file saved using the ``Model.save`` function
 (see `Keras FAQs <https://keras.io/getting-started/faq/#savingloading-whole-models-architecture-weights-optimizer-state>`_).
+The methods described here also work with ``tf.keras`` though you should use the `Tensorflow <#tensorflow-graphs>`_
+loader if you saved the model into Tensorflow's ``SavedModel`` format.
 As an example, the description for a Keras model created using:
 
 .. code-block:: python
@@ -251,8 +253,20 @@ TensorFlow Graphs
 
 DLHub uses the same information as `TensorFlow Serving <https://www.tensorflow.org/serving/>`_ for
 serving a TensorFlow model.
-Accordingly, you must save your model using the ``SavedModelBuilder`` as described
-in the `TensorFlow Serving documentation <https://www.tensorflow.org/serving/serving_basic>`_.
+
+DLHub supports multiple functions to be defined for the same ``SavedModel``
+servable, but requires one function is marked with ``DEFAULT_SERVING_SIGNATURE_DEF_KEY``.
+
+The SDK also determines the version of TensorFlow installed on your system,
+and lists it as a requirement.
+
+How these models are created is very different between TF1 and TF2.
+
+TF1
++++
+
+Save your model using the ``SavedModelBuilder`` as described
+in the `TensorFlow v1.0 <https://www.tensorflow.org/versions/r1.15/api_docs/python/tf/saved_model/Builder>`_.
 As an example, consider a graph expressing :math:`y = x + 1`::
 
 
@@ -312,11 +326,87 @@ to generate metadata describing which functions were saved:
       }
     }
 
-DLHub supports multiple functions to be defined for the same ``SavedModel``
-servable, but requires one function is marked with ``DEFAULT_SERVING_SIGNATURE_DEF_KEY``.
 
-The SDK also determines the version of TensorFlow installed on your system,
-and lists it as a requirement.
+TF2
++++
+
+Follow the instructions in `Tensorflow's documentation <https://www.tensorflow.org/guide/saved_model>`_
+to save your model into the SavedModel format.
+DLHub requires you to specify the signatures for each of your function you wish to
+serve, which means you must either specify the input signature when defining the ``tf.function``
+or create a concrete version of the function (see
+`documentation <https://www.tensorflow.org/guide/saved_model#specifying_signatures_during_export>`_).
+
+The following example shows how to save a ``tf.Module`` with one function without a signature
+and a second with a signature.
+
+.. code-block:: python
+
+        class CustomModule(tf.Module):
+
+        def __init__(self):
+            super().__init__()
+            self.m = tf.Variable([1.0, 1.0, 1.0], name='slope')
+
+        @tf.function
+        def __call__(self, x):
+            y = self.m * x + 1
+            return y
+
+        @tf.function(input_signature=[tf.TensorSpec([], tf.float32),
+                                      tf.TensorSpec((None, 3), tf.float32)])
+        def scalar_multiply(self, z, x):
+            return tf.multiply(z, x, name='scale_mult')
+
+    module = CustomModule()
+
+    # Make a concrete version of __call__
+    call = module.__call__.get_concrete_function(tf.TensorSpec((None, 3)))
+
+    tf.saved_model.save(
+        module, tf_export_path, signatures={
+            tf.saved_model.DEFAULT_SERVING_SIGNATURE_DEF_KEY: call,
+            'scalar_multiply': module.scalar_multiply
+        }
+    )
+
+The DLHub SDK will automatically recognize the function signatures and use them
+to construct a servable accordingly::
+
+    metadata = TensorFlowModel.create_model("./export")
+
+will generate metadata describing which functions were saved:
+
+
+
+.. code-block:: json
+
+    {
+      "run": {
+        "input": {
+          "type": "ndarray", "description": "x:0", "shape": [null, 3],
+          "item_type": {"type": "float"}
+        },
+        "output": {
+          "type": "ndarray", "description": "Identity:0", "shape": [null, 3],
+          "item_type": {"type": "float"}
+        },
+      }, "scalar_multiply": {
+        "input": {
+          "type": "tuple", "description": "Several tensors",
+          "element_types": [{
+              "type": "ndarray", "description": "x:0", "shape": [null, 3], "item_type": {"type": "float"}
+            }, {
+              "type": "ndarray", "description": "z:0", "shape": [], "item_type": {"type": "float"}
+            }
+          ]
+        },
+        "output": {
+          "type": "ndarray", "description": "Identity:0", "shape": [null, 3],
+          "item_type": {"type": "float"}
+        },
+      }
+    }
 
 Scikit-Learn Models
 -------------------
