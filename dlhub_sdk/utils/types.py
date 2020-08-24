@@ -30,7 +30,7 @@ def simplify_numpy_dtype(dtype):
         return "python object"
 
 
-def compose_argument_block(data_type, description, shape=(), item_type=None,
+def compose_argument_block(data_type, description, shape=None, item_type=None,
                            python_type=None, properties=None, element_types=None, **kwargs):
     """Compile a list of argument descriptions into an argument_type block
 
