@@ -42,7 +42,8 @@ def _read_tf_v1_inputs_and_outputs(arg_def):
         node_names.append(arg_def.name)
 
         # Make it an argument block
-        dlhub_arg_defs.append(compose_argument_block('ndarray', name, shape, _convert_dtype(arg_def.dtype)))
+        dlhub_arg_defs.append(compose_argument_block('ndarray', name, shape,
+                                                     _convert_dtype(arg_def.dtype)))
 
     # If the function has only one argument, return that
     if len(dlhub_arg_defs) == 1:
@@ -70,7 +71,8 @@ def _read_tf_v2_function_signature(signature: List[tf.Tensor]) -> dict:
     for sig in signature:
         if sig.dtype != tf.resource:  # Sometimes gets added for single-input functions
             output.append(compose_argument_block('ndarray', sig.name, shape=list(sig.shape),
-                                                 item_type=simplify_numpy_dtype(np.dtype(sig.dtype.as_numpy_dtype))))
+                                                 item_type=simplify_numpy_dtype(
+                                                     np.dtype(sig.dtype.as_numpy_dtype))))
     if len(output) == 1:
         return output[0]
     else:
@@ -156,10 +158,12 @@ class TensorFlowModel(BaseServableModel):
         if len(imported.signatures) == 0:
             raise ValueError('SavedModel does not contain any function signatures. '
                              'Please re-save model with function signatures. '
-                             'See: https://www.tensorflow.org/guide/saved_model#specifying_signatures_during_export')
+                             'See: https://www.tensorflow.org/guide/saved_model'
+                             '#specifying_signatures_during_export')
         elif 'run' not in imported.signatures and \
                 tf.saved_model.DEFAULT_SERVING_SIGNATURE_DEF_KEY not in imported.signatures:
-            raise ValueError('SavedModel must contain a function named "run" or the default signature key')
+            raise ValueError('SavedModel must contain a function '
+                             'named "run" or the default signature key')
 
         # Build descriptions for each function in the description
         for name, func_def in imported.signatures.items():

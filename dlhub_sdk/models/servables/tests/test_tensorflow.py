@@ -82,7 +82,7 @@ def _make_model_v2():
 
         @tf.function(input_signature=[tf.TensorSpec((None, 3), tf.float32)])
         def length(self, x):
-            return tf.reduce_sum(self(x) - x, name='length')  # Returns the number of elements in the array
+            return tf.reduce_sum(self(x) - x, name='length')
 
         @tf.function(input_signature=[tf.TensorSpec([], tf.float32),
                                       tf.TensorSpec((None, 3), tf.float32)])
@@ -133,11 +133,11 @@ class TestTensorflow(TestCase):
         assert os.path.join('variables', 'variables.index') in my_files
 
         # Check the tensorflow version
-        self.assertEqual(metadata['dlhub']['dependencies'], {'python': {'tensorflow': tf.__version__}})
+        self.assertEqual(metadata['dlhub']['dependencies'],
+                         {'python': {'tensorflow': tf.__version__}})
 
         # Check whether the 'x' is listed first for the multiple-input model or second
         my_methods = metadata['servable']['methods']
-        import json
         assert my_methods['run']['input']['type'] == 'ndarray'
         assert my_methods['run']['input']['shape'] == [None, 3]
         assert my_methods['run']['input']['item_type'] == {'type': 'float'}
