@@ -71,14 +71,16 @@ class TestSklearn(unittest.TestCase):
         # Load the model
         if skversion > '0.23':
             self.assertRaises(ValueError, ScikitLearnModel.create_model, model_path,
-                              n_input_columns=2, serialization_method='joblib', classes=np.array(['number']))
+                              n_input_columns=2, serialization_method='joblib',
+                              classes=np.array(['number']))
         else:
             model_info = ScikitLearnModel.create_model(model_path, n_input_columns=2,
                                                        serialization_method='joblib',
                                                        classes=np.array(['number']))
 
             # Check that the metadata is as expected
-            self.assertEqual(model_info["servable"]["methods"]["run"]["method_details"]["method_name"],
+            self.assertEqual(model_info["servable"]["methods"]["run"]
+                             ["method_details"]["method_name"],
                              "predict")
             self.assertEqual([model_path], model_info.list_files())
             self.assertEqual(['number'], model_info["servable"]["options"]["classes"])

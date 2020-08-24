@@ -63,8 +63,10 @@ class TestPythonModels(unittest.TestCase):
             'description': 'Predicted probabilities of being each iris species',
             'shape': [None, 3]
         }
-        assert output['servable']['methods']['run']['method_details']['class_name'].endswith('.SVC')
-        assert output['servable']['methods']['run']['method_details']['method_name'] == 'predict_proba'
+        assert (output['servable']['methods']['run']
+                ['method_details']['class_name'].endswith('.SVC'))
+        assert (output['servable']['methods']['run']
+                ['method_details']['method_name'] == 'predict_proba')
 
         self.assertEqual([pickle_path], model.list_files())
         validate_against_dlhub_schema(output, 'servable')
