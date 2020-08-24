@@ -67,7 +67,8 @@ class KerasModel(BasePythonServableModel):
         else:
             if arch_path.endswith('.h5') or arch_path.endswith('.hdf') \
                     or arch_path.endswith('.hdf5') or arch_path.endswith('.hd5'):
-                model = keras.models.load_model(arch_path, custom_objects=custom_objects, compile=False)
+                model = keras.models.load_model(arch_path,
+                                                custom_objects=custom_objects, compile=False)
             elif arch_path.endswith('.json'):
                 with open(arch_path) as fp:
                     json_string = fp.read()

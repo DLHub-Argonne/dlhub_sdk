@@ -3,16 +3,12 @@ from tempfile import mkdtemp
 import shutil
 import os
 
-from tensorflow import __version__ as tf_version
-from tensorflow.keras import __version__ as keras_version
 from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.layers import Dense, Input
-from h5py import __version__ as h5py_version
 from unittest import TestCase
 
 from dlhub_sdk.models.servables.keras import KerasModel
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
-from dlhub_sdk.version import __version__
 
 
 _year = str(datetime.now().year)
