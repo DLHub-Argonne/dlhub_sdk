@@ -1,11 +1,18 @@
 from dlhub_sdk.models.servables.python import BasePythonServableModel
 from sklearn.base import is_classifier
 from sklearn.pipeline import Pipeline
-from sklearn.externals import joblib
 import sklearn.base as sklbase
 import pickle as pkl
 import inspect
 
+# Get a version of joblib
+try:
+    from sklearn.externals import joblib
+except ImportError:
+    try:
+        import joblib
+    except ImportError:
+        joblib = None
 
 # scikit-learn stores the version used to create a model in the pickle file,
 #  but deletes it before unpickling the object. This code intercepts the version
@@ -106,6 +113,8 @@ class ScikitLearnModel(BasePythonServableModel):
             with open(path, 'rb') as fp:
                 model = pkl.load(fp)
         elif serialization_method == "joblib":
+            if joblib is None:
+                raise ImportError('joblib was not installed')
             model = joblib.load(path)
         else:
             raise Exception('Unknown serialization method: {}'.format(serialization_method))

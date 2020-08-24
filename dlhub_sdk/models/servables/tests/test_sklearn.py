@@ -1,11 +1,11 @@
 from datetime import datetime
-import numpy as np
 import unittest
 import os
 
+import numpy as np
+
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 from dlhub_sdk.models.servables.sklearn import ScikitLearnModel
-from dlhub_sdk.version import __version__
 
 
 _year = str(datetime.now().year)
@@ -20,85 +20,47 @@ class TestSklearn(unittest.TestCase):
         # Load the model
         model_info = ScikitLearnModel.create_model(model_path, n_input_columns=4, classes=3)
         model_info.set_title('Sklearn example').set_name('sklearn')
-        expected = {
-            'datacite': {
-                'creators': [],
-                'publisher': 'DLHub',
-                'titles': [{
-                    'title': 'Sklearn example'
-                }],
-                'resourceType': {
-                    'resourceTypeGeneral': "InteractiveResource"
-                },
-                'identifier': {
-                    'identifier': '10.YET/UNASSIGNED',
-                    'identifierType': 'DOI'
-                },
-                'publicationYear': _year,
-                "descriptions": [],
-                "fundingReferences": [],
-                "relatedIdentifiers": [],
-                "alternateIdentifiers": [],
-                "rightsList": []
-            },
-            "dlhub": {
-                "version": __version__,
-                "visible_to": ["public"],
-                'name': 'sklearn',
-                "domains": [],
-                'type': 'servable',
-                'files': {
-                    'model': model_path
-                },
-                'dependencies': {
-                    'python': {
-                        'scikit-learn': '0.19.1'
-                    }
+
+        # Print out the metadata
+        metadata = model_info.to_dict()
+
+        # Test key components
+        assert metadata['dlhub']['dependencies']['python'] == {
+            'scikit-learn': '0.19.1'  # The version used to save the model
+        }
+        assert metadata['servable']['shim'] == 'sklearn.ScikitLearnServable'
+        assert metadata['servable']['model_type'] == 'SVC'
+        assert metadata['servable']['methods']['run'] == {
+            "input": {
+                "type": "ndarray",
+                "shape": [None, 4],
+                "description": ("List of records to evaluate with model. "
+                                "Each record is a list of 4 variables."),
+                "item_type": {
+                    "type": "float"
                 }
             },
-            'servable': {
-                'type': 'Scikit-learn estimator',
-                'model_type': 'SVC',
-                'shim': 'sklearn.ScikitLearnServable',
-                'methods': {
-                    'run': {
-                        "input": {
-                            "type": "ndarray",
-                            "shape": [None, 4],
-                            "description": ("List of records to evaluate with model. "
-                                            "Each record is a list of 4 variables."),
-                            "item_type": {
-                                "type": "float"
-                            }
-                        },
-                        "output": {
-                            "type": "ndarray",
-                            "shape": [None, 3],
-                            "description": "Probabilities for membership in each of 3 classes",
-                            "item_type": {
-                                "type": "float"
-                            }
-                        },
-                        "parameters": {},
-                        "method_details": {
-                            "method_name": "_predict_proba"
-                        }
-                    }
-                },
-                'model_summary': ("SVC(C=1, cache_size=200, class_weight=None, coef0=0.0,\n"
-                                  "    decision_function_shape='ovr', degree=3, gamma='auto', "
-                                  "kernel='linear',\n"
-                                  "    max_iter=-1, probability=True, random_state=None,"
-                                  " shrinking=True, tol=0.001,\n"
-                                  "    verbose=False)"),
-                'options': {
-                    'is_classifier': True,
-                    'serialization_method': 'pickle',
-                    'classes': ['Class 1', 'Class 2', 'Class 3']
+            "output": {
+                "type": "ndarray",
+                "shape": [None, 3],
+                "description": "Probabilities for membership in each of 3 classes",
+                "item_type": {
+                    "type": "float"
                 }
+            },
+            "parameters": {},
+            "method_details": {
+                "method_name": "_predict_proba"
             }
         }
-        self.assertEquals(model_info.to_dict(), expected)
+        assert metadata['servable']['model_summary'].startswith('SVC(')
+        assert metadata['servable']['options'] == {
+            'is_classifier': True,
+            'serialization_method': 'pickle',
+            'classes': ['Class 1', 'Class 2', 'Class 3']
+        }
+
+        # Check the schema validation
         validate_against_dlhub_schema(model_info.to_dict(), 'servable')
 
     def test_regression(self):

@@ -69,21 +69,24 @@ class DLHubClient(BaseClient):
 
             fx_scope = "https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/all"
             auth_res = login(services=["search", "dlhub",
-                                       fx_scope],
+                                       fx_scope, "openid"],
                              app_name="DLHub_Client",
                              client_id=CLIENT_ID,
                              clear_old_tokens=force_login,
                              token_dir=_token_dir,
                              no_local_server=kwargs.get("no_local_server", True),
                              no_browser=kwargs.get("no_browser", True))
+            # openid_authorizer = auth_res["openid"]
             dlh_authorizer = auth_res["dlhub"]
             fx_authorizer = auth_res[fx_scope]
             self._search_client = auth_res["search"]
-            self._fx_client = FuncXClient(force_login=True,
-                                          fx_authorizer=fx_authorizer,
-                                          no_local_server=kwargs.get("no_local_server", True),
-                                          no_browser=kwargs.get("no_browser", True),
-                                          funcx_service_address='https://funcx.org/api/v1')
+
+        self._fx_client = FuncXClient(force_login=force_login,
+                                      # fx_authorizer=fx_authorizer,
+                                      no_local_server=kwargs.get("no_local_server", True),
+                                      no_browser=kwargs.get("no_browser", True),
+                                      funcx_service_address='https://api.funcx.org/v1',)
+                                      # openid_authorizer=openid_authorizer)
 
         # funcX endpoint to use
         self.fx_endpoint = '86a47061-f3d9-44f0-90dc-56ddc642c000'
