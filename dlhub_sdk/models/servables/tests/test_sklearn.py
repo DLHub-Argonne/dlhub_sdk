@@ -2,6 +2,7 @@ from datetime import datetime
 import unittest
 import os
 
+from sklearn import __version__ as skversion
 import numpy as np
 
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
@@ -68,13 +69,17 @@ class TestSklearn(unittest.TestCase):
         model_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'model-lr.pkl'))
 
         # Load the model
-        model_info = ScikitLearnModel.create_model(model_path, n_input_columns=2,
-                                                   serialization_method='joblib',
-                                                   classes=np.array(['number']))
+        if skversion > '0.23':
+            self.assertRaises(ValueError, ScikitLearnModel.create_model, model_path,
+                              n_input_columns=2, serialization_method='joblib', classes=np.array(['number']))
+        else:
+            model_info = ScikitLearnModel.create_model(model_path, n_input_columns=2,
+                                                       serialization_method='joblib',
+                                                       classes=np.array(['number']))
 
-        # Check that the metadata is as expected
-        self.assertEqual(model_info["servable"]["methods"]["run"]["method_details"]["method_name"],
-                         "predict")
-        self.assertEqual([model_path], model_info.list_files())
-        self.assertEqual(['number'], model_info["servable"]["options"]["classes"])
-        self.assertEqual([None], model_info["servable"]["methods"]["run"]['output']['shape'])
+            # Check that the metadata is as expected
+            self.assertEqual(model_info["servable"]["methods"]["run"]["method_details"]["method_name"],
+                             "predict")
+            self.assertEqual([model_path], model_info.list_files())
+            self.assertEqual(['number'], model_info["servable"]["options"]["classes"])
+            self.assertEqual([None], model_info["servable"]["methods"]["run"]['output']['shape'])
