@@ -89,7 +89,10 @@ class DLHubClient(BaseClient):
                                       # openid_authorizer=openid_authorizer)
 
         # funcX endpoint to use
-        self.fx_endpoint = '86a47061-f3d9-44f0-90dc-56ddc642c000'
+        self.fx_endpoints = ['86a47061-f3d9-44f0-90dc-56ddc642c000',  # main dlhub endpoint on PK
+                             'f0a443b3-0ee1-4c68-826b-cf748f90c7d4',  # second dlhub endpoint on PK
+                             'fc1ac657-be90-4f8c-9fe3-7a4a046eee93',  # backup dlhub endpoint on river
+                            ]
         # self.fx_endpoint = '2c92a06a-015d-4bfa-924c-b3d0c36bdad7'
         self.fx_serializer = FuncXSerializer()
         self.fx_cache = {}
@@ -204,13 +207,14 @@ class DLHubClient(BaseClient):
         metadata = self.describe_servable(name)
         return get_method_details(metadata, method)
 
-    def run(self, name, inputs,
+    def run(self, name, inputs, endpoint_id=None,
             asynchronous=False, async_wait=5) -> Union[Any, DLHubFuture]:
         """Invoke a DLHub servable
 
         Args:
             name (string): DLHub name of the servable of the form <user>/<servable_name>
             inputs: Data to be used as input to the function. Can be a string of file paths or URLs
+            endpoint_id: Specify a DLHub endpoint to run the function
             asynchronous (bool): Whether to return from the function immediately or
                 wait for the execution to finish.
             async_wait (float): How many seconds to wait between checking async status
@@ -225,7 +229,17 @@ class DLHubClient(BaseClient):
 
         funcx_id = self.fx_cache[name]
         payload = {'data': inputs}
-        task_id = self._fx_client.run(payload, endpoint_id=self.fx_endpoint, function_id=funcx_id)
+        if endpoint_id:
+            task_id = self._fx_client.run(payload, endpoint_id=endpoint_id, function_id=funcx_id)
+        else:
+            sent = False
+            for ep_id in self.fx_endpoints:
+                if self.check_liveness(ep_id):
+                    task_id = self._fx_client.run(payload, endpoint_id=ep_id, function_id=funcx_id)
+                    sent = True
+                    break
+            if not sent:
+                raise Exception("All DLHub endpoints are currently offline.")
 
         # Return the result
         return DLHubFuture(self, task_id, async_wait).result() if not asynchronous else task_id
@@ -264,6 +278,12 @@ class DLHubClient(BaseClient):
         if isinstance(result, tuple) and not verbose:
             result = result[0]
         return result
+
+    def check_liveness(self, endpoint_id):
+        status = self._fx_client.get_endpoint_status(endpoint_id)['status']
+        if status == 'online':
+            return True
+        return False
 
     def publish_servable(self, model):
         """Submit a servable to DLHub
