@@ -3,11 +3,9 @@ import unittest
 import os
 
 import numpy as np
-from sklearn import __version__ as skversion
 
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 from dlhub_sdk.models.servables.sklearn import ScikitLearnModel
-from dlhub_sdk.version import __version__
 
 
 _year = str(datetime.now().year)
