@@ -36,7 +36,7 @@ class DLHubClient(BaseClient):
     and providing that authorizer to the initializer (e.g., ``DLHubClient(auth)``)"""
 
     def __init__(self, dlh_authorizer=None, search_client=None, http_timeout=None,
-                 force_login=False, fx_authorizer=None, **kwargs):
+                 force_login=False, fx_authorizer=None, openid_authorizer=None, **kwargs):
         """Initialize the client
 
         Args:
@@ -60,16 +60,20 @@ class DLHubClient(BaseClient):
                             <globus_sdk.authorizers.base.GlobusAuthorizer>`):
                 An authorizer instance used to communicate with funcX.
                 If ``None``, will be created.
+            openid_authorizer (:class:`GlobusAuthorizer
+                            <globus_sdk.authorizers.base.GlobusAuthorizer>`):
+                An authorizer instance used to communicate with OpenID.
+                If ``None``, will be created.
             no_browser (bool): Do not automatically open the browser for the Globus Auth URL.
                 Display the URL instead and let the user navigate to that location manually.
                 **Default**: ``True``.
         Keyword arguments are the same as for BaseClient.
         """
-        if force_login or not dlh_authorizer or not search_client or not fx_authorizer:
+        if force_login or not dlh_authorizer or not search_client or not fx_authorizer or not openid_authorizer:
 
             fx_scope = "https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/all"
-            auth_res = login(services=["search", "dlhub",
-                                       fx_scope],
+            search_scope = "urn:globus:auth:scope:search.api.globus.org:all"
+            auth_res = login(services=["dlhub", fx_scope, "openid", search_scope],
                              app_name="DLHub_Client",
                              client_id=CLIENT_ID,
                              clear_old_tokens=force_login,
@@ -78,17 +82,20 @@ class DLHubClient(BaseClient):
                              no_browser=kwargs.get("no_browser", True))
             dlh_authorizer = auth_res["dlhub"]
             fx_authorizer = auth_res[fx_scope]
-            self._search_client = auth_res["search"]
+            search_client = auth_res[search_scope]
+            openid_authorizer = auth_res['openid']
             self._fx_client = FuncXClient(force_login=force_login,
                                           fx_authorizer=fx_authorizer,
+                                          search_authorize=search_client,
+                                          openid_authorizer=openid_authorizer,
                                           no_local_server=kwargs.get("no_local_server", True),
                                           no_browser=kwargs.get("no_browser", True),
                                           funcx_service_address='https://funcx.org/api/v1')
 
+        self._search_client = search_client
         # funcX endpoint to use
         self.fx_endpoint = '86a47061-f3d9-44f0-90dc-56ddc642c000'
         # self.fx_endpoint = '2c92a06a-015d-4bfa-924c-b3d0c36bdad7'
-        self.fx_serializer = FuncXSerializer()
         self.fx_cache = {}
         super(DLHubClient, self).__init__("DLHub", environment='dlhub', authorizer=dlh_authorizer,
                                           http_timeout=http_timeout, base_url=DLHUB_SERVICE_ADDRESS,
