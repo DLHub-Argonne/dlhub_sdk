@@ -138,7 +138,6 @@ class TestTensorflow(TestCase):
         # Check whether the 'x' is listed first for the multiple-input model or second
         my_methods = metadata['servable']['methods']
         import json
-        print(json.dumps(my_methods, indent=2))
         assert my_methods['run']['input']['type'] == 'ndarray'
         assert my_methods['run']['input']['shape'] == [None, 3]
         assert my_methods['run']['input']['item_type'] == {'type': 'float'}
