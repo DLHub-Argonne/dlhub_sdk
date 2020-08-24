@@ -9,6 +9,8 @@ jobs:
       env: KERAS_VERSION=2.1.3
     - name: Keras 2.2.3
       env: KERAS_VERSION=2.2.2
+    - name: Older Scikit-Learn
+      env: SKLEARN_VERSION=0.19.1
 before_install:
 - openssl aes-256-cbc -K $encrypted_ac5a6dd41c09_key -iv $encrypted_ac5a6dd41c09_iv
   -in test-files/DLHub_Client_tokens.json.enc -out test-files/DLHub_Client_tokens.json
@@ -16,28 +18,11 @@ before_install:
 - mkdir -p ~/.dlhub/credentials
 - cp test-files/DLHub_Client_tokens.json ~/.dlhub/credentials
 install:
-
-# Update the build environment
-- pip install --upgrade pip setuptools wheel
-
-# Install mandatory packages
-- pip install -e .
-- pip install coveralls flake8
-
-# Install the packages required for tests
-- pip install -r test-requirements.txt
-- pip install -r example-requirements.txt
-
-# Adding keras, an optional dependency
-- if [ ! -z "$KERAS_VERSION" ]; then
--   pip install keras==$KERAS_VERSION
-- fi
-
-# Print out the current build environment
-- pip list
+  - ./travis/install.sh
+  - pip list
 script:
-- flake8 .
-- travis_wait 50 nosetests --with-coverage --cover-package=dlhub_sdk
+  - flake8 .
+  - travis_wait 50 nosetests --with-coverage --cover-package=dlhub_sdk
 deploy:
   provider: pypi
   user: wardlt
