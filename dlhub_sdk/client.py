@@ -2,7 +2,6 @@ import json
 import os
 from tempfile import mkstemp
 
-import jsonpickle
 import requests
 from typing import Union, Any
 from globus_sdk.base import BaseClient, slash_join
@@ -18,8 +17,9 @@ from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 from dlhub_sdk.utils.search import DLHubSearchHelper, get_method_details, filter_latest
 
 
-# Directory for authenticaation tokens
+# Directory for authentication tokens
 _token_dir = os.path.expanduser("~/.dlhub/credentials")
+
 
 class DLHubClient(BaseClient):
     """Main class for interacting with the DLHub service
@@ -82,11 +82,9 @@ class DLHubClient(BaseClient):
             self._search_client = auth_res["search"]
 
         self._fx_client = FuncXClient(force_login=force_login,
-                                      # fx_authorizer=fx_authorizer,
                                       no_local_server=kwargs.get("no_local_server", True),
                                       no_browser=kwargs.get("no_browser", True),
                                       funcx_service_address='https://api.funcx.org/v1',)
-                                      # openid_authorizer=openid_authorizer)
 
         # funcX endpoint to use
         self.fx_endpoint = '86a47061-f3d9-44f0-90dc-56ddc642c000'
