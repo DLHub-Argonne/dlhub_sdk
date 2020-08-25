@@ -61,7 +61,7 @@ class TestClient(TestCase):
         model.set_outputs('number', 'Norm of the array')
 
         # Submit the model
-        print(self.dl.publish_servable(model))
+        self.dl.publish_servable(model)
 
     def test_describe_model(self):
         # Find the 1d_norm function from the test user (should be there)
