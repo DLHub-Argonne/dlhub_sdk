@@ -13,7 +13,7 @@ pip install -r example-requirements.txt
 
 # Adding keras, an optional dependency
 if [ ! -z "$KERAS_VERSION" ]; then
-  pip install keras==$KERAS_VERSION
+  pip install keras==$KERAS_VERSION tensorflow<2
 fi
 
 # Manually-specifying the version of scikit-learn
