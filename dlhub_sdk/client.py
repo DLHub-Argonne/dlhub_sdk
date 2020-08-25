@@ -3,7 +3,7 @@ import os
 from tempfile import mkstemp
 
 import requests
-from typing import Union, Any
+from typing import Union, Any, Optional
 from globus_sdk.base import BaseClient, slash_join
 from mdf_toolbox import login, logout
 from mdf_toolbox.search_helper import SEARCH_LIMIT
@@ -163,7 +163,7 @@ class DLHubClient(BaseClient):
             dict: status block containing "status" key.
         """
 
-        r = self._fx_client.get_task_status(task_id)
+        r = self._fx_client.get_task(task_id)
         return r
 
     def describe_servable(self, name):
@@ -203,7 +203,8 @@ class DLHubClient(BaseClient):
         return get_method_details(metadata, method)
 
     def run(self, name, inputs,
-            asynchronous=False, async_wait=5) -> Union[Any, DLHubFuture]:
+            asynchronous=False, async_wait=5,
+            timeout: Optional[float] = None) -> Union[Any, DLHubFuture]:
         """Invoke a DLHub servable
 
         Args:
@@ -212,8 +213,10 @@ class DLHubClient(BaseClient):
             asynchronous (bool): Whether to return from the function immediately or
                 wait for the execution to finish.
             async_wait (float): How many seconds to wait between checking async status
+            timeout (float): How long to wait for a result to return.
+                Only used for synchronous calls
         Returns:
-            Results of running the servable. If asynchronous, then the task ID
+            Results of running the servable. If asynchronous, then a DLHubFuture holding the result
         """
 
         if name not in self.fx_cache:
@@ -226,7 +229,8 @@ class DLHubClient(BaseClient):
         task_id = self._fx_client.run(payload, endpoint_id=self.fx_endpoint, function_id=funcx_id)
 
         # Return the result
-        return DLHubFuture(self, task_id, async_wait).result() if not asynchronous else task_id
+        future = DLHubFuture(self, task_id, async_wait)
+        return future.result(timeout=timeout) if not asynchronous else future
 
     def run_serial(self, servables, inputs, async_wait=5):
         """Invoke each servable in a serial pipeline.
