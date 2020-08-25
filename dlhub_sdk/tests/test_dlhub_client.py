@@ -9,6 +9,7 @@ from dlhub_sdk.client import DLHubClient
 # Check if we are on travis
 #  See: https://blog.travis-ci.com/august-2012-upcoming-ci-environment-updates
 is_travis = 'HAS_JOSH_K_SEAL_OF_APPROVAL' in os.environ
+is_tag = len(os.environ.get('TRAVIS_TAG', '')) > 1
 
 
 class TestClient(TestCase):
@@ -51,7 +52,7 @@ class TestClient(TestCase):
         self.assertIsInstance(task_id, DLHubFuture)
         self.assertEqual('Hello', task_id.result(timeout=60))
 
-    @skipUnless(is_travis, 'Publish test only runs on Travis')
+    @skipUnless(is_tag and is_travis, 'Publish test only runs on tagged builds on Travis')
     def test_submit(self):
         # Make an example function
         model = PythonStaticMethodModel.create_model('numpy.linalg', 'norm')
