@@ -97,7 +97,8 @@ class TestKeras(TestCase):
             model.save(model_path)
 
             # Create the metadata
-            metadata = KerasModel.create_model(model_path, ['y'], custom_objects={'Dense': keras.layers.Dense})
+            metadata = KerasModel.create_model(model_path, ['y'],
+                                               custom_objects={'Dense': keras.layers.Dense})
             metadata.set_title('test').set_name('test')
 
             # Make sure it has the custom object definitions
