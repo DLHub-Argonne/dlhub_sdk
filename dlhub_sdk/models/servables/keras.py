@@ -1,8 +1,8 @@
 try:
-    # Attempt to use Tensorflow Keras first
-    from tensorflow import keras
-except ImportError:
+    # Attempt to use regular keras first, as we figure it's installed for a reason
     import keras
+except ImportError:
+    from tensorflow import keras
 
 
 from dlhub_sdk.models.servables.python import BasePythonServableModel

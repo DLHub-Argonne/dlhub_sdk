@@ -3,8 +3,10 @@ from tempfile import mkdtemp
 import shutil
 import os
 
-from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.layers import Dense, Input
+try:
+    import keras
+except ImportError:
+    from tensorflow import keras
 from unittest import TestCase
 
 from dlhub_sdk.models.servables.keras import KerasModel
@@ -15,9 +17,9 @@ _year = str(datetime.now().year)
 
 
 def _make_simple_model():
-    model = Sequential()
-    model.add(Dense(16, input_shape=(1,), activation='relu', name='hidden'))
-    model.add(Dense(1, name='output'))
+    model = keras.models.Sequential()
+    model.add(keras.layers.Dense(16, input_shape=(1,), activation='relu', name='hidden'))
+    model.add(keras.layers.Dense(1, name='output'))
     model.compile(optimizer='rmsprop', loss='mse')
     return model
 
@@ -49,11 +51,11 @@ class TestKeras(TestCase):
 
     def test_keras_multioutput(self):
         # Make a Keras model
-        input_layer = Input(shape=(4,))
-        dense = Dense(16, activation='relu')(input_layer)
-        output_1 = Dense(1, activation='relu')(dense)
-        output_2 = Dense(2, activation='softmax')(dense)
-        model = Model([input_layer], [output_1, output_2])
+        input_layer = keras.layers.Input(shape=(4,))
+        dense = keras.layers.Dense(16, activation='relu')(input_layer)
+        output_1 = keras.layers.Dense(1, activation='relu')(dense)
+        output_2 = keras.layers.Dense(2, activation='softmax')(dense)
+        model = keras.models.Model([input_layer], [output_1, output_2])
         model.compile(optimizer='rmsprop', loss='mse')
 
         # Save it to disk
@@ -95,7 +97,8 @@ class TestKeras(TestCase):
             model.save(model_path)
 
             # Create the metadata
-            metadata = KerasModel.create_model(model_path, ['y'], custom_objects={'Dense': Dense})
+            metadata = KerasModel.create_model(model_path, ['y'],
+                                               custom_objects={'Dense': keras.layers.Dense})
             metadata.set_title('test').set_name('test')
 
             # Make sure it has the custom object definitions
