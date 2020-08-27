@@ -4,25 +4,30 @@ python:
 cache: pip
 jobs:
   include:
-    - name: Latest libraries  # Build with the latest installation
-    - name: Keras 2.1.3
-      env: KERAS_VERSION=2.1.3
-    - name: Keras 2.2.3
-      env: KERAS_VERSION=2.2.2
-    - name: Older Scikit-Learn
-      env: SKLEARN_VERSION=0.19.1
+  - name: Latest libraries
+  - name: Keras 2.1.3
+    env: KERAS_VERSION=2.1.3
+  - name: Keras 2.2.3
+    env: KERAS_VERSION=2.2.3
+  - name: Older Scikit-Learn
+    env: SKLEARN_VERSION=0.19.1
 before_install:
-- openssl aes-256-cbc -K $encrypted_ac5a6dd41c09_key -iv $encrypted_ac5a6dd41c09_iv
-  -in test-files/DLHub_Client_tokens.json.enc -out test-files/DLHub_Client_tokens.json
-  -d
-- mkdir -p ~/.dlhub/credentials
-- cp test-files/DLHub_Client_tokens.json ~/.dlhub/credentials
+# Decrypt the tokens
+- openssl aes-256-cbc -K $encrypted_8839f1a6488f_key -iv $encrypted_8839f1a6488f_iv
+  -in test-files/funcx_sdk_tokens.json.enc -out test-files/funcx_sdk_tokens.json -d
+- openssl aes-256-cbc -K $encrypted_548e88740293_key -iv $encrypted_548e88740293_iv
+  -in test-files/tokens.cfg.enc -out test-files/tokens.cfg -d
+
+# Move to proper locations
+- cp test-files/tokens.cfg ~/.globus-native-apps.cfg
+- mkdir -p ~/.funcx/credentials
+- cp test-files/funcx_sdk_tokens.json ~/.funcx/credentials/funcx_sdk_tokens.json
 install:
-  - source ./travis/install.sh
-  - pip list
+- source ./travis/install.sh
+- pip list
 script:
-  - flake8 .
-  - travis_wait 50 nosetests --with-coverage --cover-package=dlhub_sdk
+- flake8 .
+- travis_wait 50 nosetests --with-coverage --cover-package=dlhub_sdk
 deploy:
   provider: pypi
   user: wardlt

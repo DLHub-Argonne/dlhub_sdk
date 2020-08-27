@@ -3,7 +3,6 @@ from globus_sdk import GlobusAPIError
 from concurrent.futures import Future
 from threading import Thread
 from time import sleep
-import json
 
 
 class DLHubFuture(Future):
