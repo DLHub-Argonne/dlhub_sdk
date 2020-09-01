@@ -342,7 +342,7 @@ and a second with a signature.
 
 .. code-block:: python
 
-        class CustomModule(tf.Module):
+    class CustomModule(tf.Module):
 
         def __init__(self):
             super().__init__()
@@ -364,7 +364,7 @@ and a second with a signature.
     call = module.__call__.get_concrete_function(tf.TensorSpec((None, 3)))
 
     tf.saved_model.save(
-        module, tf_export_path, signatures={
+        module, "./export", signatures={
             tf.saved_model.DEFAULT_SERVING_SIGNATURE_DEF_KEY: call,
             'scalar_multiply': module.scalar_multiply
         }
