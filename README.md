@@ -1,5 +1,8 @@
 # DLHub SDK
-[![Build Status](https://travis-ci.org/DLHub-Argonne/dlhub_sdk.svg?branch=master)](https://travis-ci.org/DLHub-Argonne/dlhub_sdk)[![Coverage Status](https://coveralls.io/repos/github/DLHub-Argonne/dlhub_sdk/badge.svg?branch=master)](https://coveralls.io/github/DLHub-Argonne/dlhub_sdk?branch=master)[![PyPI version](https://badge.fury.io/py/dlhub-sdk.svg)](https://badge.fury.io/py/dlhub-sdk)[![Documentation Status](https://readthedocs.org/projects/dlhub-sdk/badge/?version=latest)](https://dlhub-sdk.readthedocs.io/en/latest/?badge=latest)
+[![Build Status](https://travis-ci.com/DLHub-Argonne/dlhub_sdk.svg?branch=master)](https://travis-ci.com/DLHub-Argonne/dlhub_sdk)
+[![Coverage Status](https://coveralls.io/repos/github/DLHub-Argonne/dlhub_sdk/badge.svg?branch=master)](https://coveralls.io/github/DLHub-Argonne/dlhub_sdk?branch=master)
+[![PyPI version](https://badge.fury.io/py/dlhub-sdk.svg)](https://badge.fury.io/py/dlhub-sdk)
+[![Documentation Status](https://readthedocs.org/projects/dlhub-sdk/badge/?version=latest)](https://dlhub-sdk.readthedocs.io/en/latest/?badge=latest)
 
 DLHub SDK contains a Python interface to [the Data and Learning Hub for Science (DLHub)](https://www.dlhub.org). 
 These interfaces include functions for quickly describing a model in the correct schema for DLHub, and discovering or using models that other scientists have published.
