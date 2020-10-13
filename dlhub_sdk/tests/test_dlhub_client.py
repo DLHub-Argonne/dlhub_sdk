@@ -10,6 +10,10 @@ from dlhub_sdk.client import DLHubClient
 #  See: https://blog.travis-ci.com/august-2012-upcoming-ci-environment-updates
 is_travis = 'HAS_JOSH_K_SEAL_OF_APPROVAL' in os.environ
 
+# Check if it is a tagged build
+is_tag = len(os.environ.get('TRAVIS_TAG', '')) > 1
+is_first_build = os.environ.get('TRAVIS_BUILD_NUMBER', '').endswith('.1')
+
 
 class TestClient(TestCase):
 
@@ -38,24 +42,21 @@ class TestClient(TestCase):
         self.assertIn('dlhub.test_gmail/1d_norm', r)
 
     def test_run(self):
-        user = "ryan_globusid"
+        user = "zhuozhao_uchicago"
         name = "noop"
         data = {"data": ["V", "Co", "Zr"]}
 
-        # Test sending the data as JSON
-        res = self.dl.run("{}/{}".format(user, name), data, input_type='json')
-        self.assertEqual({}, res)
-
-        # Test sending the data as pickle
-        res = self.dl.run("{}/{}".format(user, name), data, input_type='python')
-        self.assertEqual({}, res)
+        # Test a synchronous request
+        res = self.dl.run("{}/{}".format(user, name), data, timeout=60)
+        self.assertEqual(res, 'Hello')
 
         # Test an asynchronous request
-        task_future = self.dl.run("{}/{}".format(user, name), data, asynchronous=True)
-        self.assertIsInstance(task_future, DLHubFuture)
-        self.assertEqual({}, task_future.result(timeout=60))
+        task_id = self.dl.run("{}/{}".format(user, name), data, asynchronous=True)
+        self.assertIsInstance(task_id, DLHubFuture)
+        self.assertEqual('Hello', task_id.result(timeout=60))
 
-    @skipUnless(is_travis, 'Publish test only runs on Travis')
+    @skipUnless(is_tag and is_travis and is_first_build,
+                'Publish test only runs on first version of tagged builds on Travis')
     def test_submit(self):
         # Make an example function
         model = PythonStaticMethodModel.create_model('numpy.linalg', 'norm')
@@ -201,5 +202,6 @@ class TestClient(TestCase):
 
     @skipUnless(is_travis, 'Status')
     def test_status(self):
-        self.assertEqual('COMPLETED',
-                         self.dl.get_task_status('33456474-711e-421c-8096-4924d09f441d')['status'])
+        future = self.dl.run('zhuozhao_uchicago/noop', 'test', asynchronous=True)
+        # Need spec for Fx status returns
+        self.assertIsInstance(self.dl.get_task_status(future.task_id), dict)

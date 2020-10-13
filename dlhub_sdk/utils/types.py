@@ -6,7 +6,7 @@ def simplify_numpy_dtype(dtype):
     """Given a numpy dtype, write out the type as string
 
     Args:
-        dtype (numpy.dytpe): Type
+        dtype (numpy.dtype): Type
     Returns:
         (string) name as a simple string
     """
@@ -30,7 +30,7 @@ def simplify_numpy_dtype(dtype):
         return "python object"
 
 
-def compose_argument_block(data_type, description, shape=(), item_type=None,
+def compose_argument_block(data_type, description, shape=None, item_type=None,
                            python_type=None, properties=None, element_types=None, **kwargs):
     """Compile a list of argument descriptions into an argument_type block
 
@@ -58,7 +58,7 @@ def compose_argument_block(data_type, description, shape=(), item_type=None,
 
     # Check that shape is specified if need be
     if data_type == "ndarray":
-        if len(shape) == 0:
+        if shape is None:
             raise ValueError('Shape must be specified for ndarrays')
         args['shape'] = list(shape)
 

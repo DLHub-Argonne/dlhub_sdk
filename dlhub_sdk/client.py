@@ -2,9 +2,8 @@ import json
 import os
 from tempfile import mkstemp
 
-import jsonpickle
 import requests
-from typing import Union, Any
+from typing import Union, Any, Optional
 from globus_sdk.base import BaseClient, slash_join
 from mdf_toolbox import login, logout
 from mdf_toolbox.search_helper import SEARCH_LIMIT
@@ -18,8 +17,9 @@ from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 from dlhub_sdk.utils.search import DLHubSearchHelper, get_method_details, filter_latest
 
 
-# Directory for authenticaation tokens
+# Directory for authentication tokens
 _token_dir = os.path.expanduser("~/.dlhub/credentials")
+
 
 class DLHubClient(BaseClient):
     """Main class for interacting with the DLHub service
@@ -82,11 +82,9 @@ class DLHubClient(BaseClient):
             self._search_client = auth_res["search"]
 
         self._fx_client = FuncXClient(force_login=force_login,
-                                      # fx_authorizer=fx_authorizer,
                                       no_local_server=kwargs.get("no_local_server", True),
                                       no_browser=kwargs.get("no_browser", True),
                                       funcx_service_address='https://api.funcx.org/v1',)
-                                      # openid_authorizer=openid_authorizer)
 
         # funcX endpoint to use
         self.fx_endpoint = '86a47061-f3d9-44f0-90dc-56ddc642c000'
@@ -165,7 +163,7 @@ class DLHubClient(BaseClient):
             dict: status block containing "status" key.
         """
 
-        r = self._fx_client.get_task_status(task_id)
+        r = self._fx_client.get_task(task_id)
         return r
 
     def describe_servable(self, name):
@@ -205,7 +203,8 @@ class DLHubClient(BaseClient):
         return get_method_details(metadata, method)
 
     def run(self, name, inputs,
-            asynchronous=False, async_wait=5) -> Union[Any, DLHubFuture]:
+            asynchronous=False, async_wait=5,
+            timeout: Optional[float] = None) -> Union[Any, DLHubFuture]:
         """Invoke a DLHub servable
 
         Args:
@@ -214,8 +213,10 @@ class DLHubClient(BaseClient):
             asynchronous (bool): Whether to return from the function immediately or
                 wait for the execution to finish.
             async_wait (float): How many seconds to wait between checking async status
+            timeout (float): How long to wait for a result to return.
+                Only used for synchronous calls
         Returns:
-            Results of running the servable. If asynchronous, then the task ID
+            Results of running the servable. If asynchronous, then a DLHubFuture holding the result
         """
 
         if name not in self.fx_cache:
@@ -228,7 +229,8 @@ class DLHubClient(BaseClient):
         task_id = self._fx_client.run(payload, endpoint_id=self.fx_endpoint, function_id=funcx_id)
 
         # Return the result
-        return DLHubFuture(self, task_id, async_wait).result() if not asynchronous else task_id
+        future = DLHubFuture(self, task_id, async_wait)
+        return future.result(timeout=timeout) if not asynchronous else future
 
     def run_serial(self, servables, inputs, async_wait=5):
         """Invoke each servable in a serial pipeline.
