@@ -20,6 +20,10 @@ class DLHubFuture(Future):
         self.task_id = task_id
         self.ping_interval = ping_interval
 
+        # List of pending statuses returned by funcX.
+        # TODO: Replace this once funcX stops raising exceptions when a task is pending.
+        self.pending_statuses = ["received", "waiting-for-ep", "waiting-for-nodes", "waiting-for-launch", "running"]
+
         # Once you create this, the task has already started
         self.set_running_or_notify_cancel()
 
@@ -48,7 +52,7 @@ class DLHubFuture(Future):
                 status = self.client.get_result(self.task_id, verbose=True)
             except Exception as e:
                 # Check if it is "Task pending". funcX throws an exception on pending.
-                if e.args[0] == "Task pending":
+                if e.args[0] in self.pending_statuses:
                     return True
                 else:
                     self.set_exception(e)
