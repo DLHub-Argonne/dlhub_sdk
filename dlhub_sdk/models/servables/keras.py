@@ -1,12 +1,16 @@
-from keras import __version__ as keras_version
-from keras.models import load_model, model_from_json, model_from_yaml
-from keras.layers import Layer
-from keras import backend
+try:
+    # Attempt to use regular keras first, as we figure it's installed for a reason
+    import keras
+except ImportError:
+    from tensorflow import keras
+
 
 from dlhub_sdk.models.servables.python import BasePythonServableModel
 from dlhub_sdk.utils.types import compose_argument_block
 
-_keras_version_tuple = tuple(int(i) for i in keras_version.split("."))
+
+keras_version = keras.__version__
+_keras_version_tuple = tuple(int(i) for i in keras_version.rstrip("-tf").split("."))
 _summary_limit = 10000
 
 
@@ -18,7 +22,7 @@ def _detect_backend(output):
     """
 
     # Determine the name of the object
-    my_backend = backend.backend().lower()
+    my_backend = keras.backend.backend().lower()
 
     # Add it as a requirement
     output.add_requirement(my_backend, 'detect')
@@ -59,19 +63,20 @@ class KerasModel(BasePythonServableModel):
 
         # Get the model details
         if arch_path is None:
-            model = load_model(model_path, custom_objects=custom_objects)
+            model = keras.models.load_model(model_path, custom_objects=custom_objects)
         else:
             if arch_path.endswith('.h5') or arch_path.endswith('.hdf') \
                     or arch_path.endswith('.hdf5') or arch_path.endswith('.hd5'):
-                model = load_model(arch_path, custom_objects=custom_objects, compile=False)
+                model = keras.models.load_model(arch_path,
+                                                custom_objects=custom_objects, compile=False)
             elif arch_path.endswith('.json'):
                 with open(arch_path) as fp:
                     json_string = fp.read()
-                model = model_from_json(json_string, custom_objects=custom_objects)
+                model = keras.models.model_from_json(json_string, custom_objects=custom_objects)
             elif arch_path.endswith('.yml') or arch_path.endswith('.yaml'):
                 with open(arch_path) as fp:
                     yaml_string = fp.read()
-                model = model_from_yaml(yaml_string, custom_objects=custom_objects)
+                model = keras.models.model_from_yaml(yaml_string, custom_objects=custom_objects)
             else:
                 raise ValueError('File type for architecture not recognized')
             model.load_weights(model_path)
@@ -97,7 +102,8 @@ class KerasModel(BasePythonServableModel):
         output['servable']['model_type'] = 'Deep NN'
 
         # Add keras as a dependency
-        output.add_requirement('keras', keras_version)
+        if not keras_version.endswith("-tf"):
+            output.add_requirement('keras', keras_version)
         output.add_requirement('h5py', 'detect')
 
         # Detect backend and get its version
@@ -135,7 +141,7 @@ class KerasModel(BasePythonServableModel):
 
         # Get the class name for the custom layer
         layer_name = custom_layer.__name__
-        if not issubclass(custom_layer, Layer):
+        if not issubclass(custom_layer, keras.layers.Layer):
             raise ValueError("Custom layer ({}) must be a subclass of Layer".format(layer_name))
         module = custom_layer.__module__
 

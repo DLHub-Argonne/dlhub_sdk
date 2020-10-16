@@ -12,12 +12,10 @@ import unittest
 import math
 import os
 
-
 _year = str(datetime.now().year)
 
 
 class TestPythonModels(unittest.TestCase):
-
     maxDiff = 4096
 
     def test_pickle(self):
@@ -47,71 +45,29 @@ class TestPythonModels(unittest.TestCase):
 
         # Check the model output
         output = model.to_dict()
-        correct_output = {
-            'datacite': {
-                'creators': [],
-                'titles': [{
-                    'title': 'Python example'
-                }],
-                'publisher': 'DLHub',
-                'resourceType': {
-                    'resourceTypeGeneral': 'InteractiveResource'
-                },
-                'identifier': {
-                    'identifier': '10.YET/UNASSIGNED',
-                    'identifierType': 'DOI'
-                },
-                'publicationYear': _year,
-                "descriptions": [],
-                "fundingReferences": [],
-                "relatedIdentifiers": [],
-                "alternateIdentifiers": [],
-                "rightsList": []
-            },
-            'dlhub': {
-                'version': __version__,
-                'domains': [],
-                'visible_to': ['public'],
-                'name': 'class_method',
-                'type': 'servable',
-                'files': {
-                    'pickle': pickle_path
-                },
-                'dependencies': {
-                    'python': {
-                        'scikit-learn': skl_version,
-                        'numpy': numpy_version,
-                        'sklearn': '0.0'
-                    }
-                }
-            },
-            'servable': {
-                'type': 'Python class method',
-                'shim': 'python.PythonClassMethodServable',
-                'methods': {
-                    'run': {
-                        'input': {
-                            'type': 'ndarray',
-                            'description': 'Features for each entry',
-                            'shape': [None, 4]
-                        },
-                        'output': {
-                            'type': 'ndarray',
-                            'description': 'Predicted probabilities of being each iris species',
-                            'shape': [None, 3]
-                        },
-                        'parameters': {
-                            'fake': 'kwarg'
-                        },
-                        'method_details': {
-                            'class_name': 'sklearn.svm.classes.SVC',
-                            'method_name': 'predict_proba'
-                        },
-                    }
-                }
-            }
+        assert output['dlhub']['files'] == {'pickle': pickle_path}
+        assert output['dlhub']['dependencies']['python'] == {
+            'scikit-learn': skl_version,
+            'numpy': numpy_version,
+            'sklearn': '0.0'
         }
-        self.assertEqual(output, correct_output)
+        assert output['servable']['shim'] == 'python.PythonClassMethodServable'
+        assert 'run' in output['servable']['methods']
+        assert output['servable']['methods']['run']['input'] == {
+            'type': 'ndarray',
+            'description': 'Features for each entry',
+            'shape': [None, 4]
+        }
+        assert output['servable']['methods']['run']['output'] == {
+            'type': 'ndarray',
+            'description': 'Predicted probabilities of being each iris species',
+            'shape': [None, 3]
+        }
+        assert (output['servable']['methods']['run']
+                ['method_details']['class_name'].endswith('.SVC'))
+        assert (output['servable']['methods']['run']
+                ['method_details']['method_name'] == 'predict_proba')
+
         self.assertEqual([pickle_path], model.list_files())
         validate_against_dlhub_schema(output, 'servable')
 
