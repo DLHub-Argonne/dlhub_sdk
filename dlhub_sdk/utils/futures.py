@@ -22,7 +22,8 @@ class DLHubFuture(Future):
 
         # List of pending statuses returned by funcX.
         # TODO: Replace this once funcX stops raising exceptions when a task is pending.
-        self.pending_statuses = ["received", "waiting-for-ep", "waiting-for-nodes", "waiting-for-launch", "running"]
+        self.pending_statuses = ["received", "waiting-for-ep", "waiting-for-nodes",
+                                 "waiting-for-launch", "running"]
 
         # Once you create this, the task has already started
         self.set_running_or_notify_cancel()

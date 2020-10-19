@@ -9,7 +9,6 @@ from mdf_toolbox import login, logout
 from mdf_toolbox.search_helper import SEARCH_LIMIT
 
 from funcx.sdk.client import FuncXClient
-from funcx.serialize import FuncXSerializer
 
 from dlhub_sdk.config import DLHUB_SERVICE_ADDRESS, CLIENT_ID
 from dlhub_sdk.utils.futures import DLHubFuture
@@ -69,8 +68,8 @@ class DLHubClient(BaseClient):
                 **Default**: ``True``.
         Keyword arguments are the same as for BaseClient.
         """
-        if force_login or not dlh_authorizer or not search_client or not fx_authorizer or not openid_authorizer:
-
+        if force_login or not dlh_authorizer or not search_client \
+                or not fx_authorizer or not openid_authorizer:
             fx_scope = "https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/all"
             auth_res = login(services=["search", "dlhub",
                                        fx_scope, "openid"],
@@ -98,8 +97,10 @@ class DLHubClient(BaseClient):
         self.fx_endpoint = '86a47061-f3d9-44f0-90dc-56ddc642c000'
         # self.fx_endpoint = '2c92a06a-015d-4bfa-924c-b3d0c36bdad7'
         self.fx_cache = {}
-        super(DLHubClient, self).__init__("DLHub", environment='dlhub', authorizer=dlh_authorizer,
-                                          http_timeout=http_timeout, base_url=DLHUB_SERVICE_ADDRESS,
+        super(DLHubClient, self).__init__("DLHub", environment='dlhub',
+                                          authorizer=dlh_authorizer,
+                                          http_timeout=http_timeout,
+                                          base_url=DLHUB_SERVICE_ADDRESS,
                                           **kwargs)
 
     def logout(self):
