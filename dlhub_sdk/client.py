@@ -83,6 +83,7 @@ class DLHubClient(BaseClient):
             dlh_authorizer = auth_res["dlhub"]
             fx_authorizer = auth_res[fx_scope]
             openid_authorizer = auth_res['openid']
+            search_client=auth_res["search"]
             self._fx_client = FuncXClient(force_login=force_login,
                                           fx_authorizer=fx_authorizer,
                                           search_authorize=search_client,
