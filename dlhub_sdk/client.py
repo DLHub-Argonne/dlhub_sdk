@@ -3,13 +3,14 @@ import os
 from tempfile import mkstemp
 
 import requests
+import globus_sdk
+
 from typing import Union, Any, Optional
 from globus_sdk.base import BaseClient, slash_join
 from mdf_toolbox import login, logout
 from mdf_toolbox.search_helper import SEARCH_LIMIT
 
 from funcx.sdk.client import FuncXClient
-from funcx.serialize import FuncXSerializer
 
 from dlhub_sdk.config import DLHUB_SERVICE_ADDRESS, CLIENT_ID
 from dlhub_sdk.utils.futures import DLHubFuture
@@ -36,7 +37,7 @@ class DLHubClient(BaseClient):
     and providing that authorizer to the initializer (e.g., ``DLHubClient(auth)``)"""
 
     def __init__(self, dlh_authorizer=None, search_client=None, http_timeout=None,
-                 force_login=False, fx_authorizer=None, **kwargs):
+                 force_login=False, fx_authorizer=None, openid_authorizer=None, **kwargs):
         """Initialize the client
 
         Args:
@@ -60,17 +61,22 @@ class DLHubClient(BaseClient):
                             <globus_sdk.authorizers.base.GlobusAuthorizer>`):
                 An authorizer instance used to communicate with funcX.
                 If ``None``, will be created.
+            openid_authorizer (:class:`GlobusAuthorizer
+                            <globus_sdk.authorizers.base.GlobusAuthorizer>`):
+                An authorizer instance used to communicate with OpenID.
+                If ``None``, will be created.
             no_browser (bool): Do not automatically open the browser for the Globus Auth URL.
                 Display the URL instead and let the user navigate to that location manually.
                 **Default**: ``True``.
         Keyword arguments are the same as for BaseClient.
         """
-        if force_login or not dlh_authorizer or not search_client or not fx_authorizer:
-
+        if force_login or not dlh_authorizer or not search_client \
+                or not fx_authorizer or not openid_authorizer:
             fx_scope = "https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/all"
             auth_res = login(services=["search", "dlhub",
                                        fx_scope, "openid"],
                              app_name="DLHub_Client",
+                             make_clients=False,
                              client_id=CLIENT_ID,
                              clear_old_tokens=force_login,
                              token_dir=_token_dir,
@@ -79,20 +85,28 @@ class DLHubClient(BaseClient):
             # openid_authorizer = auth_res["openid"]
             dlh_authorizer = auth_res["dlhub"]
             fx_authorizer = auth_res[fx_scope]
-            self._search_client = auth_res["search"]
+            openid_authorizer = auth_res['openid']
+            search_authorizer = auth_res['search']
+            self._fx_client = FuncXClient(force_login=force_login,
+                                          fx_authorizer=fx_authorizer,
+                                          search_authorizer=search_authorizer,
+                                          openid_authorizer=openid_authorizer,
+                                          no_local_server=kwargs.get("no_local_server", True),
+                                          no_browser=kwargs.get("no_browser", True),
+                                          funcx_service_address='https://api.funcx.org/v1')
+            self._search_client = globus_sdk.SearchClient(authorizer=search_authorizer,
+                                                          http_timeout=5 * 60)
 
-        self._fx_client = FuncXClient(force_login=force_login,
-                                      no_local_server=kwargs.get("no_local_server", True),
-                                      no_browser=kwargs.get("no_browser", True),
-                                      funcx_service_address='https://api.funcx.org/v1',)
-
+        else:
+            self._search_client = search_client
         # funcX endpoint to use
         self.fx_endpoint = '86a47061-f3d9-44f0-90dc-56ddc642c000'
         # self.fx_endpoint = '2c92a06a-015d-4bfa-924c-b3d0c36bdad7'
-        self.fx_serializer = FuncXSerializer()
         self.fx_cache = {}
-        super(DLHubClient, self).__init__("DLHub", environment='dlhub', authorizer=dlh_authorizer,
-                                          http_timeout=http_timeout, base_url=DLHUB_SERVICE_ADDRESS,
+        super(DLHubClient, self).__init__("DLHub", environment='dlhub',
+                                          authorizer=dlh_authorizer,
+                                          http_timeout=http_timeout,
+                                          base_url=DLHUB_SERVICE_ADDRESS,
                                           **kwargs)
 
     def logout(self):
