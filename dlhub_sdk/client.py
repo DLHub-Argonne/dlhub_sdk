@@ -3,6 +3,8 @@ import os
 from tempfile import mkstemp
 
 import requests
+import globus_sdk
+
 from typing import Union, Any, Optional
 from globus_sdk.base import BaseClient, slash_join
 from mdf_toolbox import login, logout
@@ -74,6 +76,7 @@ class DLHubClient(BaseClient):
             auth_res = login(services=["search", "dlhub",
                                        fx_scope, "openid"],
                              app_name="DLHub_Client",
+                             make_clients=False,
                              client_id=CLIENT_ID,
                              clear_old_tokens=force_login,
                              token_dir=_token_dir,
@@ -83,17 +86,18 @@ class DLHubClient(BaseClient):
             dlh_authorizer = auth_res["dlhub"]
             fx_authorizer = auth_res[fx_scope]
             openid_authorizer = auth_res['openid']
-            search_client = auth_res["search"]
+            search_authorizer = auth_res['search']
             self._fx_client = FuncXClient(force_login=force_login,
                                           fx_authorizer=fx_authorizer,
-                                          search_authorizer=search_client,
+                                          search_authorizer=search_authorizer,
                                           openid_authorizer=openid_authorizer,
                                           no_local_server=kwargs.get("no_local_server", True),
                                           no_browser=kwargs.get("no_browser", True),
                                           funcx_service_address='https://api.funcx.org/v1')
-            self._search_client = auth_res["search"]
+            self._search_client = globus_sdk.SearchClient(authorizer=search_authorizer, http_timeout=5 * 60)
 
-        self._search_client = search_client
+        else:
+            self._search_client = search_client
         # funcX endpoint to use
         self.fx_endpoint = '86a47061-f3d9-44f0-90dc-56ddc642c000'
         # self.fx_endpoint = '2c92a06a-015d-4bfa-924c-b3d0c36bdad7'
