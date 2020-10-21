@@ -205,7 +205,7 @@ class BaseMetadataModel:
         return self
 
     def set_visibility(self, visible_to):
-        """Set the list of people this artifact should be visible to.
+        """Define the list of people and groups who have permissions to see and use this model.
 
         By default, it will be visible to anyone (["public"]).
 
