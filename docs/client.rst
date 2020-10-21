@@ -2,7 +2,7 @@ Guide to DLHubClient
 ====================
 
 The `DLHubClient <source/dlhub_sdk.html#dlhub_sdk.client.DLHubClient>`_
-provides a Python wrapper around the web interface for DLHub.
+provides a Python wrapper around the DLHub and funcX web services.
 In this part of the guide, we describe how to use the client to publish,
 discover, and use servables.
 
@@ -16,15 +16,15 @@ Before creating the DLHubClient, you must log in to Globus::
     from dlhub_sdk.client import DLHubClient
     client = DLHubClient()
 
+This will initiate a Globus Auth flow for you to grant the client access to
+the DLHub service, Globus Search, OpenID, and the funcX service.
 The ``DLHubClient`` class stores your credentials in your home directory
 (``~/.dlhub/credentials/DLHub_Client_tokens.json``) so that you will only
 need to log in to Globus once when using the client or the DLHub CLI.
 
-
 Call the ``logout`` function to remove access to DLHub from your system::
 
-    from dlhub_sdk.utils.auth import logout
-    logout()
+    client.logout()
 
 ``logout`` removes the credentials from your hard disk and revokes
 their authorization to prevent further use.
@@ -101,19 +101,26 @@ Running Servables
 -----------------
 
 The `DLHubClient.run <source/dlhub_sdk.html#dlhub_sdk.client.DLHubClient.run>`_
-command runs servables published through DLHub.
-To invoke the servable, you need to know the name of the servable and the username
-of the owner::
+command runs servables published through DLHub. DLHub uses the
+`funcX <https://funcx.org>`_ to perform remote inference tasks. funcX is a
+function-as-a-service platform designed to reliably and securely perform remote invocation.
+Using the DLHub Client to perform an inference task invokes a funcX function on the target servable.
+To invoke the servable, you need to know the name of the servable::
 
-    client.run(username, model_name, x)
+    client.run(model_name, x)
 
-By default, the data (``x``) is sent to DLHub after serializing it into JSON.
-You can also send the data as Python objects by changing the input type::
+The data (``x``) will be serialized and passed to the servable to act on.
 
-    client.run(username, model_name, x, input_type='python')
 
-The client will use ``pickle`` to send the input data to DLHub in this case,
-allowing for a broader range of data types to be used as inputs.
+funcX performs client-side rate limiting to avoid accidentally overloading the service.
+By default, these limits restrict the number of invocations to 20 over 10 seconds and
+restrict input size to 5MB. These limits are described in detail in the `funcX docs <https://funcx.readthedocs.io/en/latest/client.html#client-throttling>`_.
+The soft limits can be increased by modifying the DLHub client's funcX client:::
+
+    client._fx_client.max_requests = 30
+
+Note: The funcX web service will still restrict unnecessarily large inputs. Please contact us if this
+becomes an issue and we can help orchestrate big data invocations.
 
 The `DLHubClient.describe_servable <source/dlhub_sdk.html#dlhub_sdk.client.DLHubClient.describe_servable>`_ and
 `DLHubClient.describe_methods <source/dlhub_sdk.html#dlhub_sdk.client.DLHubClient.describe_methods>`_ functions
