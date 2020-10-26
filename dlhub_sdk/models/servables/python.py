@@ -60,30 +60,32 @@ class BasePythonServableModel(BaseServableModel):
         self._output["servable"]["methods"]["run"]["input"] = args
         return self
 
-    def set_input_description(self, description):
+    def set_input_description(self, description, method='run'):
         """Set the human-readable description for this servable's inputs
 
         This method can be called when implementing a Keras, PyTorch, etc. servable to fill in
         an empty input description.
 
         Args:
-            description (name): Human-readable description of the servable's inputs
+            description (string): Human-readable description of the servable's inputs
+            method (string): Name of the servable method to apply description to (by default, 'run')
         """
 
-        self._output["servable"]["methods"]["run"]["input"]["description"] = description
+        self._output["servable"]["methods"][method]["input"]["description"] = description
         return self
 
-    def set_output_description(self, description):
+    def set_output_description(self, description, method='run'):
         """Set the human-readable description for this servable's inputs
 
         This method can be called when implementing a Keras, PyTorch, etc. servable to fill in
         an empty input description.
 
         Args:
-            description (name): Human-readable description of the servable's inputs
+            description (string): Human-readable description of the servable's inputs
+            method (string): Name of the servable method to apply description to (by default, 'run')
         """
 
-        self._output["servable"]["methods"]["run"]["output"]["description"] = description
+        self._output["servable"]["methods"][method]["output"]["description"] = description
         return self
 
     def set_outputs(self, data_type, description, shape=(), item_type=None, **kwargs):
