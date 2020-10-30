@@ -4,6 +4,8 @@ import os
 from dlhub_sdk.models.servables.python import PythonStaticMethodModel
 from dlhub_sdk.utils.futures import DLHubFuture
 from dlhub_sdk.client import DLHubClient
+from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
+from jsonschema.exceptions import ValidationError
 
 
 # Check if we are on travis
@@ -205,3 +207,28 @@ class TestClient(TestCase):
         future = self.dl.run('zhuozhao_uchicago/noop', 'test', asynchronous=True)
         # Need spec for Fx status returns
         self.assertIsInstance(self.dl.get_task_status(future.task_id), dict)
+
+    def test_visibility(self):
+        model = PythonStaticMethodModel.create_model('numpy.linalg', 'norm')
+        model.set_name('1d_norm')
+        model.set_title('Norm of a 1D Array')
+        model.set_inputs('ndarray', 'Array to be normed', shape=[None])
+        model.set_outputs('number', 'Norm of the array')
+
+        model.set_visibility(users=['bec215bc-9169-4be9-af49-4872b5e11ef8']) #Setting visibility to a user
+        validate_against_dlhub_schema(model.to_dict(), 'servable')
+        self.assertTrue(model['dlhub']['visible_to'][0].startswith('urn:globus:auth:identity:'))
+
+        model.set_visibility(groups=['fdb38a24-03c1-11e3-86f7-12313809f035']) #Setting visibility to a group
+        validate_against_dlhub_schema(model.to_dict(), 'servable')
+        self.assertEqual(len(model['dlhub']['visible_to']), 1) #Ensure was replaced, not appended
+        self.assertTrue(model['dlhub']['visible_to'][0].startswith('urn:globus:groups:id:'))
+
+        model.set_visibility(users=['foo']) #Test using a non-UUID for user
+        with self.assertRaises(ValidationError):
+            validate_against_dlhub_schema(model.to_dict(), 'servable')
+
+        model.set_visibility() #Default visibility is "public"
+        validate_against_dlhub_schema(model.to_dict(), 'servable')
+        self.assertEqual(model['dlhub']['visible_to'], ['public'])
+        
