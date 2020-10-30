@@ -204,7 +204,7 @@ class BaseMetadataModel:
         self._output["dlhub"]["domains"] = domains
         return self
 
-    def set_visibility(self, users=[], groups=[]):
+    def set_visibility(self, users=None, groups=None):
         """Set the list of people this artifact should be visible to.
 
         By default, it will be visible to anyone (["public"]).
@@ -217,10 +217,12 @@ class BaseMetadataModel:
         if not (users or groups):
             visibilities.append('public')
         else:
-            for user in users:
-                visibilities.append('urn:globus:auth:identity:' + user)
-            for group in groups:
-                visibilities.append('urn:globus:groups:id:' + group)
+            if users:
+                for user in users:
+                    visibilities.append('urn:globus:auth:identity:' + user)
+            if groups:
+                for group in groups:
+                    visibilities.append('urn:globus:groups:id:' + group)
         self._output["dlhub"]["visible_to"] = visibilities
         return self
 
