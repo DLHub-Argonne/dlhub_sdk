@@ -7,6 +7,10 @@ with open(os.path.join("dlhub_sdk", "version.py")) as f:
     exec(f.read(), version_ns)
 version = version_ns['__version__']
 
+# Load in requirements from "requirements.txt"
+with open("requirements.txt") as f:
+    requirements = [x.strip() for x in f]
+
 setup(
     name='dlhub_sdk',
     version=version,
@@ -17,15 +21,7 @@ setup(
                       "include functions for quickly describing a model in the "
                       "correct schema for DLHub, and discovering or using models "
                       "that other scientists have published."),
-    install_requires=[
-        "pandas",
-        "requests>=2.20.0",
-        "jsonschema>=3.0.0",
-        "globus_sdk",
-        "jsonpickle",
-        "mdf_toolbox>=0.4.0",
-        "funcx>=0.0.2a0"
-    ],
+    install_requires=requirements,
     python_requires=">=3.4",
     classifiers=[
         "Development Status :: 3 - Alpha",
