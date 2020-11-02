@@ -9,7 +9,7 @@ pip install coveralls flake8
 
 # Adding keras and TF1 for some tests
 if [ -n "$KERAS_VERSION" ]; then
-  pip install keras==$KERAS_VERSION "tensorflow<2"
+  pip install keras==$KERAS_VERSION "tensorflow<2" "h5py<3"
 else
   # Otherwise, use TF2
   pip install "tensorflow>2"
