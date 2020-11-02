@@ -42,7 +42,7 @@ class TestModels(unittest.TestCase):
             .set_version(1)\
             .add_rights("https://www.gnu.org/licenses/gpl-3.0.en.html", "GPL v3.0")\
             .set_abstract("Abstract").set_methods("Methods")\
-            .set_visibility(['public']).set_domains(["materials science"]).set_name("example_data")
+            .set_domains(["materials science"]).set_name("example_data")
         correct_entry = {
             "datacite": {
                 "creators": [{
