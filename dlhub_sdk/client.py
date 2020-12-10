@@ -8,7 +8,7 @@ import globus_sdk
 from typing import Union, Any, Optional
 from globus_sdk.base import BaseClient, slash_join
 from mdf_toolbox import login, logout
-from mdf_toolbox.search_helper import SEARCH_LIMIT
+from mdf_toolbox.globus_search.search_helper import SEARCH_LIMIT
 
 from funcx.sdk.client import FuncXClient
 
