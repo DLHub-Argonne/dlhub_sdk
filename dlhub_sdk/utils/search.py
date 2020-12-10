@@ -1,6 +1,6 @@
 """Tools for interacting with the DLHub Search Index"""
 
-from mdf_toolbox.search_helper import SearchHelper
+from mdf_toolbox.globus_search.search_helper import SearchHelper
 from globus_sdk.search import SearchClient
 from warnings import warn
 
