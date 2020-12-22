@@ -1,7 +1,9 @@
 from datetime import datetime
+import pickle as pkl
 import unittest
 import os
 
+from sklearn.svm import SVC
 from sklearn import __version__ as skversion
 import numpy as np
 
@@ -12,11 +14,18 @@ from dlhub_sdk.models.servables.sklearn import ScikitLearnModel
 _year = str(datetime.now().year)
 
 
+_svm_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'model.pkl'))
+
+
 class TestSklearn(unittest.TestCase):
     maxDiff = 4096
 
+    def setUp(self):
+        with open(_svm_path, 'wb') as fp:
+            pkl.dump(SVC(probability=True), fp)
+
     def test_load_model(self):
-        model_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'model.pkl'))
+        model_path = _svm_path
 
         # Load the model
         model_info = ScikitLearnModel.create_model(model_path, n_input_columns=4, classes=3)
@@ -27,7 +36,7 @@ class TestSklearn(unittest.TestCase):
 
         # Test key components
         assert metadata['dlhub']['dependencies']['python'] == {
-            'scikit-learn': '0.19.1'  # The version used to save the model
+            'scikit-learn': skversion
         }
         assert metadata['servable']['shim'] == 'sklearn.ScikitLearnServable'
         assert metadata['servable']['model_type'] == 'SVC'

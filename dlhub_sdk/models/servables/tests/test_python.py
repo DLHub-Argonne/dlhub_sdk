@@ -9,21 +9,26 @@ from dlhub_sdk.version import __version__
 from sklearn import __version__ as skl_version
 from numpy import __version__ as numpy_version
 from datetime import datetime
+import pickle as pkl
 import unittest
 import math
 import os
 
 _year = str(datetime.now().year)
 
+_pickle_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'pickle.pkl'))
+
 
 class TestPythonModels(unittest.TestCase):
     maxDiff = 4096
 
-    def test_pickle(self):
-        pickle_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'model.pkl'))
+    def setUp(self):
+        with open(_pickle_path, 'wb') as fp:
+            pkl.dump(PythonClassMethodModel(), fp)
 
+    def test_pickle(self):
         # Make the model
-        model = PythonClassMethodModel.create_model(pickle_path, 'predict_proba', {'fake': 'kwarg'})
+        model = PythonClassMethodModel.create_model(_pickle_path, 'to_dict', {'fake': 'kwarg'})
         model.set_title('Python example').set_name("class_method")
 
         # Make sure it throws value errors if inputs are not set
@@ -46,7 +51,7 @@ class TestPythonModels(unittest.TestCase):
 
         # Check the model output
         output = model.to_dict()
-        assert output['dlhub']['files'] == {'pickle': pickle_path}
+        assert output['dlhub']['files'] == {'pickle': _pickle_path}
         assert output['dlhub']['dependencies']['python'] == {
             'scikit-learn': skl_version,
             'numpy': numpy_version,
@@ -65,11 +70,11 @@ class TestPythonModels(unittest.TestCase):
             'shape': [None, 3]
         }
         assert (output['servable']['methods']['run']
-                ['method_details']['class_name'].endswith('.SVC'))
+                ['method_details']['class_name'].endswith('.PythonClassMethodModel'))
         assert (output['servable']['methods']['run']
-                ['method_details']['method_name'] == 'predict_proba')
+                ['method_details']['method_name'] == 'to_dict')
 
-        self.assertEqual([pickle_path], model.list_files())
+        self.assertEqual([_pickle_path], model.list_files())
         validate_against_dlhub_schema(output, 'servable')
 
     def test_function(self):
