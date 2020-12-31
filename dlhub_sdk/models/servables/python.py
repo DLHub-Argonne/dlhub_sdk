@@ -1,7 +1,7 @@
 """Tools to annotate generic operations (e.g., class method calls) in Python"""
 import pickle as pkl
 
-from dlhub_sdk.models.servables import BaseServableModel
+from dlhub_sdk.models.servables import BaseServableModel, ArgumentTypeMetadata
 from dlhub_sdk.utils.types import compose_argument_block
 
 
@@ -20,13 +20,13 @@ class BasePythonServableModel(BaseServableModel):
             (BasePythonServableModel): self
         """
 
-        if self['servable']['methods'][method_name]['input']['type'] not in ['list', 'tuple']:
+        if self.servable.methods[method_name].input.type not in ['list', 'tuple']:
             raise ValueError('Only "list" and "tuple" inputs are compatible with unpacking')
-        self['servable']['methods'][method_name]['method_details']['unpack'] = x
+        self.servable.methods[method_name].method_details['unpack'] = x
         return self
 
     @classmethod
-    def create_model(cls, method, function_kwargs=None):
+    def create_model(cls, method, function_kwargs=None) -> 'BasePythonServableModel':
         """Initialize a model for a python object
 
         Args:
@@ -57,7 +57,7 @@ class BasePythonServableModel(BaseServableModel):
         args = compose_argument_block(data_type, description, shape, item_type, **kwargs)
 
         # Set the inputs
-        self._output["servable"]["methods"]["run"]["input"] = args
+        self.servable.methods["run"].input = ArgumentTypeMetadata.parse_obj(args)
         return self
 
     def set_input_description(self, description, method='run'):
@@ -71,7 +71,7 @@ class BasePythonServableModel(BaseServableModel):
             method (string): Name of the servable method to apply description to (by default, 'run')
         """
 
-        self._output["servable"]["methods"][method]["input"]["description"] = description
+        self.servable.methods[method].input.description = description
         return self
 
     def set_output_description(self, description, method='run'):
@@ -85,7 +85,7 @@ class BasePythonServableModel(BaseServableModel):
             method (string): Name of the servable method to apply description to (by default, 'run')
         """
 
-        self._output["servable"]["methods"][method]["output"]["description"] = description
+        self.servable.methods[method].output.description = description
         return self
 
     def set_outputs(self, data_type, description, shape=(), item_type=None, **kwargs):
@@ -100,7 +100,7 @@ class BasePythonServableModel(BaseServableModel):
         """
 
         args = compose_argument_block(data_type, description, shape, item_type, **kwargs)
-        self._output["servable"]["methods"]["run"]["output"] = args
+        self.servable.methods["run"].output = ArgumentTypeMetadata.parse_obj(args)
         return self
 
 
@@ -112,12 +112,8 @@ class PythonClassMethodModel(BasePythonServableModel):
     to run the library and their versions must also be specified. You may also specify
     any arguments of the class that should be set as defaults."""
 
-    def __init__(self):
-        super(PythonClassMethodModel, self).__init__()
-        self.class_name = None
-
     @classmethod
-    def create_model(cls, path, method, function_kwargs=None):
+    def create_model(cls, path, method, function_kwargs=None) -> 'PythonClassMethodModel':
         """Initialize a model for a python object
 
         Args:
@@ -135,7 +131,7 @@ class PythonClassMethodModel(BasePythonServableModel):
             obj = pkl.load(fp)
             class_name = '{}.{}'.format(obj.__class__.__module__, obj.__class__.__name__)
 
-        output._output["servable"]["methods"]["run"]["method_details"].update({
+        output.servable.methods["run"].method_details.update({
             'class_name': class_name
         })
 
@@ -156,11 +152,6 @@ class PythonStaticMethodModel(BasePythonServableModel):
     of this function by calling :code:`PythonStaticMethodModel.from_function_pointer(numpy.sqrt)`.
     """
 
-    def __init__(self):
-        super(PythonStaticMethodModel, self).__init__()
-        self.module = None
-        self.autobatch = False
-
     @classmethod
     def create_model(cls, module, method, autobatch=False, function_kwargs=None):
         """Initialize the method
@@ -175,7 +166,7 @@ class PythonStaticMethodModel(BasePythonServableModel):
         """
         output = super(PythonStaticMethodModel, cls).create_model(method, function_kwargs)
 
-        output._output["servable"]["methods"]["run"]["method_details"].update({
+        output.servable.methods["run"].method_details.update({
             'module': module,
             'autobatch': autobatch
         })

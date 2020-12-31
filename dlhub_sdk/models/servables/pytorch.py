@@ -1,5 +1,6 @@
 import torch
 
+from dlhub_sdk.models.servables import ArgumentTypeMetadata
 from dlhub_sdk.models.servables.python import BasePythonServableModel
 from dlhub_sdk.utils.types import compose_argument_block
 
@@ -22,7 +23,7 @@ class TorchModel(BasePythonServableModel):
             input_type (str or [str]): Data type of inputs
             output_type (str or [str]): Data type of outputs
        """
-        output = super(TorchModel, cls).create_model('__call__')
+        output: TorchModel = super().create_model('__call__')
 
         # Add model as a file to be sent
         output.add_file(model_path, 'model')
@@ -34,13 +35,11 @@ class TorchModel(BasePythonServableModel):
             raise ValueError('File type for architecture not recognized')
 
         # Get the inputs of the model
-        output['servable']['methods']['run']['input'] =\
-            output.format_layer_spec(input_shape, input_type)
-        output['servable']['methods']['run']['output'] =\
-            output.format_layer_spec(output_shape, output_type)
+        output.servable.methods['run'].input = output.format_layer_spec(input_shape, input_type)
+        output.servable.methods['run'].output = output.format_layer_spec(output_shape, output_type)
 
-        output['servable']['model_summary'] = str(model)
-        output['servable']['model_type'] = 'Deep NN'
+        output.servable.model_summary = str(model)
+        output.servable.model_type = 'Deep NN'
 
         # Add torch as a dependency
         output.add_requirement('torch', torch.__version__)
@@ -57,14 +56,15 @@ class TorchModel(BasePythonServableModel):
             (dict) Description of the inputs / outputs
         """
         if isinstance(layers, tuple):
-            return compose_argument_block("ndarray", "Tensor",
-                                          shape=list(layers), item_type=datatypes)
+            return ArgumentTypeMetadata.parse_obj(compose_argument_block("ndarray", "Tensor",
+                                                                         shape=list(layers), item_type=datatypes))
         else:
             if isinstance(datatypes, str):
                 datatypes = [datatypes] * len(layers)
-            return compose_argument_block("tuple", "Tuple of tensors",
-                                          element_types=[self.format_layer_spec(i, t)
-                                                         for i, t in zip(layers, datatypes)])
+            return ArgumentTypeMetadata.parse_obj(
+                compose_argument_block("tuple", "Tuple of tensors",
+                                       element_types=[self.format_layer_spec(i, t)
+                                                      for i, t in zip(layers, datatypes)]))
 
     def _get_handler(self):
         return "torch.TorchServable"

@@ -1,12 +1,14 @@
 """Testing the tensorflow adaptor"""
-from unittest import TestCase
 import tensorflow as tf
 import shutil
 import os
 
+from pytest import fixture
+
 from dlhub_sdk.models.servables.tensorflow import TensorFlowModel
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 
+# Do not write to a temp directory so I can see it outside of tests
 tf_export_path = os.path.join(os.path.dirname(__file__), 'tf-model')
 
 
@@ -103,53 +105,50 @@ def _make_model_v2():
     )
 
 
-class TestTensorflow(TestCase):
+@fixture(autouse=True)
+def setUp():
+    # Clear existing model
+    if os.path.isdir(tf_export_path):
+        shutil.rmtree(tf_export_path)
 
-    maxDiff = 4096
 
-    def setUp(self):
-        # Clear existing model
-        if os.path.isdir(tf_export_path):
-            shutil.rmtree(tf_export_path)
+def test_tf():
+    # Make a model and save it to disk
+    if tf.__version__ < '2':
+        _make_model_v1()
+    else:
+        _make_model_v2()
 
-    def test_tf(self):
-        # Make a model and save it to disk
-        if tf.__version__ < '2':
-            _make_model_v1()
-        else:
-            _make_model_v2()
+    # Create the description
+    model = TensorFlowModel.create_model(tf_export_path).set_title('TF Test')\
+        .set_name('tf-test')
 
-        # Create the description
-        model = TensorFlowModel.create_model(tf_export_path).set_title('TF Test')\
-            .set_name('tf-test')
+    # Generate the metadata for the test
+    metadata = model.to_dict(simplify_paths=True)
 
-        # Generate the metadata for the test
-        metadata = model.to_dict(simplify_paths=True)
+    # Make sure the files are there
+    my_files = metadata['dlhub']['files']['other']
+    assert 'saved_model.pb' in my_files
+    assert os.path.join('variables', 'variables.data-00000-of-00001') in my_files
+    assert os.path.join('variables', 'variables.index') in my_files
 
-        # Make sure the files are there
-        my_files = metadata['dlhub']['files']['other']
-        assert 'saved_model.pb' in my_files
-        assert os.path.join('variables', 'variables.data-00000-of-00001') in my_files
-        assert os.path.join('variables', 'variables.index') in my_files
+    # Check the tensorflow version
+    assert metadata['dlhub']['dependencies'] == {'python': {'tensorflow': tf.__version__}}
 
-        # Check the tensorflow version
-        self.assertEqual(metadata['dlhub']['dependencies'],
-                         {'python': {'tensorflow': tf.__version__}})
+    # Check whether the 'x' is listed first for the multiple-input model or second
+    my_methods = metadata['servable']['methods']
+    assert my_methods['run']['input']['type'] == 'ndarray'
+    assert my_methods['run']['input']['shape'] == [None, 3]
+    assert my_methods['run']['input']['item_type'] == {'type': 'float'}
 
-        # Check whether the 'x' is listed first for the multiple-input model or second
-        my_methods = metadata['servable']['methods']
-        assert my_methods['run']['input']['type'] == 'ndarray'
-        assert my_methods['run']['input']['shape'] == [None, 3]
-        assert my_methods['run']['input']['item_type'] == {'type': 'float'}
+    assert my_methods['scalar_multiply']['input']['type'] == 'tuple'
+    assert my_methods['scalar_multiply']['input']['element_types'][0]['shape'] == [None, 3]
+    assert my_methods['scalar_multiply']['input']['element_types'][1]['shape'] == []
 
-        assert my_methods['scalar_multiply']['input']['type'] == 'tuple'
-        assert my_methods['scalar_multiply']['input']['element_types'][0]['shape'] == [None, 3]
-        assert my_methods['scalar_multiply']['input']['element_types'][1]['shape'] == []
+    assert 'length' in my_methods
+    assert 'scalar_multiply' in my_methods
 
-        assert 'length' in my_methods
-        assert 'scalar_multiply' in my_methods
+    # Check the shim
+    assert metadata['servable']['shim'] == 'tensorflow.TensorFlowServable'
 
-        # Check the shim
-        assert metadata['servable']['shim'] == 'tensorflow.TensorFlowServable'
-
-        validate_against_dlhub_schema(metadata, 'servable')
+    validate_against_dlhub_schema(metadata, 'servable')
