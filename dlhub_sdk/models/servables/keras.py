@@ -139,10 +139,8 @@ class KerasModel(BasePythonServableModel):
             self
         """
 
-        # Get the class name for the custom layer
+        # get the class name for the custom object
         layer_name = custom_layer.__name__
-        if not issubclass(custom_layer, keras.layers.Layer):
-            raise ValueError("Custom layer ({}) must be a subclass of Layer".format(layer_name))
         module = custom_layer.__module__
 
         # Add the layer to the model definition
