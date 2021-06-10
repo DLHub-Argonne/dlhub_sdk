@@ -125,7 +125,7 @@ class KerasModel(BasePythonServableModel):
             return compose_argument_block("tuple", "Tuple of tensors",
                                           element_types=[self.format_layer_spec(i) for i in layers])
 
-    def add_custom_object(self, name, custom_layer):
+    def add_custom_object(self, name, custom_object):
         """Add a custom layer to the model specification
 
         See `Keras FAQs
@@ -133,24 +133,22 @@ class KerasModel(BasePythonServableModel):
         for details.
 
         Args:
-              name (string): Name of the layer
-              custom_layer (class): Class of the custom layer
+              name (string): Name of the custom object
+              custom_object (class): Class of the custom object
         Return:
             self
         """
 
-        # Get the class name for the custom layer
-        layer_name = custom_layer.__name__
-        if not issubclass(custom_layer, keras.layers.Layer):
-            raise ValueError("Custom layer ({}) must be a subclass of Layer".format(layer_name))
-        module = custom_layer.__module__
+        # get the class name for the custom object
+        object_name = custom_object.__name__
+        module = custom_object.__module__
 
         # Add the layer to the model definition
         if 'options' not in self._output['servable']:
             self['servable']['options'] = {}
         if 'custom_objects' not in self['servable']['options']:
             self['servable']['options']['custom_objects'] = {}
-        self['servable']['options']['custom_objects'][name] = '{}.{}'.format(module, layer_name)
+        self['servable']['options']['custom_objects'][name] = '{}.{}'.format(module, object_name)
 
     def _get_handler(self):
         return "keras.KerasServable"
