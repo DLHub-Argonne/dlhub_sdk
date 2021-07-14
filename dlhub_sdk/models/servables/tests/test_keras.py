@@ -109,11 +109,6 @@ class TestKeras(TestCase):
         finally:
             shutil.rmtree(tmpdir)
 
-        # Test the errors
-        with self.assertRaises(ValueError) as exc:
-            metadata.add_custom_object('BadLayer', float)
-        self.assertIn('subclass', str(exc.exception))
-
     def test_multi_file(self):
         """Test adding the architecture in a different file """
 
