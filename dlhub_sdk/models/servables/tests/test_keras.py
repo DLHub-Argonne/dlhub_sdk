@@ -5,8 +5,10 @@ import os
 
 try:
     import keras
+    keras_installed = True
 except ImportError:
     from tensorflow import keras
+    keras_installed = False
 from unittest import TestCase
 
 from dlhub_sdk.models.servables.keras import KerasModel
@@ -78,6 +80,10 @@ class TestKeras(TestCase):
                               ]})
 
             output = metadata.to_dict()
+
+            # Make sure keras not used if it is not installed
+            if not keras_installed:
+                assert 'keras' not in metadata['dlhub']['dependencies']['python']
 
             # Validate against schema
             validate_against_dlhub_schema(output, 'servable')

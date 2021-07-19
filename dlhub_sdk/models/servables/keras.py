@@ -58,14 +58,17 @@ class KerasModel(BasePythonServableModel):
             if tf_keras is None:
                 raise ValueError('You forced tf_keras but do not have tensorflow.keras')
             keras = tf_keras
+            use_tf_keras = True
         elif keras_keras is not None:
             # Use old keras by default, as users may have gone out of their way to install it
             keras = keras_keras
+            use_tf_keras = False
             if tf_keras is not None:
                 logging.warning('Model publication will use standalone keras, yet you have tf.keras installed. '
-                                'If you don\'t want this, use ``force_tf_keras=True``.')
+                                'If you want your model to use tf.keras, use ``force_tf_keras=True``.')
         elif tf_keras is not None:
             keras = tf_keras
+            use_tf_keras = True
         else:
             raise ValueError('You do not have any version of keras installed.')
 
@@ -122,7 +125,7 @@ class KerasModel(BasePythonServableModel):
         # Add keras as a dependency
         keras_version = keras.__version__
         _keras_version_tuple = tuple(int(i) for i in keras_version.rstrip("-tf").split("."))
-        if not keras_version.endswith("-tf"):
+        if not (keras_version.endswith("-tf") or use_tf_keras):
             output.add_requirement('keras', keras_version)
         output.add_requirement('h5py', 'detect')
 
