@@ -1,6 +1,5 @@
 import logging
 
-# Attempt to load both tf.keras and plain-old keras
 try:
     import keras as keras_keras
 except ImportError:
@@ -11,6 +10,7 @@ except ImportError:
     tf_keras = None
 
 from dlhub_sdk.models.servables.python import BasePythonServableModel
+from dlhub_sdk.models.servables import ArgumentTypeMetadata
 from dlhub_sdk.utils.types import compose_argument_block
 
 logger = logging.getLogger(__name__)
@@ -53,7 +53,7 @@ class KerasModel(BasePythonServableModel):
                 for more details.
             force_tf_keras (bool): Force the use of TF.Keras even if keras is installed
        """
-        output: KerasModel = super(KerasModel, cls).create_model('predict')
+        output: KerasModel = super().create_model('predict')
         if force_tf_keras:
             if tf_keras is None:
                 raise ValueError('You forced tf_keras but do not have tensorflow.keras')
@@ -103,24 +103,19 @@ class KerasModel(BasePythonServableModel):
             model.load_weights(model_path)
 
         # Get the inputs of the model
-        output['servable']['methods']['run']['input'] = output.format_layer_spec(model.input_shape)
-        output['servable']['methods']['run']['output'] = output.format_layer_spec(
-            model.output_shape)
+        output.servable.methods['run'].input = output.format_layer_spec(model.input_shape)
+        output.servable.methods['run'].output = output.format_layer_spec(model.output_shape)
         if output_names is not None:
-            output['servable']['methods']['run']['method_details']['classes'] = output_names
+            output.servable.methods['run'].method_details['classes'] = output_names
 
         # Get a full description of the model. Limit summary to _summary_limit in length
-        output.summary = ""
+        _summary_tmp = []
+        model.summary(print_fn=_summary_tmp.append)
+        summary = "\n".join(_summary_tmp)
+        summary = (summary[:_summary_limit] + '<<TRUNCATED>>') if len(summary) > _summary_limit else summary
 
-        def capture_summary(x):
-            output.summary += x + "\n"
-
-        model.summary(print_fn=capture_summary)
-        output.summary = (output.summary[:_summary_limit] + '<<TRUNCATED>>') \
-            if len(output.summary) > _summary_limit else output.summary
-
-        output['servable']['model_summary'] = output.summary
-        output['servable']['model_type'] = 'Deep NN'
+        output.servable.model_summary = summary
+        output.servable.model_type = 'Deep NN'
 
         # Add keras as a dependency
         keras_version = keras.__version__
@@ -134,7 +129,7 @@ class KerasModel(BasePythonServableModel):
 
         return output
 
-    def format_layer_spec(self, layers):
+    def format_layer_spec(self, layers) -> ArgumentTypeMetadata:
         """Make a description of a list of input or output layers
 
         Args:
@@ -143,10 +138,12 @@ class KerasModel(BasePythonServableModel):
             (dict) Description of the inputs / outputs
         """
         if isinstance(layers, tuple):
-            return compose_argument_block("ndarray", "Tensor", shape=list(layers))
+            return ArgumentTypeMetadata.parse_obj(compose_argument_block("ndarray", "Tensor", shape=list(layers)))
         else:
-            return compose_argument_block("tuple", "Tuple of tensors",
-                                          element_types=[self.format_layer_spec(i) for i in layers])
+            return ArgumentTypeMetadata.parse_obj(
+                compose_argument_block("tuple", "Tuple of tensors",
+                                       element_types=[self.format_layer_spec(i) for i in layers])
+            )
 
     def add_custom_object(self, name, custom_object):
         """Add a custom layer to the model specification
@@ -167,11 +164,9 @@ class KerasModel(BasePythonServableModel):
         module = custom_object.__module__
 
         # Add the layer to the model definition
-        if 'options' not in self._output['servable']:
-            self['servable']['options'] = {}
-        if 'custom_objects' not in self['servable']['options']:
-            self['servable']['options']['custom_objects'] = {}
-        self['servable']['options']['custom_objects'][name] = '{}.{}'.format(module, object_name)
+        if 'custom_objects' not in self.servable.options:
+            self.servable.options['custom_objects'] = {}
+        self.servable.options['custom_objects'][name] = '{}.{}'.format(module, object_name)
 
     def _get_handler(self):
         return "keras.KerasServable"

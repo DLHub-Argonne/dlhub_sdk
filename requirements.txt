@@ -3,3 +3,4 @@ requests>=2.24.0
 mdf_toolbox>=0.5.4
 jsonschema>=3.2.0
 funcx>=0.0.5
+pydantic

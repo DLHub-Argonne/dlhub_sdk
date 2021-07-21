@@ -55,20 +55,20 @@ class ScikitLearnModel(BasePythonServableModel):
         # Load the model and get the method name, needed for instantiating the model type
         skl_version, model = ScikitLearnModel._load_model(path, serialization_method)
         method_name, method_kwargs = ScikitLearnModel._get_predict_method(model)
-        output = super(ScikitLearnModel, cls).create_model(method_name, method_kwargs)
+        output: ScikitLearnModel = super(ScikitLearnModel, cls).create_model(method_name, method_kwargs)
 
         # Save the serialization method
-        output["servable"]["options"] = {"serialization_method": serialization_method}
+        output.servable.options = {"serialization_method": serialization_method}
 
         # Save the classes, if present
         if classes is not None:
             if isinstance(classes, int):
                 classes = ['Class {}'.format(i+1) for i in range(classes)]
-            output["servable"]["options"]["classes"] = list(classes)
+            output.servable.options["classes"] = list(classes)
 
         # Store the model input/output information
-        output.n_input_columns = n_input_columns
-        output.classes = classes
+        n_input_columns = n_input_columns
+        classes = classes
 
         # Load other metadata
         output.inspect_model(model)
@@ -154,16 +154,16 @@ class ScikitLearnModel(BasePythonServableModel):
         pipeline = isinstance(model, Pipeline)
 
         # Save the model type
-        self._output["servable"]["model_type"] = type(model.steps[-1][-1]).__name__ \
-            if pipeline else type(model).__name__
+        self.servable.model_type = type(model.steps[-1][-1]).__name__ if pipeline else type(model).__name__
 
         # Get a summary about the model
         # sklearn prints out a text summary of the model
-        self._output["servable"]["model_summary"] = str(model)
+        self.servable.model_summary = str(model)
+
         # Determine whether the object is a classifier
         is_clfr = is_classifier(model)
-        self["servable"]["options"]["is_classifier"] = is_clfr
-        if "classes" not in self["servable"]["options"] and is_clfr:
+        self.servable.options["is_classifier"] = is_clfr
+        if "classes" not in self.servable.options and is_clfr:
             raise Exception('Classes (or at least number of classes) must be specified '
                             'in initializer for classifiers.')
 

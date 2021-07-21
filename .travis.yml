@@ -27,7 +27,7 @@ install:
 - pip list
 script:
 - flake8 .
-- travis_wait 50 nosetests --with-coverage --cover-package=dlhub_sdk
+- travis_wait 50 pytest --cov=dlhub_sdk
 deploy:
   provider: pypi
   user: wardlt

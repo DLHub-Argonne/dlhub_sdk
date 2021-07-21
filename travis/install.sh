@@ -5,7 +5,7 @@ pip install --upgrade pip setuptools wheel
 
 # Install mandatory packages
 pip install -e .
-pip install coveralls flake8
+pip install coveralls flake8 pytest pytest-cov
 
 # Adding keras and TF1 for some tests
 if [ -n "$KERAS_VERSION" ]; then
