@@ -3,7 +3,9 @@ import os
 
 try:
     import keras
+    keras_installed = True
 except ImportError:
+    keras_installed = False
     from tensorflow import keras
 from pytest import raises
 
@@ -92,11 +94,6 @@ def test_custom_layers(tmpdir):
 
     # Validate it against DLHub schema
     validate_against_dlhub_schema(metadata.to_dict(), 'servable')
-
-    # Test the errors
-    with raises(ValueError) as exc:
-        metadata.add_custom_object('BadLayer', float)
-    assert 'subclass' in str(exc)
 
 
 def test_multi_file(tmpdir):
