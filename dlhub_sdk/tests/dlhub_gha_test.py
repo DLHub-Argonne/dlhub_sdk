@@ -42,7 +42,7 @@ is_first_build = os.environ.get('TRAVIS_BUILD_NUMBER', '').endswith('.1')
 def dl():
     return DLHubClient(
         dlh_authorizer = auth_res["dlhub"], fx_authorizer = auth_res[fx_scope],
-        openid_authorizer = auth_res['openid'], search_authorizer = auth_res['search'],
+        openid_authorizer = auth_res['openid'], search_client = auth_res['search'],
         force_login=False, http_timeout=10
     )
 
