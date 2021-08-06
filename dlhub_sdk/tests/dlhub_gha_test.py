@@ -25,10 +25,6 @@ auth_res = mdf_toolbox.confidential_login(client_id=client_id,
                                         client_secret=client_secret,
                                         services=services, make_clients=True)
 
-dlh_authorizer = auth_res["dlhub"]
-fx_authorizer = auth_res[fx_scope]
-openid_authorizer = auth_res['openid']
-search_authorizer = auth_res['search']
 # Check if we are on travis
 #  See: https://blog.travis-ci.com/august-2012-upcoming-ci-environment-updates
 is_travis = 'HAS_JOSH_K_SEAL_OF_APPROVAL' in os.environ
