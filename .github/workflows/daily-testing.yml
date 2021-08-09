@@ -37,7 +37,7 @@ jobs:
         pip install mdf-connect-client
         pip install flake8 pytest
         pip install -r test-requirements.txt
-        pip install keras==${{matrix.keras-version}} "tensorflow<2" "h5py<3"
+        pip install keras==${{matrix.keras-version}}
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
     - name: Lint with flake8
