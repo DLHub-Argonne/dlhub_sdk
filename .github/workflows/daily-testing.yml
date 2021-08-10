@@ -30,6 +30,13 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+        
+    - name: Globus auth
+      run: 'echo "$GLOBUS_CONFIG" > ~/.globus-native-apps.cfg'
+      shell: bash
+      env:
+        GLOBUS_CONFIG: "${{ secrets.GLOBUS_CONFIG }}"    
+        
     - name: Run Installation Script
       run: |
         python -m pip install --upgrade pip
