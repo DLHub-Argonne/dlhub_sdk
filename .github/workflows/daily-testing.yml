@@ -28,13 +28,13 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-        
+
     - name: Globus auth
       run: 'echo "$GLOBUS_CONFIG" > ~/.globus-native-apps.cfg'
       shell: bash
       env:
-        GLOBUS_CONFIG: "${{ secrets.GLOBUS_CONFIG }}"    
-        
+        GLOBUS_CONFIG: "${{ secrets.GLOBUS_CONFIG }}"
+
     - name: Run Installation Script
       run: |
         python -m pip install --upgrade pip
@@ -52,4 +52,5 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        pytest -s ./dlhub_sdk/tests/dlhub_gha_test.py
+        # run all testing documents, except the local tests
+        pytest -s ./dlhub_sdk -k 'not test_dlhub_client'
