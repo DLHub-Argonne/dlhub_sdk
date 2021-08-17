@@ -3,6 +3,7 @@ pandas>=0.22.0
 scikit-learn>=0.19.1
 scipy>=0.19.1
 torch>=1.1.0
+tensorflow
 pytest
 mdf-connect-client>=0.3.8
 funcx==0.0.6a5
