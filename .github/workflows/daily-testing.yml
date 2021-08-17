@@ -17,6 +17,7 @@ jobs:
       matrix:
         python-version: [3.7, 3.8, 3.9]
         keras-version: [2.1.3, 2.2.3]
+        tf-version: [2.5.0]
 
     env:
       CLIENT_ID: ${{ secrets.CLIENT_ID }}
@@ -43,8 +44,9 @@ jobs:
         pip install flake8 pytest
         pip install -r test-requirements.txt
         pip install keras==${{matrix.keras-version}}
+        pip install tensorflow==${{tf-version}}
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        
+
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
