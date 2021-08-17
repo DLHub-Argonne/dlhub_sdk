@@ -44,9 +44,9 @@ jobs:
         pip install -r test-requirements.txt
         pip install keras==${{matrix.keras-version}}
         if  ${{matrix.keras-version == '2.2.3'}}; then 
-          pip install tensorflow 2.5.0
+          pip install tensorflow 2.5
         else
-          pip install tensorflow 1.8.0
+          pip install tensorflow 1.8
         fi  
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
