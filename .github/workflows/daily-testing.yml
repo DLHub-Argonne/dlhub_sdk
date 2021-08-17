@@ -43,13 +43,11 @@ jobs:
         pip install flake8 pytest
         pip install -r test-requirements.txt
         pip install keras==${{matrix.keras-version}}
-        if  ${{matrix.keras-version == '2.2.3'}}; then pip install tensorflow 2.5.0
+        if  ${{matrix.keras-version == '2.2.3'}}; then 
+          pip install tensorflow 2.5.0
         else
           pip install tensorflow 1.8.0
-
-
-        else
-        pip install tensorflow==${{matrix.tf-version}}
+        fi  
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
     - name: Lint with flake8
