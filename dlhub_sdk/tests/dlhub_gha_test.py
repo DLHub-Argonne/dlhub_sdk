@@ -74,8 +74,6 @@ def test_run(dl):
     assert task_id.result(timeout=60) == 'Hello'
 
 
-@mark.skipif(not (is_tag and is_travis and is_first_build),
-             reason='Publish test only runs on first version of tagged builds on Travis')
 def test_submit(dl):
     # Make an example function
     model = PythonStaticMethodModel.create_model('numpy.linalg', 'norm')
