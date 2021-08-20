@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         python-version: [3.9]
-        keras-version: [2.1.3, 2.2.3]
+        keras-version: [0, 2.1.3, 2.2.3]
         tf-version: [2.5]
 
     env:
@@ -43,8 +43,12 @@ jobs:
         pip install -e .
         pip install flake8 pytest
         pip install -r test-requirements.txt
-        pip install keras==${{matrix.keras-version}}
-        pip install tensorflow==${{matrix.tf-version}}
+
+        if  ${{matrix.keras-version != '0'}}; then
+          pip install keras==${{matrix.keras-version}} "tensorflow<2" "h5py<3"
+        else
+          pip install tensorflow==${{matrix.tf-version}}
+        fi
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
     - name: Lint with flake8
@@ -56,8 +60,4 @@ jobs:
     - name: Test with pytest
       run: |
         # run all testing documents, except the local tests
-        if  ${{matrix.keras-version == '2.2.3'}}; then
-          pytest -s ./dlhub_sdk -k 'not test_dlhub_client'
-        else
-          pytest ./dlhub_sdk -k "not test_dlhub_client and not test_keras and not test_tensorflow"
-        fi
+        pytest -s ./dlhub_sdk -k 'not test_dlhub_client'
