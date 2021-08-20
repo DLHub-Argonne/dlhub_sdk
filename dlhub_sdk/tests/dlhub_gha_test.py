@@ -9,7 +9,7 @@ from mdf_connect_client import MDFConnectClient
 import mdf_toolbox
 
 
-#github specific declarations
+# github specific declarations
 client_id = os.getenv('CLIENT_ID')
 client_secret = os.getenv('CLIENT_SECRET')
 
@@ -25,22 +25,20 @@ auth_res = mdf_toolbox.confidential_login(client_id=client_id,
                                         client_secret=client_secret,
                                         services=services, make_clients=True)
 
-# Check if we are on travis
-#  See: https://blog.travis-ci.com/august-2012-upcoming-ci-environment-updates
-is_travis = 'HAS_JOSH_K_SEAL_OF_APPROVAL' in os.environ
-
-# Check if it is a tagged build
-is_tag = len(os.environ.get('TRAVIS_TAG', '')) > 1
-is_first_build = os.environ.get('TRAVIS_BUILD_NUMBER', '').endswith('.1')
+is_gha = os.getenv('GITHUB_ACTIONS')
 
 
 @fixture()
 def dl():
-    return DLHubClient(
-        dlh_authorizer = auth_res["dlhub"], fx_authorizer = auth_res[fx_scope],
-        openid_authorizer = auth_res['openid'], search_client = auth_res['search'],
-        force_login=False, http_timeout=10
-    )
+    if is_gha:
+        print("in if")
+        return DLHubClient(
+            dlh_authorizer = auth_res["dlhub"], fx_authorizer = auth_res[fx_scope],
+            openid_authorizer = auth_res['openid'], search_client = auth_res['search'],
+            force_login=False, http_timeout=10
+        )
+    else:
+        return DLHubClient(http_timeout=10)
 
 
 def test_get_servables(dl):
@@ -226,4 +224,3 @@ def test_status(dl):
     future = dl.run('zhuozhao_uchicago/noop', 'test', asynchronous=True)
     # Need spec for Fx status returns
     assert isinstance(dl.get_task_status(future.task_id), dict)
-    

@@ -7,8 +7,8 @@ import mdf_toolbox
 
 
 #github specific declarations
-# client_id = os.getenv('CLIENT_ID')
-# client_secret = os.getenv('CLIENT_SECRET')
+client_id = os.getenv('CLIENT_ID')
+client_secret = os.getenv('CLIENT_SECRET')
 
 fx_scope = "https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/all"
 
@@ -18,8 +18,8 @@ services=[
         fx_scope,
         "openid"]
 
-auth_res = mdf_toolbox.confidential_login(client_id="b6544309-da65-4476-8259-300a7dbd7322",
-                                        client_secret="ULR0Kr34F8glsslBw76MQoTYR+Mwebo3DjSrqVRd+DM=",
+auth_res = mdf_toolbox.confidential_login(client_id=client_id,
+                                        client_secret=client_secret,
                                         services=services, make_clients=True)
 
 
