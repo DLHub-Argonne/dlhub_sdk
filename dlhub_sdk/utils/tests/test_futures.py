@@ -1,3 +1,5 @@
+import os 
+
 from dlhub_sdk.utils.futures import DLHubFuture
 from dlhub_sdk.client import DLHubClient
 from unittest import TestCase, expectedFailure
