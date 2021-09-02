@@ -74,8 +74,19 @@ jobs:
     - name: Test with pytest
       run: |
         # run all testing documents, except the local tests     
-        if  ${{matrix.keras-version == '2.2.3' || matrix.keras-version == 'TF'}}; then 
+        if  ${{ matrix.keras-version == '2.2.3' }}; then 
           pytest -s ./dlhub_sdk -k 'not test_dlhub_client'
-        else 
+        fi 
+        
+        if ${{ matrix.keras-version == 'TF' }}; then 
+          pytest -s ./dlhub_sdk -k 'not test_dlhub_client'
+        fi 
+        
+        if ${{ matrix.keras-version == '2.1.3' }}; then 
           pytest ./dlhub_sdk -k "not test_dlhub_client and not test_keras and not test_tensorflow"
         fi   
+        
+        if ${{ matrix.keras-version == 'SKLEARN' }}; then 
+          pytest ./dlhub_sdk -k "not test_dlhub_client and not test_keras and not test_tensorflow"
+        fi 
+            
