@@ -58,7 +58,7 @@ jobs:
           pip install tensorflow==${{matrix.tf-version}}
         fi 
         
-        if ${{matrx.keras-version == 'SKLEARN' }}; then
+        if ${{matrix.keras-version == 'SKLEARN' }}; then
           pip install scikit-learn
         fi
           
