@@ -73,9 +73,9 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        # run all testing documents, except the local tests
-        if ${{matrix.keras-version == 'SKLEARN' || matrix.keras-version == '2.1.3'}}; then
-          pytest -s ./dlhub_sdk -k 'not test_dlhub_client and not test_keras and not test_tensorflow'
-        else
+        # run all testing documents, except the local tests     
+        if  ${{matrix.keras-version == '2.2.3' || matrix.keras-version == 'TF'}}; then 
           pytest -s ./dlhub_sdk -k 'not test_dlhub_client'
-        fi
+        else 
+          pytest ./dlhub_sdk -k "not test_dlhub_client and not test_keras and not test_tensorflow"
+        fi   
