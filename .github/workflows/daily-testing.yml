@@ -45,7 +45,7 @@ jobs:
         pip install flake8 pytest
         pip install -r test-requirements.txt
 
-        if  ${{matrix.keras-version == '2.1.3' || matrix.keras-version == '2.2.3}}; then
+        if  ${{ matrix.keras-version == '2.1.3' }}; then
           pip install keras==${{matrix.keras-version}} "h5py<3"
         else
           if  ${{matrix.keras-version == '0'}}; then
