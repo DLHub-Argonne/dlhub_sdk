@@ -46,8 +46,8 @@ jobs:
         pip install -r test-requirements.txt
         
         if  ${{ matrix.keras-version == '2.2.3' }}; then
-          pip install keras==${{matrix.keras-version}} 
           pip install tensorflow==${{matrix.tf-version}}
+          pip install keras==${{matrix.keras-version}}    
         fi 
         
         if  ${{ matrix.keras-version == '2.1.3' }}; then
@@ -74,4 +74,8 @@ jobs:
     - name: Test with pytest
       run: |
         # run all testing documents, except the local tests
-        pytest -s ./dlhub_sdk -k 'not test_dlhub_client'
+        if ${{matrix.keras-version == 'SKLEARN' || matrix.keras-version == '2.1.3'}}; then
+          pytest -s ./dlhub_sdk -k 'not test_dlhub_client and not test_keras and not test_tensorflow'
+        else
+          pytest -s ./dlhub_sdk -k 'not test_dlhub_client'
+        fi
