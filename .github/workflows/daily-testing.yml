@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         python-version: [3.9]
-        keras-version: [0, 1 , 2.1.3, 2.2.3]
+        keras-version: [TF, SKLEARN , 2.1.3, 2.2.3]
         tf-version: [2.5]
 
     env:
@@ -48,7 +48,7 @@ jobs:
         if  ${{ matrix.keras-version == '2.1.3' || matrix.keras-version == '2.2.3' }}; then
           pip install keras==${{matrix.keras-version}} 
         else
-          if  ${{matrix.keras-version == '0'}}; then
+          if  ${{matrix.keras-version == 'TF'}}; then
             pip install tensorflow==${{matrix.tf-version}}
           else 
             pip install scikit-learn==0.19.1
