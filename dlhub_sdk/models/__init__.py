@@ -38,7 +38,7 @@ class DLHubMetadata(BaseModel):
 
     version: str = Field(__version__, description="Version of the SDK used to create this object")
     domains: List[str] = Field(default_factory=list, description="List of scientific domains that describe this object")
-    visible_to: List[str] = Field(default_factory=list,
+    visible_to: List[str] = Field(['public'],
                                   description="List of groups or identities for which this object is visible")
     name: Optional[str] = Field(None, description="Name of the object", regex=r'^\S+$')
     files: Dict[str, Union[str, List[str]]] = Field(default_factory=dict,
