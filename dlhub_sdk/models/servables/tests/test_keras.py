@@ -1,17 +1,32 @@
 from datetime import datetime
+import pytest
 import os
+
+
 
 try:
     import keras
     keras_installed = True
+
+
 except ImportError:
     keras_installed = False
-    from tensorflow import keras
-from pytest import raises
+
+    try:
+        from tensorflow import keras
+        keras_installed = True
+
+    except ImportError:
+        keras_installed = False 
+
+no_keras = pytest.mark.skipif(keras_installed == False, reason='keras not installed')
+
+
 
 from dlhub_sdk.models.servables.keras import KerasModel
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 
+print(keras_installed)
 
 _year = str(datetime.now().year)
 
@@ -24,6 +39,7 @@ def _make_simple_model():
     return model
 
 
+@no_keras
 def test_keras_single_input(tmpdir):
     # Make a Keras model
     model = _make_simple_model()
@@ -41,7 +57,7 @@ def test_keras_single_input(tmpdir):
     output = metadata.to_dict()
     validate_against_dlhub_schema(output, 'servable')
 
-
+@no_keras
 def test_keras_multioutput(tmpdir):
     # Make a Keras model
     input_layer = keras.layers.Input(shape=(4,))
@@ -73,7 +89,7 @@ def test_keras_multioutput(tmpdir):
     # Validate against schema
     validate_against_dlhub_schema(output, 'servable')
 
-
+@no_keras
 def test_custom_layers(tmpdir):
     """Test adding custom layers to the definition"""
 
@@ -95,7 +111,7 @@ def test_custom_layers(tmpdir):
     # Validate it against DLHub schema
     validate_against_dlhub_schema(metadata.to_dict(), 'servable')
 
-
+@no_keras
 def test_multi_file(tmpdir):
     """Test adding the architecture in a different file """
 
