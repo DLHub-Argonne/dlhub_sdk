@@ -1,19 +1,20 @@
 """Testing the tensorflow adaptor"""
-import pytest 
+import pytest
 import shutil
 import os
 
 from pytest import fixture
-
-from dlhub_sdk.models.servables.tensorflow import TensorFlowModel
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
-
 
 try:
     import tensorflow as tf
+    from dlhub_sdk.models.servables.tensorflow import TensorFlowModel
     tf_installed = True
 except ImportError:
     tf_installed = False
+
+
+
 
 no_tf = pytest.mark.skipif(tf_installed == False, reason='tf not installed')
 
