@@ -1,5 +1,5 @@
 """Testing the tensorflow adaptor"""
-import tensorflow as tf
+import pytest 
 import shutil
 import os
 
@@ -7,6 +7,15 @@ from pytest import fixture
 
 from dlhub_sdk.models.servables.tensorflow import TensorFlowModel
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
+
+
+try:
+    import tensorflow as tf
+    tf_installed = True
+except ImportError:
+    tf_installed = False
+
+no_tf = pytest.mark.skipif(tf_installed == False, reason='tf not installed')
 
 # Do not write to a temp directory so I can see it outside of tests
 tf_export_path = os.path.join(os.path.dirname(__file__), 'tf-model')
@@ -112,6 +121,7 @@ def setUp():
         shutil.rmtree(tf_export_path)
 
 
+@no_tf
 def test_tf():
     # Make a model and save it to disk
     if tf.__version__ < '2':
