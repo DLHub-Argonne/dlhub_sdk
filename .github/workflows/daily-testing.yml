@@ -19,10 +19,11 @@ jobs:
       matrix:
         python-version: ['']
         keras-version: ['']
-        tf-version: [2.5]
+        tf-version: ['']
         include: 
           - python-version: 3.9 
             keras-version: TF 
+            tf-version: 2.5
             label: latest-tf 
             
           - python-verison: 3.9 
@@ -31,10 +32,12 @@ jobs:
             
           - python-version: 3.9 
             keras-version: 2.1.3
+            tf-version: 2.5
             label: keras-2.1.3
             
           - python-version: 3.9 
             keras-version: 2.2.3
+            tf-version: 2.5
             label: keras-2.2.3
             
        
