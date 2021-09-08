@@ -95,7 +95,6 @@ jobs:
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
-      continue-on-error: True 
       run: |
         # run all testing documents, except the local tests
         if  ${{ matrix.keras-version == '2.2.3' }}; then
