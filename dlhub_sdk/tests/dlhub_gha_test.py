@@ -31,7 +31,6 @@ is_gha = os.getenv('GITHUB_ACTIONS')
 @fixture()
 def dl():
     if is_gha:
-        print("in if")
         return DLHubClient(
             dlh_authorizer = auth_res["dlhub"], fx_authorizer = auth_res[fx_scope],
             openid_authorizer = auth_res['openid'], search_client = auth_res['search'],
