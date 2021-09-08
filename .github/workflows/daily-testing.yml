@@ -15,10 +15,29 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false 
       matrix:
-        python-version: [3.9]
-        keras-version: [TF, SKLEARN , 2.1.3, 2.2.3]
+        python-version: ['']
+        keras-version: ['']
         tf-version: [2.5]
+        include: 
+          - python-version: 3.9 
+            keras-version: TF 
+            label: latest-tf 
+            
+          - python-verison: 3.9 
+            keras-version: SKLEARN 
+            label: sklearn
+            
+          - python-version: 3.9 
+            keras-version: 2.1.3
+            label: keras-2.1.3
+            
+          - python-version: 3.9 
+            keras-version: 2.2.3
+            label: keras-2.2.3
+            
+       
 
     env:
       CLIENT_ID: ${{ secrets.CLIENT_ID }}
