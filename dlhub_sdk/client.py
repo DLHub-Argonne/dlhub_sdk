@@ -93,7 +93,7 @@ class DLHubClient(BaseClient):
                                           openid_authorizer=openid_authorizer,
                                           no_local_server=kwargs.get("no_local_server", True),
                                           no_browser=kwargs.get("no_browser", True),
-                                          funcx_service_address='https://api.funcx.org/v1')
+                                          )
             self._search_client = globus_sdk.SearchClient(authorizer=search_authorizer,
                                                           http_timeout=5 * 60)
 
