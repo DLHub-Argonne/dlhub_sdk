@@ -115,12 +115,6 @@ def test_multi_file(tmpdir):
     # Save it
     model_path = os.path.join(tmpdir, 'model.hd5')
     model.save(model_path, include_optimizer=False)
-    model_json = os.path.join(tmpdir, 'model.json')
-    with open(model_json, 'w') as fp:
-        print(model.to_json(), file=fp)
-    model_yaml = os.path.join(tmpdir, 'model.yml')
-    with open(model_yaml, 'w') as fp:
-        print(model.to_yaml(), file=fp)
     weights_path = os.path.join(tmpdir, 'weights.hd5')
     model.save_weights(weights_path)
 
@@ -130,8 +124,16 @@ def test_multi_file(tmpdir):
     # Make sure both files are included in the files list
     assert metadata.dlhub.files == {'arch': model_path, 'model': weights_path}
 
-    # Try it with the JSON and YAML versions
+    # Try it with the JSON
+    model_json = os.path.join(tmpdir, 'model.json')
+    with open(model_json, 'w') as fp:
+        print(model.to_json(), file=fp)
     KerasModel.create_model(weights_path, ['y'], arch_path=model_json)
+
+    # Try it with YAML in earlier versions
     keras_major_version = tuple(int(x) for x in keras.__version__.split(".")[:2])
     if keras_major_version < (2, 6):
+        model_yaml = os.path.join(tmpdir, 'model.yml')
+        with open(model_yaml, 'w') as fp:
+            print(model.to_yaml(), file=fp)
         KerasModel.create_model(weights_path, ['y'], arch_path=model_yaml)
