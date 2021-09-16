@@ -68,6 +68,7 @@ jobs:
             pip install keras==${{matrix.cfg.keras-version}} "tensorflow<2" "h5py<3"
           else
             # Otherwise, use TF2
+            pip uninstall keras
             pip install "tensorflow>2"
           fi
 
