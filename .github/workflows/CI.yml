@@ -24,20 +24,20 @@ jobs:
             label: latest libraries
 
           # Support for legacy methods to save/load models
-          - python_verison: 3.9
+          - python_version: 3.9
             scikit-learn: 0.19.1
             label: sklearn <= 0.19.1
 
           # Support for changes in Keras
-          - python_version: 3.9
+          - python_version: 3.7
             keras-version: 2.1.3
             label: keras-2.1.3
 
-          - python_version: 3.9
+          - python_version: 3.7
             keras-version: 2.2.3
             label: keras-2.2.3
 
-    name: "${{ matrix.cfg.python_version }} - ${{ matrix.cfg.label }}"
+    name: "Python ${{ matrix.cfg.python_version }} - ${{ matrix.cfg.label }}"
 
     env:
       CLIENT_ID: ${{ secrets.CLIENT_ID }}
