@@ -43,7 +43,7 @@ def test_torch_single_input(tmpdir):
     output = metadata.to_dict()
     assert output["dlhub"] == {
         "version": __version__, "domains": [],
-        "visible_to": [],
+        "visible_to": ['public'],
         'type': 'servable',
         "name": "mlp", "files": {"model": model_path},
         "dependencies": {"python": {
