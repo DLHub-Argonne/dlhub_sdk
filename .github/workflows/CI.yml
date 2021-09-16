@@ -4,8 +4,12 @@
 name: CI
 
 on:
-  - push
-  - pull_request
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
   schedule:
     # daily testing to occur at 7:30 CST every Monday
     - cron: '30 13 * * 1'
@@ -38,7 +42,6 @@ jobs:
     env:
       CLIENT_ID: ${{ secrets.CLIENT_ID }}
       CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
-      SCIKIT_LEARN_VERSION: '0.19.1'
 
     steps:
       - uses: actions/checkout@v2
