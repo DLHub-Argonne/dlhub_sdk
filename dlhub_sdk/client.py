@@ -6,7 +6,8 @@ import requests
 import globus_sdk
 
 from typing import Union, Any, Optional
-from globus_sdk.base import BaseClient, slash_join
+from globus_sdk import BaseClient
+from globus_sdk.utils import slash_join
 from mdf_toolbox import login, logout
 from mdf_toolbox.globus_search.search_helper import SEARCH_LIMIT
 
