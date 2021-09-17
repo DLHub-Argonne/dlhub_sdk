@@ -119,7 +119,6 @@ class KerasModel(BasePythonServableModel):
 
         # Add keras as a dependency
         keras_version = keras.__version__
-        _keras_version_tuple = tuple(int(i) for i in keras_version.rstrip("-tf").split("."))
         if not (keras_version.endswith("-tf") or use_tf_keras):
             output.add_requirement('keras', keras_version)
         output.add_requirement('h5py', 'detect')
