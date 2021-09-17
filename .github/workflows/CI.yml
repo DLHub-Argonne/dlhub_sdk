@@ -89,4 +89,4 @@ jobs:
       - name: Test with pytest
         run: |
           # run all testing documents, except the local tests
-          pytest ./dlhub_sdk -k "not test_dlhub_client"
+          pytest ./dlhub_sdk
