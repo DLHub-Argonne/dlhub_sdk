@@ -206,9 +206,9 @@ def test_basic_search(dl):
     assert isinstance(res, list)
 
 
-@mark.skipif(not is_gha, reason='Namespace test is only valid with credentials used on Travis')
+@mark.skipif(not is_gha, reason='Namespace test is only valid with credentials used on GHA')
 def test_namespace(dl):
-    assert dl.get_username() == 'dlhub.test_gmail'
+    assert dl.get_username().endswith('_clients')
 
 
 def test_status(dl):
