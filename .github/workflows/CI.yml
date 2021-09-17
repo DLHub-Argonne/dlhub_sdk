@@ -88,5 +88,10 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Test with pytest
         run: |
-          # run all testing documents, except the local tests
-          pytest ./dlhub_sdk
+          pytest --cov=dlhub_sdk ./dlhub_sdk
+      - name: Coveralls
+        run: |
+          pip install coveralls
+          coveralls --service=github
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
