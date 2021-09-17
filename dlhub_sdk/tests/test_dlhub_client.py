@@ -67,6 +67,7 @@ def test_run(dl):
 
 
 @mark.skipif(not is_gha, reason='Avoid running this test except on larger-scale tests of the system')
+@mark.skip
 def test_submit(dl):
     # Make an example function
     model = PythonStaticMethodModel.create_model('numpy.linalg', 'norm')
