@@ -33,7 +33,7 @@ class DLHubFuture(Future):
             assert AttributeError('Ping interval must be at least 1 second')
 
         # Start a thread that polls status
-        self._checker_thread = Thread(target=DLHubFuture._ping_server, args=(self,))
+        self._checker_thread = Thread(target=DLHubFuture._ping_server, args=(self,), daemon=True)
         self._checker_thread.start()
 
     def _ping_server(self):
