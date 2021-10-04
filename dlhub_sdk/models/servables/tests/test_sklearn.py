@@ -10,7 +10,6 @@ import numpy as np
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 from dlhub_sdk.models.servables.sklearn import ScikitLearnModel
 
-
 _year = str(datetime.now().year)
 _svm_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'model.pkl'))
 
@@ -37,29 +36,26 @@ def test_load_model():
     }
     assert metadata['servable']['shim'] == 'sklearn.ScikitLearnServable'
     assert metadata['servable']['model_type'] == 'SVC'
-    assert metadata['servable']['methods']['run'] == {
-        "input": {
-            "type": "ndarray",
-            "shape": [None, 4],
-            "description": ("List of records to evaluate with model. "
-                            "Each record is a list of 4 variables."),
-            "item_type": {
-                "type": "float"
-            }
-        },
-        "output": {
-            "type": "ndarray",
-            "shape": [None, 3],
-            "description": "Probabilities for membership in each of 3 classes",
-            "item_type": {
-                "type": "float"
-            }
-        },
-        "parameters": {},
-        "method_details": {
-            "method_name": "_predict_proba"
+    assert metadata['servable']['methods']['run']['input'] == {
+        "type": "ndarray",
+        "shape": [None, 4],
+        "description": ("List of records to evaluate with model. "
+                        "Each record is a list of 4 variables."),
+        "item_type": {
+            "type": "float"
         }
     }
+    assert metadata['servable']['methods']['run']['output'] == {
+        "type": "ndarray",
+        "shape": [None, 3],
+        "description": "Probabilities for membership in each of 3 classes",
+        "item_type": {
+            "type": "float"
+        }
+    }
+    assert metadata['servable']['methods']['run']['parameters'] == {}
+    assert metadata['servable']['methods']['run']['method_details']['method_name'].endswith('proba')
+
     assert metadata['servable']['model_summary'].startswith('SVC(')
     assert metadata['servable']['options'] == {
         'is_classifier': True,
