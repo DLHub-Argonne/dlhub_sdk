@@ -9,8 +9,7 @@ from sklearn import __version__ as skl_version
 from numpy import __version__ as numpy_version
 from pytest import fixture, raises
 
-from dlhub_sdk.models.servables.python import PythonClassMethodModel, \
-    PythonStaticMethodModel
+from dlhub_sdk.models.servables.python import PythonClassMethodModel, PythonStaticMethodModel
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 from dlhub_sdk.utils.types import compose_argument_block
 
@@ -71,7 +70,7 @@ def test_pickle():
             ['method_details']['method_name'] == 'to_dict')
 
     assert [_pickle_path] == model.list_files()
-    validate_against_dlhub_schema(output, 'servable')
+    validate_against_dlhub_schema(model, 'servable')
 
 
 def test_function():
