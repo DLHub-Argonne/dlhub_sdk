@@ -2,8 +2,7 @@ import logging
 import json
 import os
 from tempfile import mkstemp
-from typing import Union, Any, Optional
-
+from typing import Union, Any, Optional, Tuple, Dict
 
 import requests
 import globus_sdk
@@ -230,21 +229,33 @@ class DLHubClient(BaseClient):
         metadata = self.describe_servable(name)
         return get_method_details(metadata, method)
 
-    def run(self, name, inputs,
-            asynchronous=False, async_wait=5,
-            timeout: Optional[float] = None) -> Union[Any, DLHubFuture]:
+    def run(self, name: str, inputs: Any, parameters: Optional[Dict[str, Any]] = None,
+            asynchronous: bool = False, debug: bool = False, async_wait: float = 5,
+            timeout: Optional[float] = None)\
+            -> Union[
+                DLHubFuture,
+                Tuple[Any, Dict[str, Any]],
+                Any
+            ]:
         """Invoke a DLHub servable
 
         Args:
-            name (string): DLHub name of the servable of the form <user>/<servable_name>
+            name: DLHub name of the servable of the form <user>/<servable_name>
             inputs: Data to be used as input to the function. Can be a string of file paths or URLs
-            asynchronous (bool): Whether to return from the function immediately or
-                wait for the execution to finish.
-            async_wait (float): How many seconds to wait between checking async status
-            timeout (float): How long to wait for a result to return.
-                Only used for synchronous calls
+            parameters: Any optional parameters to pass to the function.
+            asynchronous: Whether to return from the function immediately or wait for the execution to finish.
+            debug: Whether to capture the standard out and error printed during execution
+            async_wait: How many seconds to wait between checking async status
+            timeout: How long to wait for a result to return. Only used for synchronous calls
         Returns:
-            Results of running the servable. If asynchronous, then a DLHubFuture holding the result
+            If asynchronous, a DLHubFuture for the execution
+            If debug, the output of the function and dictionary holding the following information:
+                - success: Whether the code inside ran without raising an exception
+                - stdout/stderr: Captured standard output and error, if requested
+                - timing: Execution time for the segment in seconds
+                - exc: Captured exception object
+                - error_message: Exception traceback
+            If neither, the output of the function
         """
 
         if name not in self.fx_cache:
@@ -253,11 +264,15 @@ class DLHubClient(BaseClient):
             self.fx_cache.update({name: serv['dlhub']['funcx_id']})
 
         funcx_id = self.fx_cache[name]
-        payload = {'data': inputs}
+        payload = {
+            'inputs': inputs,
+            'parameters': parameters,
+            'debug': debug
+        }
         task_id = self._fx_client.run(payload, endpoint_id=self.fx_endpoint, function_id=funcx_id)
 
         # Return the result
-        future = DLHubFuture(self, task_id, async_wait)
+        future = DLHubFuture(self, task_id, async_wait, debug)
         return future.result(timeout=timeout) if not asynchronous else future
 
     def run_serial(self, servables, inputs, async_wait=5):

@@ -8,17 +8,19 @@ from time import sleep
 class DLHubFuture(Future):
     """Utility class for simplifying asynchronous execution in DLHub"""
 
-    def __init__(self, client, task_id: str, ping_interval: float):
+    def __init__(self, client, task_id: str, ping_interval: float, debug: bool):
         """
         Args:
-             client (DLHubClient): Already-initialized client, used to check
-             task_id (str): Set the task ID of the
-             ping_interval (float): How often to ping the server to check status in seconds
+             client: Already-initialized client, used to check
+             task_id: Set the task ID of the
+             ping_interval: How often to ping the server to check status in seconds
+             debug: Whether to return the run metadata
         """
         super().__init__()
         self.client = client
         self.task_id = task_id
         self.ping_interval = ping_interval
+        self.debug = debug
 
         # List of pending statuses returned by funcX.
         # TODO: Replace this once funcX stops raising exceptions when a task is pending.
@@ -50,18 +52,24 @@ class DLHubFuture(Future):
         if super().running():
             # If the task isn't already completed, check if it is still running
             try:
-                status = self.client.get_result(self.task_id, verbose=True)
+                results = self.client.get_result(self.task_id, verbose=True)
             except Exception as e:
                 # Check if it is "Task pending". funcX throws an exception on pending.
                 if e.args[0] in self.pending_statuses:
                     return True
-                else:
-                    self.set_exception(e)
-                    return False
 
-            if isinstance(status, tuple):
-                # TODO pass in verbose setting?
-                self.set_result(status[0])
+            # If successfull, `status` now contains:
+            #  (function_return, metadata), run_time
+            (return_val, metadata), _ = results
+
+            if not metadata['success']:
+                self.set_exception(metadata['exc'])
+            else:
+                # If debug: then return return_val and metadata
+                if self.debug:
+                    self.set_result(return_val)
+                else:
+                    self.set_result((return_val, metadata))
                 return False
 
         return False
