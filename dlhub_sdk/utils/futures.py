@@ -58,6 +58,11 @@ class DLHubFuture(Future):
                 if e.args[0] in self.pending_statuses:
                     return True
 
+                # If not, something has gone wrong and we need to throw an exception
+                else:
+                    self.set_exception(e)
+                    return False
+
             # If successfull, `status` now contains:
             #  (function_return, metadata), run_time
             (return_val, metadata), _ = results
