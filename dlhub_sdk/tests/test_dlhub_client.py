@@ -52,18 +52,19 @@ def test_get_servables(dl):
 
 
 def test_run(dl):
-    user = "zhuozhao_uchicago"
-    name = "noop"
-    data = {"data": ["V", "Co", "Zr"]}
+    user = "aristana_uchicago"
+    name = "noopv10"
+    data = True # accepts anything as input, but listed as Boolean in DLHub
 
     # Test a synchronous request
     res = dl.run("{}/{}".format(user, name), data, timeout=60)
-    assert res == 'Hello'
+    # res[0] contains model results, res[1] contains event data JSON
+    assert res[0] == 'Hello world!'
 
     # Test an asynchronous request
     task_id = dl.run("{}/{}".format(user, name), data, asynchronous=True)
     assert isinstance(task_id, DLHubFuture)
-    assert task_id.result(timeout=60) == 'Hello'
+    assert task_id.result(timeout=60) == 'Hello world!'
 
 
 @mark.skipif(not is_gha, reason='Avoid running this test except on larger-scale tests of the system')
@@ -213,6 +214,6 @@ def test_namespace(dl):
 
 
 def test_status(dl):
-    future = dl.run('zhuozhao_uchicago/noop', 'test', asynchronous=True)
+    future = dl.run('aristana_uchicago/noopv10', 'test', asynchronous=True)
     # Need spec for Fx status returns
     assert isinstance(dl.get_task_status(future.task_id), dict)
