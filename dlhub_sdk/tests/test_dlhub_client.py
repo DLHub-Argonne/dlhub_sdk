@@ -64,7 +64,7 @@ def test_run(dl):
     # Test an asynchronous request
     task_id = dl.run("{}/{}".format(user, name), data, asynchronous=True)
     assert isinstance(task_id, DLHubFuture)
-    assert task_id.result(timeout=60) == 'Hello world!'
+    assert task_id.result(timeout=60)[0] == 'Hello world!'
 
 
 @mark.skipif(not is_gha, reason='Avoid running this test except on larger-scale tests of the system')
