@@ -54,7 +54,7 @@ def test_get_servables(dl):
 def test_run(dl):
     user = "aristana_uchicago"
     name = "noopv10"
-    data = True # accepts anything as input, but listed as Boolean in DLHub
+    data = True  # accepts anything as input, but listed as Boolean in DLHub
 
     # Test a synchronous request
     res = dl.run("{}/{}".format(user, name), data, timeout=60)
