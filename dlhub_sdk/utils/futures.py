@@ -72,9 +72,9 @@ class DLHubFuture(Future):
             else:
                 # If debug: then return return_val and metadata
                 if self.debug:
-                    self.set_result(return_val)
-                else:
                     self.set_result((return_val, metadata))
+                else:
+                    self.set_result(return_val)
                 return False
 
         return False

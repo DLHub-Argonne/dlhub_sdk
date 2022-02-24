@@ -59,12 +59,18 @@ def test_run(dl):
     # Test a synchronous request
     res = dl.run("{}/{}".format(user, name), data, timeout=60)
     # res[0] contains model results, res[1] contains event data JSON
+    assert res == 'Hello world!'
+
+    # Do the same thing with debug mode
+    res = dl.run("{}/{}".format(user, name), data, timeout=60, debug=True)
+    # res[0] contains model results, res[1] contains event data JSON
     assert res[0] == 'Hello world!'
+    assert isinstance(res[1], dict)
 
     # Test an asynchronous request
-    task_id = dl.run("{}/{}".format(user, name), data, asynchronous=True)
-    assert isinstance(task_id, DLHubFuture)
-    assert task_id.result(timeout=60)[0] == 'Hello world!'
+    res = dl.run("{}/{}".format(user, name), data, asynchronous=True)
+    assert isinstance(res, DLHubFuture)
+    assert res.result(timeout=60) == 'Hello world!'
 
 
 @mark.skipif(not is_gha, reason='Avoid running this test except on larger-scale tests of the system')
