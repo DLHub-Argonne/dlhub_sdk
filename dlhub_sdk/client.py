@@ -181,6 +181,14 @@ class DLHubClient(BaseClient):
         servables = self.get_servables(only_latest_version=True)
         return [x['dlhub']['shorthand_name'] for x in servables]
 
+    def get_signed_url(self):
+        """Get a signed url to upload a zip to the serivce"""
+
+        res = self.get('/publish/signed_url')
+        if res.status_code != 200:
+                raise Exception(res.text)
+        return res.data
+
     def get_task_status(self, task_id):
         """Get the status of a DLHub task.
 
@@ -343,25 +351,20 @@ class DLHubClient(BaseClient):
         try:
             model.get_zip_file(zip_filename)
 
-            # Get the authorization headers
-            headers = {}
-            self.authorizer.set_authorization_header(headers)
+            signed_url = self.get_signed_url()
+            with open(zip_filename, 'rb') as f:
+                files = {'file': (zip_filename, f)}
+                http_response = requests.post(signed_url['url'], data=signed_url['fields'], files=files)
+            # If successful, returns HTTP status code 204
+            if http_response.status_code != 204:
+                raise Exception(http_response.text)
 
-            # Submit data to DLHub service
-            with open(zip_filename, 'rb') as zf:
-                reply = requests.post(
-                    slash_join(self.base_url, 'publish'),
-                    headers=headers,
-                    files={
-                        'json': ('dlhub.json', json.dumps(metadata), 'application/json'),
-                        'file': ('servable.zip', zf, 'application/octet-stream')
-                    }
-                )
+            # TODO: Use the signed url as input to the container service
 
-            # Return the task id
-            if reply.status_code != 200:
-                raise Exception(reply.text)
-            return reply.json()['task_id']
+            # # Return the task id
+            # if reply.status_code != 200:
+            #     raise Exception(reply.text)
+            # return reply.json()['task_id']
         finally:
             os.unlink(zip_filename)
 
