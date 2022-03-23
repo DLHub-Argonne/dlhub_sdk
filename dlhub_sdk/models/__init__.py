@@ -16,7 +16,7 @@ import os
 import re
 
 from dlhub_sdk.models.datacite import Datacite, DataciteRelatedIdentifierType, DataciteRelationType
-from dlhub_sdk import __version__
+from dlhub_sdk.version import __version__
 
 name_re = re.compile(r'^\S+$')
 

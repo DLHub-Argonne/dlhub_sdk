@@ -138,11 +138,15 @@ class ScikitLearnModel(BasePythonServableModel):
             - (string) Name of the predict method
             - (dict) Any options for the predict method and their default values
         """
-        # Store any special keyword arguments for the predict function
+
+        # Determine which function we call to make a prediction based on whether we are a classifier or regressor
         model_obj = model.steps[-1][-1] if isinstance(model, Pipeline) else model
         predict_fun = model_obj.predict_proba if is_classifier(model) else model_obj.predict
+
+        # Find any additional arguments for the method (e.g., return_std for GPR models)
         spec = inspect.signature(predict_fun)
-        predict_options = dict((k, v.default) for k, v in spec.parameters.items() if k != "X")
+        predict_options = dict((k, v.default) for k, v in spec.parameters.items()
+                               if k not in ["X", "self"])  # Skip if parameter is "self" or "X" (we know about them)
         return predict_fun.__name__, predict_options
 
     def inspect_model(self, model):

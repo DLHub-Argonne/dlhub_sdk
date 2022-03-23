@@ -1,5 +1,5 @@
 # DLHub SDK
-[![Build Status](https://travis-ci.com/DLHub-Argonne/dlhub_sdk.svg?branch=master)](https://travis-ci.com/DLHub-Argonne/dlhub_sdk)
+[![CI](https://github.com/DLHub-Argonne/dlhub_sdk/actions/workflows/CI.yml/badge.svg)](https://github.com/DLHub-Argonne/dlhub_sdk/actions/workflows/CI.yml)
 [![Coverage Status](https://coveralls.io/repos/github/DLHub-Argonne/dlhub_sdk/badge.svg?branch=master)](https://coveralls.io/github/DLHub-Argonne/dlhub_sdk?branch=master)
 [![PyPI version](https://badge.fury.io/py/dlhub-sdk.svg)](https://badge.fury.io/py/dlhub-sdk)
 [![Documentation Status](https://readthedocs.org/projects/dlhub-sdk/badge/?version=latest)](https://dlhub-sdk.readthedocs.io/en/latest/?badge=latest)

@@ -136,7 +136,7 @@ class TensorFlowModel(BaseServableModel):
                                                    'output_nodes': output_nodes})
 
         # Check if there is a run method
-        if 'run' not in self['servable']['methods']:
+        if 'run' not in self.servable.methods:
             raise ValueError('There is no default servable for this model.\n'
                              ' Make sure to use '
                              'tf.saved_model.signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY '

@@ -13,10 +13,7 @@ try:
 except ImportError:
     tf_installed = False
 
-
-
-
-no_tf = pytest.mark.skipif(tf_installed == False, reason='tf not installed')
+no_tf = pytest.mark.skipif(not tf_installed, reason='tf not installed')
 
 # Do not write to a temp directory so I can see it outside of tests
 tf_export_path = os.path.join(os.path.dirname(__file__), 'tf-model')

@@ -2,32 +2,23 @@ from datetime import datetime
 import pytest
 import os
 
-
-
 try:
     import keras
+
     keras_installed = True
-
-
 except ImportError:
     keras_installed = False
-
     try:
         from tensorflow import keras
+
         keras_installed = True
-
     except ImportError:
-        keras_installed = False 
-
-no_keras = pytest.mark.skipif(keras_installed == False, reason='keras not installed')
-
-
+        keras_installed = False
 
 from dlhub_sdk.models.servables.keras import KerasModel
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 
-print(keras_installed)
-
+no_keras = pytest.mark.skipif(not keras_installed, reason='keras not installed')
 _year = str(datetime.now().year)
 
 
@@ -56,6 +47,7 @@ def test_keras_single_input(tmpdir):
     # Validate against schema
     output = metadata.to_dict()
     validate_against_dlhub_schema(output, 'servable')
+
 
 @no_keras
 def test_keras_multioutput(tmpdir):
@@ -89,6 +81,7 @@ def test_keras_multioutput(tmpdir):
     # Validate against schema
     validate_against_dlhub_schema(output, 'servable')
 
+
 @no_keras
 def test_custom_layers(tmpdir):
     """Test adding custom layers to the definition"""
@@ -111,6 +104,7 @@ def test_custom_layers(tmpdir):
     # Validate it against DLHub schema
     validate_against_dlhub_schema(metadata.to_dict(), 'servable')
 
+
 @no_keras
 def test_multi_file(tmpdir):
     """Test adding the architecture in a different file """
@@ -121,12 +115,6 @@ def test_multi_file(tmpdir):
     # Save it
     model_path = os.path.join(tmpdir, 'model.hd5')
     model.save(model_path, include_optimizer=False)
-    model_json = os.path.join(tmpdir, 'model.json')
-    with open(model_json, 'w') as fp:
-        print(model.to_json(), file=fp)
-    model_yaml = os.path.join(tmpdir, 'model.yml')
-    with open(model_yaml, 'w') as fp:
-        print(model.to_yaml(), file=fp)
     weights_path = os.path.join(tmpdir, 'weights.hd5')
     model.save_weights(weights_path)
 
@@ -136,6 +124,16 @@ def test_multi_file(tmpdir):
     # Make sure both files are included in the files list
     assert metadata.dlhub.files == {'arch': model_path, 'model': weights_path}
 
-    # Try it with the JSON and YAML versions
+    # Try it with the JSON
+    model_json = os.path.join(tmpdir, 'model.json')
+    with open(model_json, 'w') as fp:
+        print(model.to_json(), file=fp)
     KerasModel.create_model(weights_path, ['y'], arch_path=model_json)
-    KerasModel.create_model(weights_path, ['y'], arch_path=model_yaml)
+
+    # Try it with YAML in earlier versions
+    keras_major_version = tuple(int(x) for x in keras.__version__.split(".")[:2])
+    if keras_major_version < (2, 6):
+        model_yaml = os.path.join(tmpdir, 'model.yml')
+        with open(model_yaml, 'w') as fp:
+            print(model.to_yaml(), file=fp)
+        KerasModel.create_model(weights_path, ['y'], arch_path=model_yaml)

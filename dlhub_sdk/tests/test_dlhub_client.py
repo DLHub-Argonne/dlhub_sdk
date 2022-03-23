@@ -1,5 +1,6 @@
 import os
 
+import mdf_toolbox
 from pytest import fixture, raises, mark
 
 from dlhub_sdk.models.servables.python import PythonStaticMethodModel
@@ -7,18 +8,29 @@ from dlhub_sdk.utils.futures import DLHubFuture
 from dlhub_sdk.client import DLHubClient
 
 
-# Check if we are on travis
-#  See: https://blog.travis-ci.com/august-2012-upcoming-ci-environment-updates
-is_travis = 'HAS_JOSH_K_SEAL_OF_APPROVAL' in os.environ
-
-# Check if it is a tagged build
-is_tag = len(os.environ.get('TRAVIS_TAG', '')) > 1
-is_first_build = os.environ.get('TRAVIS_BUILD_NUMBER', '').endswith('.1')
+# github specific declarations
+client_id = os.getenv('CLIENT_ID')
+client_secret = os.getenv('CLIENT_SECRET')
+fx_scope = "https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/all"
+is_gha = os.getenv('GITHUB_ACTIONS')
 
 
 @fixture()
 def dl():
-    return DLHubClient(http_timeout=10)
+    if is_gha:
+        # Get the services via a confidential log in
+        services = ["search", "dlhub", fx_scope, "openid"]
+        auth_res = mdf_toolbox.confidential_login(client_id=client_id,
+                                                  client_secret=client_secret,
+                                                  services=services,
+                                                  make_clients=False)
+        return DLHubClient(
+            dlh_authorizer=auth_res["dlhub"], fx_authorizer=auth_res[fx_scope],
+            openid_authorizer=auth_res['openid'], search_authorizer=auth_res['search'],
+            force_login=False, http_timeout=10
+        )
+    else:
+        return DLHubClient(http_timeout=10)
 
 
 def test_get_servables(dl):
@@ -40,22 +52,29 @@ def test_get_servables(dl):
 
 
 def test_run(dl):
-    user = "zhuozhao_uchicago"
-    name = "noop"
-    data = {"data": ["V", "Co", "Zr"]}
+    user = "aristana_uchicago"
+    name = "noop_v10"
+    data = True  # accepts anything as input, but listed as Boolean in DLHub
 
     # Test a synchronous request
     res = dl.run("{}/{}".format(user, name), data, timeout=60)
-    assert res == 'Hello'
+    # res[0] contains model results, res[1] contains event data JSON
+    assert res == 'Hello world!'
+
+    # Do the same thing with debug mode
+    res = dl.run("{}/{}".format(user, name), data, timeout=60, debug=True)
+    # res[0] contains model results, res[1] contains event data JSON
+    assert res[0] == 'Hello world!'
+    assert isinstance(res[1], dict)
 
     # Test an asynchronous request
-    task_id = dl.run("{}/{}".format(user, name), data, asynchronous=True)
-    assert isinstance(task_id, DLHubFuture)
-    assert task_id.result(timeout=60) == 'Hello'
+    res = dl.run("{}/{}".format(user, name), data, asynchronous=True)
+    assert isinstance(res, DLHubFuture)
+    assert res.result(timeout=60) == 'Hello world!'
 
 
-@mark.skipif(not (is_tag and is_travis and is_first_build),
-             reason='Publish test only runs on first version of tagged builds on Travis')
+@mark.skipif(not is_gha, reason='Avoid running this test except on larger-scale tests of the system')
+@mark.skip
 def test_submit(dl):
     # Make an example function
     model = PythonStaticMethodModel.create_model('numpy.linalg', 'norm')
@@ -190,17 +209,17 @@ def test_basic_search(dl):
     assert len(res) > 0
 
     # Test another query from the documentation
-    res = dl.query.match_term('servable.type', '"Keras Model"')\
+    res = dl.query.match_term('servable.type', '"Keras Model"') \
         .match_domains('chemistry').search()
     assert isinstance(res, list)
 
 
-@mark.skipif(not is_travis, reason='Namespace test is only valid with credentials used on Travis')
+@mark.skipif(not is_gha, reason='Namespace test is only valid with credentials used on GHA')
 def test_namespace(dl):
-    assert dl.get_username() == 'dlhub.test_gmail'
+    assert dl.get_username().endswith('_clients')
 
 
 def test_status(dl):
-    future = dl.run('zhuozhao_uchicago/noop', 'test', asynchronous=True)
+    future = dl.run('aristana_uchicago/noop_v10', 'test', asynchronous=True)
     # Need spec for Fx status returns
     assert isinstance(dl.get_task_status(future.task_id), dict)
