@@ -7,7 +7,6 @@ from typing import Union, Any, Optional, Tuple, Dict
 import requests
 import globus_sdk
 
-from typing import Union, Any, Optional
 from globus_sdk import BaseClient
 from globus_sdk.utils import slash_join
 from globus_sdk.authorizers import GlobusAuthorizer
