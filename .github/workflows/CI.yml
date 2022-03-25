@@ -69,7 +69,7 @@ jobs:
           else
             # Otherwise, use TF2
             pip uninstall keras
-            pip install "tensorflow>2"
+            pip install "tensorflow>2,<2.6"
           fi
 
           # Manually-specifying the version of scikit-learn
