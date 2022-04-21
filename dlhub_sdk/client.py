@@ -116,7 +116,7 @@ class DLHubClient(BaseClient):
                                       no_local_server=kwargs.get("no_local_server", True),
                                       no_browser=kwargs.get("no_browser", True))
         self._search_client = globus_sdk.SearchClient(authorizer=search_authorizer,
-                                                      transport_params={"http_timeout": 5 * 60})
+                                                      transport_params={"http_timeout": http_timeout})
 
         # funcX endpoint to use
         self.fx_endpoint = '86a47061-f3d9-44f0-90dc-56ddc642c000'
