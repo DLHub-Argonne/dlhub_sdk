@@ -43,6 +43,9 @@ class DLHubClient(BaseClient):
         You must provide authorizers DLHub for all sub-services: Globus Search, FuncX, and OpenID.
     """
 
+    # service name is a class attribute in Globus SDK 3
+    service_name = "DLHub"
+
     def __init__(self, dlh_authorizer: Optional[GlobusAuthorizer] = None,
                  search_authorizer: Optional[GlobusAuthorizer] = None,
                  fx_authorizer: Optional[GlobusAuthorizer] = None,
@@ -118,7 +121,8 @@ class DLHubClient(BaseClient):
         # funcX endpoint to use
         self.fx_endpoint = '86a47061-f3d9-44f0-90dc-56ddc642c000'
         self.fx_cache = {}
-        super(DLHubClient, self).__init__("DLHub", environment='dlhub',
+
+        super(DLHubClient, self).__init__(environment='dlhub',
                                           authorizer=dlh_authorizer,
                                           transport_params={"http_timeout": http_timeout},
                                           base_url=DLHUB_SERVICE_ADDRESS,
