@@ -349,15 +349,14 @@ class DLHubClient(BaseClient):
         try:
             model.get_zip_file(zip_filename)
 
-            # Get the authorization headers
-            headers = {}
-            self.authorizer.set_authorization_header(headers)
+            # Get the authorization header token (string for the headers dict)
+            header = self.authorizer.get_authorization_header()
 
             # Submit data to DLHub service
             with open(zip_filename, 'rb') as zf:
                 reply = requests.post(
                     slash_join(self.base_url, 'publish'),
-                    headers=headers,
+                    headers={"Authorization": header},
                     files={
                         'json': ('dlhub.json', json.dumps(metadata), 'application/json'),
                         'file': ('servable.zip', zf, 'application/octet-stream')
