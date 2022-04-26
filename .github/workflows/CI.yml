@@ -23,11 +23,6 @@ jobs:
           - python_version: 3.9
             label: latest libraries
 
-          # Support for legacy methods to save/load models
-          - python_version: 3.6
-            scikit-learn: 0.19.1
-            label: sklearn <= 0.19.1
-
           # Support for changes in Keras
           - python_version: 3.7
             keras-version: 2.1.3

@@ -6,8 +6,10 @@ from typing import Union, Any, Optional, Tuple, Dict
 
 import requests
 import globus_sdk
+
+from globus_sdk import BaseClient
+from globus_sdk.utils import slash_join
 from globus_sdk.authorizers import GlobusAuthorizer
-from globus_sdk.base import BaseClient, slash_join
 from mdf_toolbox import login, logout
 from mdf_toolbox.globus_search.search_helper import SEARCH_LIMIT
 from funcx.sdk.client import FuncXClient
@@ -40,6 +42,9 @@ class DLHubClient(BaseClient):
         and providing that authorizer to the initializer (e.g., ``DLHubClient(dlhub_authorizer=auth)``).
         You must provide authorizers DLHub for all sub-services: Globus Search, FuncX, and OpenID.
     """
+
+    # service name is a class attribute in Globus SDK 3
+    service_name = "DLHub"
 
     def __init__(self, dlh_authorizer: Optional[GlobusAuthorizer] = None,
                  search_authorizer: Optional[GlobusAuthorizer] = None,
@@ -111,14 +116,15 @@ class DLHubClient(BaseClient):
                                       no_local_server=kwargs.get("no_local_server", True),
                                       no_browser=kwargs.get("no_browser", True))
         self._search_client = globus_sdk.SearchClient(authorizer=search_authorizer,
-                                                      http_timeout=5 * 60)
+                                                      transport_params={"http_timeout": http_timeout})
 
         # funcX endpoint to use
         self.fx_endpoint = '86a47061-f3d9-44f0-90dc-56ddc642c000'
         self.fx_cache = {}
-        super(DLHubClient, self).__init__("DLHub", environment='dlhub',
+
+        super(DLHubClient, self).__init__(environment='dlhub',
                                           authorizer=dlh_authorizer,
-                                          http_timeout=http_timeout,
+                                          transport_params={"http_timeout": http_timeout},
                                           base_url=DLHUB_SERVICE_ADDRESS,
                                           **kwargs)
 
@@ -343,15 +349,14 @@ class DLHubClient(BaseClient):
         try:
             model.get_zip_file(zip_filename)
 
-            # Get the authorization headers
-            headers = {}
-            self.authorizer.set_authorization_header(headers)
+            # Get the authorization header token (string for the headers dict)
+            header = self.authorizer.get_authorization_header()
 
             # Submit data to DLHub service
             with open(zip_filename, 'rb') as zf:
                 reply = requests.post(
                     slash_join(self.base_url, 'publish'),
-                    headers=headers,
+                    headers={"Authorization": header},
                     files={
                         'json': ('dlhub.json', json.dumps(metadata), 'application/json'),
                         'file': ('servable.zip', zf, 'application/octet-stream')
