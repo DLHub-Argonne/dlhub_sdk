@@ -7,3 +7,5 @@ pytest
 pytest-cov
 mdf-connect-client>=0.3.8
 pytest-timeout
+protobuf>3,<4
+pyyaml>5,<6
