@@ -60,7 +60,7 @@ jobs:
 
           # Adding keras and TF1 for some tests
           if [ -n "${{matrix.cfg.keras-version}}" ]; then
-            pip install keras==${{matrix.cfg.keras-version}} "tensorflow<2" "h5py<3" "pyyaml<6"
+            pip install keras==${{matrix.cfg.keras-version}} "tensorflow<2" "h5py<3" "pyyaml<6" "protobuf<4"
           else
             # Otherwise, use TF2
             pip uninstall keras
