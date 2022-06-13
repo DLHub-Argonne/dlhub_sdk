@@ -20,7 +20,13 @@ jobs:
       fail-fast: false
       matrix:
         cfg:
+          - python_version: 3.10
+            label: latest libraries
+
           - python_version: 3.9
+            label: latest libraries
+
+          - python_version: 3.8
             label: latest libraries
 
           # Support for changes in Keras
