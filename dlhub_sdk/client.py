@@ -18,6 +18,7 @@ from dlhub_sdk.config import DLHUB_SERVICE_ADDRESS, CLIENT_ID
 from dlhub_sdk.utils.futures import DLHubFuture
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 from dlhub_sdk.utils.search import DLHubSearchHelper, get_method_details, filter_latest
+from dlhub_sdk.utils.types import type_name_to_type
 
 # Directory for authentication tokens
 _token_dir = os.path.expanduser("~/.dlhub/credentials")
@@ -275,11 +276,46 @@ class DLHubClient(BaseClient):
             'parameters': parameters,
             'debug': debug
         }
+
+        self._validate_input_type(name, inputs) # perhaps more sensible to place this at the top?
+
         task_id = self._fx_client.run(payload, endpoint_id=self.fx_endpoint, function_id=funcx_id)
 
         # Return the result
         future = DLHubFuture(self, task_id, async_wait, debug)
         return future.result(timeout=timeout) if not asynchronous else future
+
+    def _validate_input_type(self, name: str, inputs: Any) -> None:
+        """Validate user inputted type against model metadata
+
+        Args:
+            name (string): The name of the servable in question
+            inputs: Data whose types are to be compared to the metadata expectations
+        Returns:
+            None
+        Raises:
+            ValueError: If any type in inputs is unexpected
+        """
+        res = self.search(f"dlhub.name: {name}", advanced=True, limit=1, only_latest=True)
+
+        expected_input_type = type_name_to_type(res[0]["servable"]["methods"]["run"]["input"]["type"])
+
+        if not isinstance(inputs, expected_input_type):
+            raise ValueError(f"dl.run given improper input type: expected {expected_input_type.__name__}, received {type(inputs).__name__}")
+        elif isinstance(inputs, bool) and issubclass(int, expected_input_type):
+            logger.warning("[WARNING] Boolean input has been validated as type Integer, this is likely unintended.")
+
+        if expected_input_type is list:
+            expected_item_type = type_name_to_type(res[0]["servable"]["methods"]["run"]["input"]["item_type"]["type"])
+            item_type_name = expected_item_type.__name__ if hasattr(expected_item_type, __name__) else "number"
+            warn = True
+
+            for i, item in enumerate(inputs):
+                if not isinstance(item, expected_item_type):
+                    raise ValueError(f"dl.run given improper input type: expected list[{item_type_name}], received {type(item).__name__} at inputs[{i}]")
+                elif warn and isinstance(item, bool) and issubclass(int, expected_item_type):
+                    logger.warning("[WARNING] Boolean input has been validated as type Integer, this is likely unintended.")
+                    warn = False
 
     def run_serial(self, servables, inputs, async_wait=5):
         """Invoke each servable in a serial pipeline.
