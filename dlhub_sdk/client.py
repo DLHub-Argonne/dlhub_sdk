@@ -296,7 +296,7 @@ class DLHubClient(BaseClient):
         Raises:
             ValueError: If any type in inputs is unexpected
         """
-        res = self.search("noop")#f"dlhub.name: {name}", advanced=True, limit=1, only_latest=True)
+        res = self.search(f"dlhub.name: {name}", advanced=True, limit=1, only_latest=True)
 
         expected_input_type = type_name_to_type(res[0]["servable"]["methods"]["run"]["input"]["type"])
 
