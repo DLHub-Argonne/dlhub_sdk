@@ -41,12 +41,13 @@ def type_name_to_type(name: str) -> type:
         TypeError: If name is not a string
         ValueError: If name is not matched to a type object
     """
-    type_table = {"boolean": bool, "integer": int, "string": str, "number": int | float | complex} # number is a workaround for bad metadata that is already published
+    type_table = {"boolean": bool, "integer": int, "string": str, "number": int | float | complex}
+    # number is a workaround for bad metadata that is already published
 
     try:
         return type_table.get(name) or __builtins__[name]
     except TypeError:
-        raise TypeError(f"expected argument of type str, received: {type(name).__name__}") # an easier error to understand than 'unhashable type'
+        raise TypeError(f"expected argument of type str, received: {type(name).__name__}")  # an easier error to understand than 'unhashable type'
     except KeyError:
         raise ValueError(f"received an unknown type name: {name}")
 

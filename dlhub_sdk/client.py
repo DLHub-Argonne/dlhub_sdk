@@ -277,7 +277,7 @@ class DLHubClient(BaseClient):
             'debug': debug
         }
 
-        self._validate_input_type(name, inputs) # perhaps more sensible to place this at the top?
+        self._validate_input_type(name, inputs)  # perhaps more sensible to place this at the top?
 
         task_id = self._fx_client.run(payload, endpoint_id=self.fx_endpoint, function_id=funcx_id)
 
@@ -296,7 +296,7 @@ class DLHubClient(BaseClient):
         Raises:
             ValueError: If any type in inputs is unexpected
         """
-        res = self.search(f"dlhub.name: {name}", advanced=True, limit=1, only_latest=True)
+        res = self.search("noop")#f"dlhub.name: {name}", advanced=True, limit=1, only_latest=True)
 
         expected_input_type = type_name_to_type(res[0]["servable"]["methods"]["run"]["input"]["type"])
 
@@ -312,7 +312,8 @@ class DLHubClient(BaseClient):
 
             for i, item in enumerate(inputs):
                 if not isinstance(item, expected_item_type):
-                    raise ValueError(f"dl.run given improper input type: expected list[{item_type_name}], received {type(item).__name__} at inputs[{i}]")
+                    raise ValueError(f"dl.run given improper input type: expected list[{item_type_name}], "
+                                     f"received {type(item).__name__} at index {i}")
                 elif warn and isinstance(item, bool) and issubclass(int, expected_item_type):
                     logger.warning("[WARNING] Boolean input has been validated as type Integer, this is likely unintended.")
                     warn = False
