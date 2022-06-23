@@ -276,7 +276,7 @@ class DLHubClient(BaseClient):
             'debug': debug
         }
 
-        self._validate_input_type(name, inputs)  # perhaps more sensible to place this at the top?
+        self._validate_input(name, inputs)  # perhaps more sensible to place this at the top?
 
         task_id = self._fx_client.run(payload, endpoint_id=self.fx_endpoint, function_id=funcx_id)
 
@@ -284,7 +284,7 @@ class DLHubClient(BaseClient):
         future = DLHubFuture(self, task_id, async_wait, debug)
         return future.result(timeout=timeout) if not asynchronous else future
 
-    def _validate_input_type(self, name: str, inputs: Any) -> None:
+    def _validate_input(self, name: str, inputs: Any) -> None:
         """Validate user inputted type against model metadata
 
         Args:
@@ -293,10 +293,10 @@ class DLHubClient(BaseClient):
         Returns:
             None
         Raises:
-            ValueError: If any type in inputs is unexpected
+            ValueError: If any value in inputs is unexpected
+            TypeError: If any type in inputs is unexpected
         """
         res = self.search(f"dlhub.name: {name}", advanced=True, limit=1)
-
         validate(inputs, res[0]["servable"]["methods"]["run"]["input"], logger=logger)
 
     def run_serial(self, servables, inputs, async_wait=5):
