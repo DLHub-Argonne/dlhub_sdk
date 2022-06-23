@@ -46,6 +46,7 @@ def validate(inputs: Any, db_entry: dict, *, logger: Logger = None) -> None:
         expected_properties = db_entry["properties"]
         validate_dict(inputs, expected_properties, logger=logger)
 
+
 def validate_type(obj: Any, in_type: type, *, logger: Logger = None) -> None:  # better var name for in_type?
     """Compare the type of obj with in_type
 
@@ -84,7 +85,7 @@ def validate_iterable(iterable: list | tuple, item_type: type, *, logger: Logger
     for i, item in enumerate(iterable):
         if not isinstance(item, item_type):
             raise TypeError(f"dl.run given improper input type: expected {type(iterable).__name__}[{item_type.__name__}], "
-                                f"received {type(item).__name__} at index {i}")
+                            f"received {type(item).__name__} at index {i}")
         elif warn and isinstance(item, bool) and issubclass(int, item_type):
             log_func(BOOL_SUB_INT_MSG)
             warn = False
@@ -110,7 +111,7 @@ def validate_ndarray(arr: ndarray, shape: tuple, item_type: type, *, logger: Log
 
     if len(arr.shape) != len(shape):
         raise shape_err
-    elif not all(map(lambda t: t[0]==t[1] or t[1]=="None", zip(arr.shape, shape))):
+    elif not all(map(lambda t: t[0] == t[1] or t[1] == "None", zip(arr.shape, shape))):
         raise shape_err
     elif item_type:
         warn = True
