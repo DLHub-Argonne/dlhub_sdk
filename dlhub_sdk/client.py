@@ -3,7 +3,6 @@ import json
 import os
 from tempfile import mkstemp
 from typing import Union, Any, Optional, Tuple, Dict
-
 import requests
 import globus_sdk
 
@@ -18,7 +17,7 @@ from dlhub_sdk.config import DLHUB_SERVICE_ADDRESS, CLIENT_ID
 from dlhub_sdk.utils.futures import DLHubFuture
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 from dlhub_sdk.utils.search import DLHubSearchHelper, get_method_details, filter_latest
-from dlhub_sdk.utils.types import type_name_to_type
+from dlhub_sdk.utils.validation import validate
 
 # Directory for authentication tokens
 _token_dir = os.path.expanduser("~/.dlhub/credentials")
@@ -296,27 +295,9 @@ class DLHubClient(BaseClient):
         Raises:
             ValueError: If any type in inputs is unexpected
         """
-        res = self.search(f"dlhub.name: {name}", advanced=True, limit=1, only_latest=True)
+        res = self.search(f"dlhub.name: {name}", advanced=True, limit=1)
 
-        expected_input_type = type_name_to_type(res[0]["servable"]["methods"]["run"]["input"]["type"])
-
-        if not isinstance(inputs, expected_input_type):
-            raise ValueError(f"dl.run given improper input type: expected {expected_input_type.__name__}, received {type(inputs).__name__}")
-        elif isinstance(inputs, bool) and issubclass(int, expected_input_type):
-            logger.warning("[WARNING] Boolean input has been validated as type Integer, this is likely unintended.")
-
-        if expected_input_type is list:
-            expected_item_type = type_name_to_type(res[0]["servable"]["methods"]["run"]["input"]["item_type"]["type"])
-            item_type_name = expected_item_type.__name__ if hasattr(expected_item_type, __name__) else "number"
-            warn = True
-
-            for i, item in enumerate(inputs):
-                if not isinstance(item, expected_item_type):
-                    raise ValueError(f"dl.run given improper input type: expected list[{item_type_name}], "
-                                     f"received {type(item).__name__} at index {i}")
-                elif warn and isinstance(item, bool) and issubclass(int, expected_item_type):
-                    logger.warning("[WARNING] Boolean input has been validated as type Integer, this is likely unintended.")
-                    warn = False
+        validate(inputs, res[0]["servable"]["methods"]["run"]["input"], logger=logger)
 
     def run_serial(self, servables, inputs, async_wait=5):
         """Invoke each servable in a serial pipeline.

@@ -30,28 +30,6 @@ def simplify_numpy_dtype(dtype):
         return "python object"
 
 
-def type_name_to_type(name: str) -> type:
-    """Convert string type name to Python type object
-
-    Args:
-        name (string): The name of the type in question
-    Returns:
-        type: the type object whose __name__ is name
-    Raises:
-        TypeError: If name is not a string
-        ValueError: If name is not matched to a type object
-    """
-    type_table = {"boolean": bool, "integer": int, "string": str, "number": int | float | complex}
-    # number is a workaround for bad metadata that is already published
-
-    try:
-        return type_table.get(name) or __builtins__[name]
-    except TypeError:
-        raise TypeError(f"expected argument of type str, received: {type(name).__name__}")  # an easier error to understand than 'unhashable type'
-    except KeyError:
-        raise ValueError(f"received an unknown type name: {name}")
-
-
 def compose_argument_block(data_type, description, shape=None, item_type=None,
                            python_type=None, properties=None, element_types=None, **kwargs):
     """Compile a list of argument descriptions into an argument_type block
