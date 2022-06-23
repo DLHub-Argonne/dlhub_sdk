@@ -1,6 +1,6 @@
 from io import IOBase
 from logging import Logger
-from typing import Any
+from typing import Union, Any
 from numpy import ndarray, ndenumerate
 
 # warning message that is delivered when a boolean is (perhaps) incorrectly considered an integer
@@ -67,7 +67,7 @@ def validate_type(obj: Any, in_type: type, *, logger: Logger = None) -> None:  #
         log_func(BOOL_SUB_INT_MSG)
 
 
-def validate_iterable(iterable: list | tuple, item_type: type, *, logger: Logger = None) -> None:
+def validate_iterable(iterable: Union[list, tuple], item_type: type, *, logger: Logger = None) -> None:
     """Compare the type of each item in iterable with item_type
 
     Args:
