@@ -29,6 +29,18 @@ def type_name_to_type(name: str) -> type:
 
 
 def validate(inputs: Any, db_entry: dict, *, logger: Logger = None) -> None:
+    """Perform the complete validation step
+
+    Args:
+        inputs (Any): The input that will be provided to a servable
+        db_entry (dict): The metadata that inputs is validated against
+        logger (Logger): Optionally output warnings through logger
+    Returns:
+        None
+    Raises:
+        ValueError: If any value in inputs violates the db_entry
+        TypeError: If any type in inputs does not match the db_entry
+    """
     expected_input_type = type_name_to_type(db_entry["type"])
 
     validate_type(inputs, expected_input_type, logger=logger)
