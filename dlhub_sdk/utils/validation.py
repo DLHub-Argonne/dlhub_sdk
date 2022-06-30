@@ -1,13 +1,13 @@
 from io import IOBase
-from logging import Logger
-from typing import Union, Any
+from pathlib import Path
+from typing import Hashable, Union, Any
 from numpy import ndarray, ndenumerate
+import warnings
 
-# warning message that is delivered when a boolean is (perhaps) incorrectly considered an integer
-BOOL_SUB_INT_MSG = "[WARNING] Boolean input has been validated as type Integer, this is likely unintended."
+class ValidationWarning(RuntimeWarning):
+    """Brought to the user's attention when a validation step has dubious accuracy"""
 
-
-def type_name_to_type(name: str) -> type:
+def _type_name_to_type(name: str) -> type:
     """Convert string type name to Python type object
 
     Args:
@@ -15,145 +15,191 @@ def type_name_to_type(name: str) -> type:
     Returns:
         type: the type object whose __name__ is name (or None in the case of "None")
     Raises:
-        TypeError: If name is not a string
         ValueError: If name is not matched to a type object
     """
-    type_table = {"boolean": bool, "integer": int, "string": str, "file": IOBase, "ndarray": ndarray}
+    type_table = {"boolean": bool, "integer": int, "string": str, "file": Union[IOBase, Path, str], "ndarray": ndarray}
 
     try:
-        return type_table.get(name) or __builtins__[name]
-    except TypeError:
-        raise TypeError(f"expected argument of type str, received: {type(name).__name__}")  # an easier error to understand than 'unhashable type'
-    except KeyError:
-        raise ValueError(f"received an unknown type name: {name}")
+        return type_table.get(name) or __builtins__[name]  # getattr(__builtins__, name) if __builtins__ is a module
+    except KeyError:  # AttributeError if __builtins__ is a module
+        raise ValueError(f"found an unknown type name in servable metadata: {name}")
 
 
-def validate(inputs: Any, db_entry: dict, *, logger: Logger = None) -> None:
+def _generate_err(err_type: Exception, path: list[list[str, Hashable]], expected: type = None, given: type = None, *, msg: str = None) -> Exception:
+    """Generate an error based on the given arguments
+
+    Args:
+        err_type (Exception): The error type to generate
+        path (list): List that stores the path through the data to display
+        expected (type): What type the caller was expecting
+        given (type): What type the caller received
+        msg (string): The message to pass through to the generated error
+    Returns:
+        Exception
+    """
+    if expected is not None:
+        expected = expected.__name__
+    if given is not None:
+        given = given.__name__
+    loc = " at input" if path else ""
+
+    for jump in reversed(path):
+        expected = f"{jump[0]}[{expected}]"
+    for jump in path:
+        loc += f"[{repr(jump[1])}]"
+
+    if msg:
+        return err_type(msg.format(loc=loc))  # allows callers (never the user) to use "{loc}" to access the variable in this scope
+    return err_type(f"dl.run given improper input type: expected {expected}, received {given}{loc}")
+
+
+def validate(inputs: Any, db_entry: dict, path: list[list[str, Hashable]] = None) -> None:
     """Perform the complete validation step
 
     Args:
         inputs (Any): The input that will be provided to a servable
         db_entry (dict): The metadata that inputs is validated against
-        logger (Logger): Optionally output warnings through logger
+        path (list): List that stores the path through the data to the current point
     Returns:
         None
     Raises:
         ValueError: If any value in inputs does not match the db_entry
         TypeError: If any type in inputs does not match the db_entry
     """
-    expected_input_type = type_name_to_type(db_entry["type"])
+    path = [] if path is None else path
 
-    validate_type(inputs, expected_input_type, logger=logger)
+    expected_input_type = _type_name_to_type(db_entry["type"])
+    _validate_type(inputs, expected_input_type, path)
 
-    if expected_input_type is list or expected_input_type is tuple:
-        expected_item_type = type_name_to_type(db_entry["item_type"]["type"])
-        validate_iterable(inputs, expected_item_type, logger=logger)
+    if expected_input_type is list:
+        _validate_list(inputs, db_entry, path)
+
+    elif expected_input_type is tuple:
+        _validate_tuple(inputs, db_entry["element_types"], path)
 
     elif expected_input_type is ndarray:
-        expected_shape = tuple(db_entry["shape"])
-        expected_item_type = type_name_to_type(db_entry["item_type"]["type"])
-        validate_ndarray(inputs, expected_shape, expected_item_type, logger=logger)
+        _validate_ndarray(inputs, db_entry["shape"], db_entry, path)
 
     elif expected_input_type is dict:
-        expected_properties = db_entry["properties"]
-        validate_dict(inputs, expected_properties, logger=logger)
+        _validate_dict(inputs, db_entry["properties"], path)
+    # it is intentional that nothing is done in the absence of an Exception
 
 
-def validate_type(obj: Any, in_type: type, *, logger: Logger = None) -> None:  # better var name for in_type?
+def _validate_type(obj: Any, in_type: type, path: list[list[str, Hashable]]) -> None:
     """Compare the type of obj with in_type
 
     Args:
         obj (Any): The object whose type needs to be validated
         in_type (type): The type that obj is expected to have
-        logger (Logger): Optionally output warnings through logger
+        path (list): List that stores the path through the data to the current point
     Returns:
         None
     Raises:
         TypeError: If the types do not match
     """
-    log_func = print if logger is None else logger.warning
+    obj_type = None if obj is None else type(obj)
 
     if not isinstance(obj, in_type):
-        raise TypeError(f"dl.run given improper input type: expected {in_type.__name__}, received {type(obj).__name__}")
-    elif isinstance(obj, bool) and issubclass(int, in_type):
-        log_func(BOOL_SUB_INT_MSG)
+        raise _generate_err(TypeError, path, in_type, obj_type)
+    if isinstance(obj, bool) and issubclass(int, in_type):
+        # warning message is delivered when a boolean is (perhaps) incorrectly considered an integer
+        warnings.warn("Boolean input has been validated as type Integer, this is likely unintended.", ValidationWarning, stacklevel=2)
 
 
-def validate_iterable(iterable: Union[list, tuple], item_type: type, *, logger: Logger = None) -> None:
-    """Compare the type of each item in iterable with item_type
+def _validate_list(li: list, db_entry: dict, path: list[list[str, Hashable]]) -> None:
+    """Recursively validate each of the elements in li against db_entry["item_type"]
 
     Args:
-        iterable (list | tuple): The object whose items need to have their types validated
-        item_type (type): The type that each item is expected to have
-        logger (Logger): Optionally output warnings through logger
+        li (list): The list whose items need to have their type validated
+        db_entry (dict): The entry that stores type data for li
+        path (list): List that stores the path through the data to the current point
     Returns:
         None
     Raises:
         TypeError: If any of the items' types do not match
     """
-    log_func = print if logger is None else logger.warning
-    warn = True
+    path.append(["list", None])
+    for i, item in enumerate(li):
+        path[-1][1] = i
+        validate(item, db_entry["item_type"], path)
+    path.pop()
 
-    for i, item in enumerate(iterable):
-        if not isinstance(item, item_type):
-            raise TypeError(f"dl.run given improper input type: expected {type(iterable).__name__}[{item_type.__name__}], "
-                            f"received {type(item).__name__} at index {i}")
-        elif warn and isinstance(item, bool) and issubclass(int, item_type):
-            log_func(BOOL_SUB_INT_MSG)
-            warn = False
+def _validate_tuple(tup: tuple, db_entries: list[dict], path: list[list[str, Hashable]]) -> None:
+    """Recursively validate each of the elements in tup against the corresponding entry in db_entries
+
+    Args:
+        tup (tuple): The tuple whose items need to have their type validated
+        db_entries (list): The list of dicts that store the metadata for each item in tup
+        path (list): List that stores the path through the data to the current point
+    Returns:
+        None
+    Raises:
+        ValueError: If the number of entries and tuple elements do not match
+        TypeError: If any of the items' types do not match
+    """
+    if len(tup) != len(db_entries):
+        raise _generate_err(ValueError, path, msg=f"dl.run expected tuple of length {len(db_entries)}, recieved tuple with length {len(tup)}"
+                                                  +"{loc}")
+
+    path.append(["tuple", None])
+    for i, (given, expected) in enumerate(zip(tup, db_entries)):
+        path[-1][1] = i
+        validate(given, expected, path)
+    path.pop()
 
 
-def validate_ndarray(arr: ndarray, shape: tuple, item_type: type, *, logger: Logger = None) -> None:
-    """Compare the shape and type of each item in arr with shape and item_type, respectively
+def _validate_ndarray(arr: ndarray, shape: list, db_entry: dict, path: list[list[str, Hashable]]) -> None:
+    """Compare the shape of arr with shape and recursively validate each of the elements in arr against db_entry["item_type"]
 
     Args:
         arr (ndarray): The ndarray whose shape and items need to be validated
-        shape (tuple): The shape that arr is expected to have
-        item_type (type): The type that each item in arr is expected to have
-        logger (Logger): Optionally output warnings through logger
+        shape (list): The shape that arr is expected to have
+        db_entry (dict): The entry where type data may or may not be retrieved
+        path (list): List that stores the path through the data to the current point
     Returns:
         None
     Raises:
         ValueError: If arr.shape does not match shape
         TypeError: If any of the items' types do not match
     """
-    log_func = print if logger is None else logger.warning
-
-    shape_err = ValueError(f"dl.run given improper input: expected ndarray.shape = {shape}, received shape: {arr.shape}")
+    shape = tuple(int(x) if x != "None" else x for x in shape)
+    shape_err = _generate_err(ValueError, path, msg=f"dl.run given improper input: expected ndarray.shape = {shape}, received shape: {arr.shape}"
+                                                    +"{loc}")
 
     if len(arr.shape) != len(shape):
         raise shape_err
-    elif not all(map(lambda t: t[0] == t[1] or t[1] == "None", zip(arr.shape, shape))):
+    if not all(map(lambda t: t[0] == t[1] or t[1] == "None", zip(arr.shape, shape))):
         raise shape_err
-    elif item_type:
-        warn = True
-
+    if entry:=db_entry.get("item_type"):
+        path.append(["ndarray", None])
         for i, item in ndenumerate(arr):
-            if not isinstance(item, item_type):
-                raise TypeError(f"dl.run given improper input type: expected ndarray[{item_type.__name__}], "
-                                f"received {type(item).__name__} at index {i}")
-            elif warn and isinstance(item, bool) and issubclass(int, item_type):
-                log_func(BOOL_SUB_INT_MSG)
-                warn = False
+            path[-1][1] = i
+            validate(item.item(), entry, path)
+        path.pop()
 
 
-def validate_dict(dct: dict, props: dict, *, logger: Logger = None) -> None:
-    """Recursively validate each of the inputs in dct against props
+def _validate_dict(dct: dict, props: dict, path: list[list[str, Hashable]]) -> None:
+    """Recursively validate each of the pairs in dct against props
 
     Args:
         dct (dict): The dict whose keys and values need to be validated
         props (dict): The dict that describes the expected keys and values
-        logger (Logger): Optionally output warnings through logger
+        path (list): List that stores the path through the data to the current point
     Returns:
         None
     Raises:
         ValueError: If dct is missing a key from props or a value in dct causes an error
         TypeError: If any of the values' types do not match
     """
-    """ for key in dct:
-        if key not in props:
-            raise ValueError(f"dl.run given improper input: given unexpected dictionary key ({key})") """
-    for key in props:
-        if key not in dct:
-            raise ValueError(f"dl.run given improper input: expected dictionary key ({key}) to be present")
-        validate(dct[key], props[key], logger=logger)
+    if props:
+        path.append(["dict", None])
+        for key in dct:
+            path[-1][1] = key
+            if key not in props:
+                raise _generate_err(ValueError, path, msg=f"dl.run given improper input: given unexpected dictionary key: {repr(key)}"+"{loc}")
+        for key in props:
+            path[-1][1] = key
+            if key not in dct:
+                raise _generate_err(ValueError, path, msg=f"dl.run given improper input: expected dictionary key: {repr(key)} to be present"+"{loc}")
+            validate(dct[key], props[key], path)
+        path.pop()

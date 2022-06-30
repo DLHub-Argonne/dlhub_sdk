@@ -236,8 +236,8 @@ class DLHubClient(BaseClient):
         return get_method_details(metadata, method)
 
     def run(self, name: str, inputs: Any, parameters: Optional[Dict[str, Any]] = None,
-            asynchronous: bool = False, debug: bool = False, async_wait: float = 5,
-            timeout: Optional[float] = None)\
+            asynchronous: bool = False, debug: bool = False, validate_input: bool = True,
+            async_wait: float = 5, timeout: Optional[float] = None)\
             -> Union[
                 DLHubFuture,
                 Tuple[Any, Dict[str, Any]],
@@ -251,6 +251,7 @@ class DLHubClient(BaseClient):
             parameters: Any optional parameters to pass to the function.
             asynchronous: Whether to return from the function immediately or wait for the execution to finish.
             debug: Whether to capture the standard out and error printed during execution
+            validate_input: whether to validate the provided input against the servable's published metadata
             async_wait: How many seconds to wait between checking async status
             timeout: How long to wait for a result to return. Only used for synchronous calls
         Returns:
@@ -276,7 +277,11 @@ class DLHubClient(BaseClient):
             'debug': debug
         }
 
-        self._validate_input(name, inputs)  # perhaps more sensible to place this at the top?
+        if validate_input:
+            try:
+                self._validate_input(name, inputs)
+            except KeyError:
+                raise ValueError("dl.run did not find a servable, was a dataset run?")
 
         task_id = self._fx_client.run(payload, endpoint_id=self.fx_endpoint, function_id=funcx_id)
 
@@ -297,7 +302,7 @@ class DLHubClient(BaseClient):
             TypeError: If any type in inputs is unexpected
         """
         res = self.search(f"dlhub.name: {name}", advanced=True, limit=1)
-        validate(inputs, res[0]["servable"]["methods"]["run"]["input"], logger=logger)
+        validate(inputs, res[0]["servable"]["methods"]["run"]["input"])
 
     def run_serial(self, servables, inputs, async_wait=5):
         """Invoke each servable in a serial pipeline.
