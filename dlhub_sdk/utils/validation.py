@@ -4,8 +4,10 @@ from typing import Hashable, Union, Any
 from numpy import ndarray, ndenumerate
 import warnings
 
+
 class ValidationWarning(RuntimeWarning):
     """Brought to the user's attention when a validation step has dubious accuracy"""
+
 
 def _type_name_to_type(name: str) -> type:
     """Convert string type name to Python type object
@@ -124,6 +126,7 @@ def _validate_list(li: list, db_entry: dict, path: list[list[str, Hashable]]) ->
         validate(item, db_entry["item_type"], path)
     path.pop()
 
+
 def _validate_tuple(tup: tuple, db_entries: list[dict], path: list[list[str, Hashable]]) -> None:
     """Recursively validate each of the elements in tup against the corresponding entry in db_entries
 
@@ -139,7 +142,7 @@ def _validate_tuple(tup: tuple, db_entries: list[dict], path: list[list[str, Has
     """
     if len(tup) != len(db_entries):
         raise _generate_err(ValueError, path, msg=f"dl.run expected tuple of length {len(db_entries)}, recieved tuple with length {len(tup)}"
-                                                  +"{loc}")
+                                                  + "{loc}")
 
     path.append(["tuple", None])
     for i, (given, expected) in enumerate(zip(tup, db_entries)):
@@ -164,13 +167,15 @@ def _validate_ndarray(arr: ndarray, shape: list, db_entry: dict, path: list[list
     """
     shape = tuple(int(x) if x != "None" else x for x in shape)
     shape_err = _generate_err(ValueError, path, msg=f"dl.run given improper input: expected ndarray.shape = {shape}, received shape: {arr.shape}"
-                                                    +"{loc}")
+                                                    + "{loc}")
 
     if len(arr.shape) != len(shape):
         raise shape_err
     if not all(map(lambda t: t[0] == t[1] or t[1] == "None", zip(arr.shape, shape))):
         raise shape_err
-    if entry:=db_entry.get("item_type"):
+
+    entry = db_entry.get("item_type")
+    if entry:
         path.append(["ndarray", None])
         for i, item in ndenumerate(arr):
             path[-1][1] = i
