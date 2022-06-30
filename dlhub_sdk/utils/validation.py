@@ -234,5 +234,6 @@ def _test() -> None:
     for given, expected in zip(inputs, metadata):
         validate(given, expected)
 
+
 if __name__ == "__main__":
     _test()
