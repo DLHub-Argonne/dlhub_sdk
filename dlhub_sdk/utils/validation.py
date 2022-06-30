@@ -1,7 +1,7 @@
 from io import IOBase
 from pathlib import Path
-from typing import Hashable, Union, Any
-from numpy import ndarray, ndenumerate
+from typing import Union, Any
+from numpy import array, ndarray, ndenumerate
 import warnings
 
 
@@ -27,7 +27,7 @@ def _type_name_to_type(name: str) -> type:
         raise ValueError(f"found an unknown type name in servable metadata: {name}")
 
 
-def _generate_err(err_type: Exception, path: list[list[str, Hashable]], expected: type = None, given: type = None, *, msg: str = None) -> Exception:
+def _generate_err(err_type: Exception, path: list, expected: type = None, given: type = None, *, msg: str = None) -> Exception:
     """Generate an error based on the given arguments
 
     Args:
@@ -55,7 +55,7 @@ def _generate_err(err_type: Exception, path: list[list[str, Hashable]], expected
     return err_type(f"dl.run given improper input type: expected {expected}, received {given}{loc}")
 
 
-def validate(inputs: Any, db_entry: dict, path: list[list[str, Hashable]] = None) -> None:
+def validate(inputs: Any, db_entry: dict, path: list = None) -> None:
     """Perform the complete validation step
 
     Args:
@@ -87,7 +87,7 @@ def validate(inputs: Any, db_entry: dict, path: list[list[str, Hashable]] = None
     # it is intentional that nothing is done in the absence of an Exception
 
 
-def _validate_type(obj: Any, in_type: type, path: list[list[str, Hashable]]) -> None:
+def _validate_type(obj: Any, in_type: type, path: list) -> None:
     """Compare the type of obj with in_type
 
     Args:
@@ -108,7 +108,7 @@ def _validate_type(obj: Any, in_type: type, path: list[list[str, Hashable]]) -> 
         warnings.warn("Boolean input has been validated as type Integer, this is likely unintended.", ValidationWarning, stacklevel=2)
 
 
-def _validate_list(li: list, db_entry: dict, path: list[list[str, Hashable]]) -> None:
+def _validate_list(li: list, db_entry: dict, path: list) -> None:
     """Recursively validate each of the elements in li against db_entry["item_type"]
 
     Args:
@@ -127,7 +127,7 @@ def _validate_list(li: list, db_entry: dict, path: list[list[str, Hashable]]) ->
     path.pop()
 
 
-def _validate_tuple(tup: tuple, db_entries: list[dict], path: list[list[str, Hashable]]) -> None:
+def _validate_tuple(tup: tuple, db_entries: list, path: list) -> None:
     """Recursively validate each of the elements in tup against the corresponding entry in db_entries
 
     Args:
@@ -151,7 +151,7 @@ def _validate_tuple(tup: tuple, db_entries: list[dict], path: list[list[str, Has
     path.pop()
 
 
-def _validate_ndarray(arr: ndarray, shape: list, db_entry: dict, path: list[list[str, Hashable]]) -> None:
+def _validate_ndarray(arr: ndarray, shape: list, db_entry: dict, path: list) -> None:
     """Compare the shape of arr with shape and recursively validate each of the elements in arr against db_entry["item_type"]
 
     Args:
@@ -183,7 +183,7 @@ def _validate_ndarray(arr: ndarray, shape: list, db_entry: dict, path: list[list
         path.pop()
 
 
-def _validate_dict(dct: dict, props: dict, path: list[list[str, Hashable]]) -> None:
+def _validate_dict(dct: dict, props: dict, path: list) -> None:
     """Recursively validate each of the pairs in dct against props
 
     Args:
@@ -208,3 +208,31 @@ def _validate_dict(dct: dict, props: dict, path: list[list[str, Hashable]]) -> N
                 raise _generate_err(ValueError, path, msg=f"dl.run given improper input: expected dictionary key: {repr(key)} to be present"+"{loc}")
             validate(dct[key], props[key], path)
         path.pop()
+
+
+def _test() -> None:
+    metadata = [
+        {"type": "integer"},
+        {"type": "float"},
+        {"type": "boolean"},
+        {"item_type": {"type": "integer"}, "type": "list"},
+        {"element_types": [{"type": "integer"}, {"type": "integer"}, {"type": "string"}], "type": "tuple"},
+        {"properties": {"a": {"type": "integer"}, "b": {"type": "integer"}, "c": {"type": "integer"}}, "type": "dict"},
+        {"shape": ["None", "2"], "item_type": {"type": "integer"}, "type": "ndarray"},
+        {"item_type": {"properties": {"a": {"item_type": {"type": "integer"}, "type": "list"}}, "type": "dict"}, "type": "list"}
+    ]
+    inputs = [
+        1,
+        1.23,
+        False,
+        [1, 2, 3],
+        (1, 2, "hello"),
+        {"a": 1, "b": 2, "c": 3},
+        array([[1, 2], [3, 4]]),
+        [{"a": [1, 2, 3, 4]}]
+    ]
+    for given, expected in zip(inputs, metadata):
+        validate(given, expected)
+
+if __name__ == "__main__":
+    _test()
