@@ -1,6 +1,6 @@
 from io import IOBase
 from pathlib import Path
-from typing import Hashable, List, Union, Any
+from typing import Hashable, List, Tuple, Union, Any
 from numpy import ndarray, void
 from datetime import datetime, timedelta
 import warnings
@@ -24,6 +24,8 @@ def _type_name_to_type(name: str) -> type:
     """
     type_table = {"boolean": bool,
                   "integer": int,
+                  "float": Union[int, float],
+                  "number": Union[int, float, complex],
                   "string": str,
                   "file": Union[IOBase, Path, str],
                   "ndarray": ndarray,
@@ -37,7 +39,7 @@ def _type_name_to_type(name: str) -> type:
         raise ValueError(f"found an unknown type name in servable metadata: {name}")
 
 
-def _generate_err(err_type: Exception, path: List[List[Hashable]], expected: type = None, given: type = None, *, msg: str = None) -> Exception:
+def _generate_err(err_type: Exception, path: List[Tuple[str, Hashable]], expected: type = None, given: type = None, *, msg: str = None) -> Exception:
     """Generate an error based on the given arguments
 
     Args:
@@ -69,7 +71,7 @@ def _generate_err(err_type: Exception, path: List[List[Hashable]], expected: typ
     return err_type(f"dl.run given improper input type: expected {expected}, received {given}{loc}")
 
 
-def validate(inputs: Any, db_entry: dict, path: List[List[Hashable]] = None) -> None:
+def validate(inputs: Any, db_entry: dict, path: List[Tuple[str, Hashable]] = None) -> None:
     """Perform the complete validation step
 
     Args:
@@ -102,13 +104,13 @@ def validate(inputs: Any, db_entry: dict, path: List[List[Hashable]] = None) -> 
     # it is intentional that nothing is done in the absence of an Exception
 
 
-def _validate_type(obj: Any, in_type: type, path: List[List[Hashable]], *, class_: bool = False) -> None:
+def _validate_type(obj: Any, in_type: type, path: List[Tuple[str, Hashable]], *, class_: bool = False) -> None:
     """Compare the type of obj with in_type
 
     Args:
         obj (Any): The object whose type needs to be validated
         in_type (type): The type that obj is expected to have
-        path (list): List that stores the path through the data to the current point
+        path (list): List that stores the path through the data to the current point (items in the form [dtype: str, index/key: Hashable])
         class_ (boolean): Whether to consider obj as an instance or a class
     Returns:
         None
@@ -117,6 +119,7 @@ def _validate_type(obj: Any, in_type: type, path: List[List[Hashable]], *, class
     """
     check_func = issubclass if class_ else isinstance  # the relationship between obj and in_type depends on class_
 
+    # find the type of obj, if obj is a class its type is obj rather than 'type'
     if obj is None:  # avoids dealing with 'NoneType'
         obj_type = None
     elif class_:
@@ -131,13 +134,13 @@ def _validate_type(obj: Any, in_type: type, path: List[List[Hashable]], *, class
         warnings.warn("Boolean input has been validated as type Integer, this is likely unintended.", ValidationWarning, stacklevel=2)
 
 
-def _validate_list(li: list, db_entry: dict, path: List[List[Hashable]]) -> None:
+def _validate_list(li: list, db_entry: dict, path: List[Tuple[str, Hashable]]) -> None:
     """Recursively validate each of the elements in li against db_entry["item_type"]
 
     Args:
         li (list): The list whose items need to have their type validated
         db_entry (dict): The entry that stores type data for li
-        path (list): List that stores the path through the data to the current point
+        path (list): List that stores the path through the data to the current point (items in the form [dtype: str, index/key: Hashable])
     Returns:
         None
     Raises:
@@ -150,13 +153,13 @@ def _validate_list(li: list, db_entry: dict, path: List[List[Hashable]]) -> None
     path.pop()  # since checking for this object has concluded, remove it from the path
 
 
-def _validate_tuple(tup: tuple, db_entries: List[dict], path: List[List[Hashable]]) -> None:
+def _validate_tuple(tup: tuple, db_entries: List[dict], path: List[Tuple[str, Hashable]]) -> None:
     """Recursively validate each of the elements in tup against the corresponding entry in db_entries
 
     Args:
         tup (tuple): The tuple whose items need to have their type validated
         db_entries (list): The list of dicts that store the metadata for each item in tup
-        path (list): List that stores the path through the data to the current point
+        path (list): List that stores the path through the data to the current point (items in the form [dtype: str, index/key: Hashable])
     Returns:
         None
     Raises:
@@ -176,14 +179,14 @@ def _validate_tuple(tup: tuple, db_entries: List[dict], path: List[List[Hashable
     path.pop()
 
 
-def _validate_ndarray(arr: ndarray, shape: List[str], db_entry: dict, path: List[List[Hashable]]) -> None:
+def _validate_ndarray(arr: ndarray, shape: List[str], db_entry: dict, path: List[Tuple[str, Hashable]]) -> None:
     """Compare the shape of arr with shape and recursively validate each of the elements in arr against db_entry["item_type"]
 
     Args:
         arr (ndarray): The ndarray whose shape and items need to be validated
         shape (list): The shape that arr is expected to have
         db_entry (dict): The entry where type data may or may not be retrieved
-        path (list): List that stores the path through the data to the current point
+        path (list): List that stores the path through the data to the current point (items in the form [dtype: str, index/key: Hashable])
     Returns:
         None
     Raises:
@@ -214,13 +217,13 @@ def _validate_ndarray(arr: ndarray, shape: List[str], db_entry: dict, path: List
             _validate_type(_type_name_to_type(arr_type_str), _type_name_to_type(entry["type"]), path, class_=True)
 
 
-def _validate_dict(dct: dict, props: dict, path: List[List[Hashable]]) -> None:
+def _validate_dict(dct: dict, props: dict, path: List[Tuple[str, Hashable]]) -> None:
     """Recursively validate each of the pairs in dct against props
 
     Args:
         dct (dict): The dict whose keys and values need to be validated
         props (dict): The dict that describes the expected keys and values
-        path (list): List that stores the path through the data to the current point
+        path (list): List that stores the path through the data to the current point (items in the form [dtype: str, index/key: Hashable])
     Returns:
         None
     Raises:
