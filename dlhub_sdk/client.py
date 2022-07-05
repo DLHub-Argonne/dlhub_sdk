@@ -278,10 +278,7 @@ class DLHubClient(BaseClient):
         }
 
         if validate_input:
-            try:
-                self._validate_input(name, inputs)
-            except KeyError:
-                raise ValueError("dl.run did not find a servable, was a dataset run?")
+            self._validate_input(name, inputs)
 
         task_id = self._fx_client.run(payload, endpoint_id=self.fx_endpoint, function_id=funcx_id)
 
