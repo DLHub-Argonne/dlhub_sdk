@@ -12,7 +12,7 @@ class ValidationWarning(RuntimeWarning):
     """Brought to the user's attention when a validation step has dubious accuracy"""
 
 
-def _type_name_to_type(name: str) -> type:
+def _type_name_to_type(name: str) -> Union[type, Tuple[type]]:
     """Convert string type name to Python type object
 
     Args:
@@ -24,10 +24,10 @@ def _type_name_to_type(name: str) -> type:
     """
     type_table = {"boolean": bool,
                   "integer": int,
-                  "float": Union[int, float],
-                  "number": Union[int, float, complex],
+                  "float": (int, float),
+                  "number": (int, float, complex),
                   "string": str,
-                  "file": Union[IOBase, Path, str],
+                  "file": (IOBase, Path, str),
                   "ndarray": ndarray,
                   "datetime": datetime,
                   "timedelta": timedelta}
