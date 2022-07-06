@@ -3,7 +3,6 @@ import json
 import os
 from tempfile import mkstemp
 from typing import Union, Any, Optional, Tuple, Dict
-
 import requests
 import globus_sdk
 
@@ -18,6 +17,7 @@ from dlhub_sdk.config import DLHUB_SERVICE_ADDRESS, CLIENT_ID
 from dlhub_sdk.utils.futures import DLHubFuture
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 from dlhub_sdk.utils.search import DLHubSearchHelper, get_method_details, filter_latest
+from dlhub_sdk.utils.validation import validate
 
 # Directory for authentication tokens
 _token_dir = os.path.expanduser("~/.dlhub/credentials")
@@ -236,8 +236,8 @@ class DLHubClient(BaseClient):
         return get_method_details(metadata, method)
 
     def run(self, name: str, inputs: Any, parameters: Optional[Dict[str, Any]] = None,
-            asynchronous: bool = False, debug: bool = False, async_wait: float = 5,
-            timeout: Optional[float] = None)\
+            asynchronous: bool = False, debug: bool = False, validate_input: bool = True,
+            async_wait: float = 5, timeout: Optional[float] = None)\
             -> Union[
                 DLHubFuture,
                 Tuple[Any, Dict[str, Any]],
@@ -251,6 +251,7 @@ class DLHubClient(BaseClient):
             parameters: Any optional parameters to pass to the function.
             asynchronous: Whether to return from the function immediately or wait for the execution to finish.
             debug: Whether to capture the standard out and error printed during execution
+            validate_input: whether to validate the provided input against the servable's published metadata
             async_wait: How many seconds to wait between checking async status
             timeout: How long to wait for a result to return. Only used for synchronous calls
         Returns:
@@ -275,11 +276,30 @@ class DLHubClient(BaseClient):
             'parameters': parameters,
             'debug': debug
         }
+
+        if validate_input:
+            self._validate_input(name, inputs)
+
         task_id = self._fx_client.run(payload, endpoint_id=self.fx_endpoint, function_id=funcx_id)
 
         # Return the result
         future = DLHubFuture(self, task_id, async_wait, debug)
         return future.result(timeout=timeout) if not asynchronous else future
+
+    def _validate_input(self, name: str, inputs: Any) -> None:
+        """Validate user inputted type against model metadata
+
+        Args:
+            name (string): The name of the servable in question
+            inputs: Data whose types are to be compared to the metadata expectations
+        Returns:
+            None
+        Raises:
+            ValueError: If any value in inputs is unexpected
+            TypeError: If any type in inputs is unexpected
+        """
+        res = self.search(f"dlhub.name: {name}", advanced=True, limit=1)
+        validate(inputs, res[0]["servable"]["methods"]["run"]["input"])
 
     def run_serial(self, servables, inputs, async_wait=5):
         """Invoke each servable in a serial pipeline.

@@ -220,6 +220,6 @@ def test_namespace(dl):
 
 
 def test_status(dl):
-    future = dl.run('aristana_uchicago/noop_v10', 'test', asynchronous=True)
+    future = dl.run('aristana_uchicago/noop_v10', True, asynchronous=True)
     # Need spec for Fx status returns
     assert isinstance(dl.get_task_status(future.task_id), dict)
