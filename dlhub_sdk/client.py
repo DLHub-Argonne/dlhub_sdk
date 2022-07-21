@@ -376,7 +376,7 @@ class DLHubClient(BaseClient):
                   "sklearn": ScikitLearnModel}
 
         # raise an error if the provided servable_type is invalid
-        if model :=models.get(servable_type) is None:
+        if model := models.get(servable_type) is None:
             raise ValueError(f"dl.easy_publish given invalid servable type: {servable_type}, please refer to the docstring")
 
         # attempt to construct the model and raise a helpful error if needed
