@@ -7,9 +7,11 @@ on:
   push:
     branches:
       - master
+      - dev
   pull_request:
     branches:
       - master
+      - dev
   schedule:
     # daily testing to occur at 7:30 CST every Monday
     - cron: '30 13 * * 1'
