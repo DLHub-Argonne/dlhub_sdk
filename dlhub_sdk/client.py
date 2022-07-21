@@ -376,7 +376,7 @@ class DLHubClient(BaseClient):
                   "sklearn": ScikitLearnModel}
 
         # raise an error if the provided servable_type is invalid
-        if model:=models.get(servable_type) is None:
+        if model :=models.get(servable_type) is None:
             raise ValueError(f"dl.easy_publish given invalid servable type: {servable_type}, please refer to the docstring")
 
         # attempt to construct the model and raise a helpful error if needed
@@ -384,7 +384,7 @@ class DLHubClient(BaseClient):
             model_info = model.create_model(**serv_options)
         except Exception as e:
             help_err = HelpMessage(f"{e.args[0]}\n Help can be found here:\n"
-                                    "https://dlhub-sdk.readthedocs.io/en/latest/source/dlhub_sdk.models.servables.html#"
+                                   "https://dlhub-sdk.readthedocs.io/en/latest/source/dlhub_sdk.models.servables.html#"
                                    f"{model.__module__}{model.__name__}.create_model")
             raise help_err from e
 
@@ -398,7 +398,6 @@ class DLHubClient(BaseClient):
 
         # return the status block of the publish task
         return self.get_task_status(task_id)
-
 
     def publish_servable(self, model):
         """Submit a servable to DLHub
