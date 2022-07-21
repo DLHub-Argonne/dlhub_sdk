@@ -383,8 +383,7 @@ class DLHubClient(BaseClient):
         try:
             model_info = model.create_model(**serv_options)
         except Exception as e:
-            help_err = HelpMessage(f"{e.args[0]}\n Help can be found here:\n"
-                                   "https://dlhub-sdk.readthedocs.io/en/latest/source/dlhub_sdk.models.servables.html#"
+            help_err = HelpMessage(f"Help can be found here:\nhttps://dlhub-sdk.readthedocs.io/en/latest/source/dlhub_sdk.models.servables.html#"
                                    f"{model.__module__}{model.__name__}.create_model")
             raise help_err from e
 
