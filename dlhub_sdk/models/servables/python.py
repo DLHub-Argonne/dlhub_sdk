@@ -153,17 +153,26 @@ class PythonStaticMethodModel(BasePythonServableModel):
     """
 
     @classmethod
-    def create_model(cls, module, method, autobatch=False, function_kwargs=None):
-        """Initialize the method
+    def create_model(cls, module=None, method=None, f=None, autobatch=False, function_kwargs=None):
+        """Initialize the method based on the provided arguments
 
         Args:
+            f (object): A function pointer
             module (string): Name of the module holding the function
             method (string): Name of the method for this class
             autobatch (bool): Whether to automatically run this function on a list of inputs.
                 Calls :code:`map(f, list)`
             function_kwargs (dict): Names and values of any other argument of the function to set
                 the values must be JSON serializable.
+        Raises:
+            TypeError: If there is no valid way to process the given arguments
         """
+        if f is not None:
+            module, method = f.__module__, f.__name__
+        elif module is None or method is None:
+            raise TypeError("PythonStaticMethodModel.create_model was not provided valid arguments. Please provide either a funtion pointer"
+                            " or the module and name of the desired static function")
+
         output = super(PythonStaticMethodModel, cls).create_model(method, function_kwargs)
 
         output.servable.methods["run"].method_details.update({
@@ -171,17 +180,6 @@ class PythonStaticMethodModel(BasePythonServableModel):
             'autobatch': autobatch
         })
         return output
-
-    @classmethod
-    def from_function_pointer(cls, f, autobatch=False, function_kwargs=None):
-        """Construct the module given a function pointer
-
-        Args:
-            f (object): A function pointer
-            autobatch (bool): Whether to run function on an iterable of entries
-            function_kwargs (dict): Any default options for this function
-        """
-        return cls.create_model(f.__module__, f.__name__, autobatch, function_kwargs)
 
     def _get_handler(self):
         return 'python.PythonStaticMethodServable'
