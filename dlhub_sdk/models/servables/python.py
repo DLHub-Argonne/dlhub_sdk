@@ -135,6 +135,8 @@ class PythonClassMethodModel(BasePythonServableModel):
             'class_name': class_name
         })
 
+        # func = getattr(obj, method)
+
         return output
 
     def _get_handler(self):
@@ -180,6 +182,16 @@ class PythonStaticMethodModel(BasePythonServableModel):
             'autobatch': autobatch
         })
         return output
+
+    @classmethod
+    def from_function_pointer(cls, f, autobatch=False, function_kwargs=None):
+        """Construct the module given a function pointer
+        Args:
+            f (object): A function pointer
+            autobatch (bool): Whether to run function on an iterable of entries
+            function_kwargs (dict): Any default options for this function
+        """
+        return cls.create_model(f=f, autobatch=autobatch, function_kwargs=function_kwargs)
 
     def _get_handler(self):
         return 'python.PythonStaticMethodServable'
