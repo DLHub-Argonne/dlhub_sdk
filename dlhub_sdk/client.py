@@ -347,12 +347,12 @@ class DLHubClient(BaseClient):
             result = result[0]
         return result
 
-    def easy_publish(self, title: str, creator: Union[str, list[str]], short_name: str, servable_type: str, serv_options: dict[str, Any]):
+    def easy_publish(self, title: str, creators: Union[str, list[str]], short_name: str, servable_type: str, serv_options: dict[str, Any]):
         """Simplified publishing method for servables
 
         Args:
             title (string): title for the servable
-            creator (string | list): either the creator's name or a list of the creators' names
+            creators (string | list): either the creator's name (FamilyName, GivenName) or a list of the creators' names
             short_name (string): shorthand name for the servable
             servable_type (string): the type of the servable, must be a member of ("static_method",
                                                                                    "class_method",
@@ -362,7 +362,7 @@ class DLHubClient(BaseClient):
                                                                                    "sklearn")
             serv_options (dict): the servable_type specific arguments that are necessary for publishing
         Returns:
-            (dict): status block from the publish task containing "status" key
+            (string): task id of this submission, can be used to check for success
         Raises:
             ValueError: If the given servable_type is not in the list of acceptable types
             Exception: If the serv_options are incomplete or the request to publish results in an error
@@ -376,7 +376,8 @@ class DLHubClient(BaseClient):
                   "sklearn": ScikitLearnModel}
 
         # raise an error if the provided servable_type is invalid
-        if model := models.get(servable_type) is None:
+        model = models.get(servable_type)
+        if model is None:
             raise ValueError(f"dl.easy_publish given invalid servable type: {servable_type}, please refer to the docstring")
 
         # attempt to construct the model and raise a helpful error if needed
@@ -384,19 +385,20 @@ class DLHubClient(BaseClient):
             model_info = model.create_model(**serv_options)
         except Exception as e:
             help_err = HelpMessage(f"Help can be found here:\nhttps://dlhub-sdk.readthedocs.io/en/latest/source/dlhub_sdk.models.servables.html#"
-                                   f"{model.__module__}{model.__name__}.create_model")
+                                   f"{model.__module__}.{model.__name__}.create_model")
             raise help_err from e
 
         # set the required datacite fields
         model_info.set_title(title)
-        model_info.set_creators(creator)
+        creators = [creators] if isinstance(creators, str) else creators
+        model_info.set_creators(creators, [])  # we do not ask for affiliations
         model_info.set_name(short_name)
 
         # perform the publish
         task_id = self.publish_servable(model_info)
 
-        # return the status block of the publish task
-        return self.get_task_status(task_id)
+        # return the id of the publish task
+        return task_id
 
     def publish_servable(self, model):
         """Submit a servable to DLHub
