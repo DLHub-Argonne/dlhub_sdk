@@ -2,6 +2,7 @@ import os
 
 import mdf_toolbox
 from pytest import fixture, raises, mark
+from pytest_mock import mocker  # your editor may fail to detect its usage
 
 from dlhub_sdk.models.servables.python import PythonStaticMethodModel
 from dlhub_sdk.utils.futures import DLHubFuture
@@ -73,9 +74,9 @@ def test_run(dl):
     assert res.result(timeout=60) == 'Hello world!'
 
 
-@mark.skipif(not is_gha, reason='Avoid running this test except on larger-scale tests of the system')
-@mark.skip
-def test_submit(dl):
+# @mark.skipif(not is_gha, reason='Avoid running this test except on larger-scale tests of the system')
+# @mark.skip
+def test_submit(dl, mocker):
     # Make an example function
     model = PythonStaticMethodModel.create_model('numpy.linalg', 'norm')
     model.dlhub.test = True
@@ -84,8 +85,24 @@ def test_submit(dl):
     model.set_inputs('ndarray', 'Array to be normed', shape=[None])
     model.set_outputs('number', 'Norm of the array')
 
+    # make dummy reply for patch to return
+    class DummyReply:
+        def __init__(self) -> None:
+            self.status_code = 200
+
+        def json(self) -> dict[str, str]:
+            return {"task_id": "bf06d72e-0478-11ed-97f9-4b1381555b22"}  # valid task id, status is known to be FAILED
+
+    # patch requests.post
+    mocker.patch("requests.post", return_value=DummyReply())
+
     # Submit the model
-    dl.publish_servable(model)
+    task_id = dl.publish_servable(model)
+    assert task_id == "bf06d72e-0478-11ed-97f9-4b1381555b22"
+
+    # Submit the model using easy publish
+    task_id = dl.easy_publish("Norm of a 1D Array", "Developer, Some", "1d_norm", "static_method", {"module": "numpy.linalg", "method": "norm"})
+    assert task_id == "bf06d72e-0478-11ed-97f9-4b1381555b22"
 
 
 def test_describe_model(dl):
