@@ -1,8 +1,13 @@
 """Tools to annotate generic operations (e.g., class method calls) in Python"""
 import pickle as pkl
+import importlib
+from inspect import Signature
+from types import GenericAlias
+from typing import Any, Union
+from numpy import ndarray
 
 from dlhub_sdk.models.servables import BaseServableModel, ArgumentTypeMetadata
-from dlhub_sdk.utils.types import compose_argument_block
+from dlhub_sdk.utils.types import compose_argument_block, PY_TYPENAME_TO_JSON
 
 
 class BasePythonServableModel(BaseServableModel):
@@ -113,7 +118,7 @@ class PythonClassMethodModel(BasePythonServableModel):
     any arguments of the class that should be set as defaults."""
 
     @classmethod
-    def create_model(cls, path, method, function_kwargs=None) -> 'PythonClassMethodModel':
+    def create_model(cls, path, method, function_kwargs=None, *, auto_inspect=False) -> 'PythonClassMethodModel':
         """Initialize a model for a python object
 
         Args:
@@ -121,6 +126,7 @@ class PythonClassMethodModel(BasePythonServableModel):
             method (string): Name of the method for this class
             function_kwargs (dict): Names and values of any other argument of the function to set
                 the values must be JSON serializable.
+            auto_inspect (boolean): Whether or not to attempt to automatically extract inputs from the function
         """
         output = super(PythonClassMethodModel, cls).create_model(method, function_kwargs)
 
@@ -135,7 +141,12 @@ class PythonClassMethodModel(BasePythonServableModel):
             'class_name': class_name
         })
 
-        # func = getattr(obj, method)
+        if auto_inspect:
+            func = getattr(obj, method)
+
+            sig = Signature.from_callable(func)
+            output = output.set_inputs(**_signature_to_input(sig))
+            output = output.set_outputs(**_signature_to_output(sig))
 
         return output
 
@@ -155,7 +166,7 @@ class PythonStaticMethodModel(BasePythonServableModel):
     """
 
     @classmethod
-    def create_model(cls, module=None, method=None, autobatch=False, function_kwargs=None, *, f=None):
+    def create_model(cls, module=None, method=None, autobatch=False, function_kwargs=None, *, f=None, auto_inspect=False):
         """Initialize the method based on the provided arguments
 
         Args:
@@ -166,12 +177,17 @@ class PythonStaticMethodModel(BasePythonServableModel):
             function_kwargs (dict): Names and values of any other argument of the function to set
                 the values must be JSON serializable.
             f (object): A function pointer
+            auto_inspect (boolean): Whether or not to attempt to automatically extract inputs from the function
         Raises:
             TypeError: If there is no valid way to process the given arguments
         """
         if f is not None:
             module, method = f.__module__, f.__name__
-        elif module is None or method is None:
+            func = f
+        elif module is not None and method is not None:
+            module_obj = importlib.import_module(module)
+            func = getattr(module_obj, method)
+        else:
             raise TypeError("PythonStaticMethodModel.create_model was not provided valid arguments. Please provide either a funtion pointer"
                             " or the module and name of the desired static function")
 
@@ -181,6 +197,12 @@ class PythonStaticMethodModel(BasePythonServableModel):
             'module': module,
             'autobatch': autobatch
         })
+
+        if auto_inspect:
+            sig = Signature.from_callable(func)
+            output = output.set_inputs(**_signature_to_input(sig))
+            output = output.set_outputs(**_signature_to_output(sig))
+
         return output
 
     @classmethod
@@ -198,3 +220,58 @@ class PythonStaticMethodModel(BasePythonServableModel):
 
     def _get_type(self):
         return 'Python static method'
+
+
+def _signature_to_input(sig: Signature) -> dict[str, Any]:
+    if len(sig.parameters.values()) == 0:
+        return {"data_type": "python object", "description": "", "python_type": "builtins.NoneType"}  # mirros behavior of LN#276-7
+
+    metadata = []
+    for param in sig.parameters.values():
+        # if the parameter is not type hinted, no information can be extracted for the metadata
+        if param.annotation is param.empty:
+            raise TypeError(f"Please provide a type hint for the parameter: {param.name}")
+        # if the parameter is an iterable and its element type(s) were not provided, not enough information can be extracted
+        # this condition is sufficient because a proper type hint of such a type will be a GenericAlias and not the type itself
+        elif param.annotation in {list, tuple}:  # dict could be included, but those values are unused in _type_hint_to_metadata as of now
+            raise TypeError(f"Please provide the types that the parameter: {param.name} is expected to accept")
+
+        metadata.append(_type_hint_to_metadata(param.annotation))
+
+    if len(metadata) == 1:
+        metadata = metadata[0]  # get the item from the single item list
+        return {"data_type": metadata.pop("type"), **metadata}  # change the name of the "type" property and merge the rest in
+
+    return {"data_type": "tuple", "description": "", "element_types": metadata}
+
+
+def _signature_to_output(sig: Signature) -> dict[str, Any]:
+    if sig.return_annotation is sig.empty:
+        raise TypeError(f"Please provide a type hint for the return type of your function")
+
+    metadata = _type_hint_to_metadata(sig.return_annotation)
+
+    return {"data_type": metadata.pop("type"), **metadata}  # change the name of the "type" property and merge the rest in
+
+def _type_hint_to_metadata(hint: Union[GenericAlias, type]) -> dict[str, str]:
+    if isinstance(hint, GenericAlias):
+        if hint.__origin__ is ndarray:
+            return compose_argument_block("ndarray", "", shape="Any", item_type=_type_hint_to_metadata(hint.__args__[0]))
+        elif hint.__origin__ is list:
+            return compose_argument_block("list", "", item_type=_type_hint_to_metadata(hint.__args__[0]))  # __args__ is a tuple even if it's length 1
+        elif hint.__origin__ is tuple:
+            return compose_argument_block("tuple", "", element_types=[_type_hint_to_metadata(x) for x in hint.__args__])
+        elif hint.__origin__ is dict:
+            return compose_argument_block("dict", "", properties={})  # without the keys no part of the hint can be properly processed
+        else:
+            raise TypeError("Fatal error: unknown paramaterized type encountered")
+    else:
+        if hint is ndarray:
+            return compose_argument_block("ndarray", "", shape="Any")
+
+        json_name = PY_TYPENAME_TO_JSON.get(hint)
+        if json_name:
+            return compose_argument_block(json_name, "")
+
+        if hint is None: hint = type(None)
+        return compose_argument_block("python object", "", python_type=f"{hint.__module__}.{hint.__qualname__}")
