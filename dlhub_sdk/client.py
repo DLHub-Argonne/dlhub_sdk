@@ -359,7 +359,8 @@ class DLHubClient(BaseClient):
                                                                                    "keras",
                                                                                    "pytorch",
                                                                                    "tensorflow",
-                                                                                   "sklearn")
+                                                                                   "sklearn") more information on servable types can be found here:
+                                                                                   https://dlhub-sdk.readthedocs.io/en/latest/servable-types.html
             serv_options (dict): the servable_type specific arguments that are necessary for publishing
         Returns:
             (string): task id of this submission, can be used to check for success
@@ -390,7 +391,7 @@ class DLHubClient(BaseClient):
 
         # set the required datacite fields
         model_info.set_title(title)
-        creators = [creators] if isinstance(creators, str) else creators
+        creators = [creators] if isinstance(creators, str) else creators  # handle the case where creators is a string
         model_info.set_creators(creators, [])  # we do not ask for affiliations
         model_info.set_name(short_name)
 

@@ -135,8 +135,6 @@ class PythonClassMethodModel(BasePythonServableModel):
             'class_name': class_name
         })
 
-        # func = getattr(obj, method)
-
         return output
 
     def _get_handler(self):
@@ -165,12 +163,13 @@ class PythonStaticMethodModel(BasePythonServableModel):
                 Calls :code:`map(f, list)`
             function_kwargs (dict): Names and values of any other argument of the function to set
                 the values must be JSON serializable.
-            f (object): A function pointer
+            f (object): Function pointer to the Python function to be published
         Raises:
             TypeError: If there is no valid way to process the given arguments
         """
+        # determine which set of acceptable parameters was given, or err if invalid (valid would be f | module & method)
         if f is not None:
-            module, method = f.__module__, f.__name__
+            module, method = f.__module__, f.__name__  # if f is provided, assign its module and method names
         elif module is None or method is None:
             raise TypeError("PythonStaticMethodModel.create_model was not provided valid arguments. Please provide either a funtion pointer"
                             " or the module and name of the desired static function")
@@ -187,7 +186,7 @@ class PythonStaticMethodModel(BasePythonServableModel):
     def from_function_pointer(cls, f, autobatch=False, function_kwargs=None):
         """Construct the module given a function pointer
         Args:
-            f (object): A function pointer
+            f (object): Function pointer to the Python function to be published
             autobatch (bool): Whether to run function on an iterable of entries
             function_kwargs (dict): Any default options for this function
         """
