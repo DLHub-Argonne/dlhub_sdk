@@ -410,6 +410,20 @@ class DLHubClient(BaseClient):
         task_id = response.data['task_id']
         return task_id
 
+    def edit_servable(self, servable_query: str, **kwargs) -> str:
+        """Edit the indicated servable using kwargs
+
+        Args:
+            servable_query (string): query to locate desired servable
+            kwargs: the arg name is the property to be changed and the value is the new value
+        Returns:
+            (string): task id of the edit request, can be used to check its status
+        """
+        metadata = {}
+
+        for key, value in kwargs.items():
+            metadata[key] = value
+
     def search(self, query, advanced=False, limit=None, only_latest=True):
         """Query the DLHub servable library
 
