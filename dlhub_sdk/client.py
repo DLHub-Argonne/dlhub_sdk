@@ -1,9 +1,12 @@
+from functools import reduce
 import logging
 import json
+from jsonschema import SchemaError
 import os
 from tempfile import mkstemp
 from typing import Union, Any, Optional, Tuple, Dict
 import requests
+import warnings
 import globus_sdk
 
 from globus_sdk import BaseClient
@@ -14,6 +17,7 @@ from mdf_toolbox.globus_search.search_helper import SEARCH_LIMIT
 from funcx.sdk.client import FuncXClient
 
 from dlhub_sdk.config import DLHUB_SERVICE_ADDRESS, CLIENT_ID
+from dlhub_sdk.models.servables import BaseServableModel
 from dlhub_sdk.utils.futures import DLHubFuture
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 from dlhub_sdk.utils.search import DLHubSearchHelper, get_method_details, filter_latest
@@ -22,6 +26,10 @@ from dlhub_sdk.utils.validation import validate
 # Directory for authentication tokens
 _token_dir = os.path.expanduser("~/.dlhub/credentials")
 logger = logging.getLogger(__name__)
+
+
+class PermissionWarning(UserWarning):
+    """Brought to the user's attention when they attempt to perform an action without proper privileges"""
 
 
 class DLHubClient(BaseClient):
@@ -410,19 +418,61 @@ class DLHubClient(BaseClient):
         task_id = response.data['task_id']
         return task_id
 
-    def edit_servable(self, servable_query: str, **kwargs) -> str:
-        """Edit the indicated servable using kwargs
+    def edit_servable(self, servable_name: str, *, model: BaseServableModel = None, changes: dict[str, str] = None) -> str:
+        """Edit servable metadata from its name and model object or dict of changes
 
         Args:
-            servable_query (string): query to locate desired servable
-            kwargs: the arg name is the property to be changed and the value is the new value
+            servable_name (string): name of the servable to be modified
+            model (BaseServableModel): the new metadata can be retrieved from a model object
+            changes (dict): keys represent the property to be edited using a period delimited path through the metadata structure
+                            e.g. the input description is located at `servable.methods.run.input.description`
+                            the full structure of the metadata can be found at <INSERT LINK TO DOCS HERE>
         Returns:
-            (string): task id of the edit request, can be used to check its status
+            (string): status of the edit request
+        Raises:
+            ValueError: if the user provides an invalid key in changes or an unsatisfactory servable_name (points to more than one servable)
+            Exception: if the user attempts to edit a servable they do not own or a property they cannot edit
         """
-        metadata = {}
+        if model is not None:
+            metadata = model.to_dict()
+        else:
+            metadata = self.search_by_servable(servable_name, self.get_username(), only_latest=True)
+            if not isinstance(metadata, dict):
+                raise ValueError("Please provide the unique name of a servable that you own")
 
-        for key, value in kwargs.items():
-            metadata[key] = value
+            for key_str, value in changes.items():
+                metadata = self._edit_dict(metadata, key_str.split("."), value)
+
+        try:
+            validate_against_dlhub_schema(metadata, "servable")
+        except SchemaError:
+            raise ValueError("dl.edit_servable was supplied invalid replacement data")  # traceback will show the SchemaError
+
+        res = self.post(f"/servables/{self.get_username()}/{servable_name}", json_body=metadata)
+
+        return res["status"]
+
+    def _edit_dict(self, dct: dict, keys: list[str], data: Any) -> dict:
+        """Edit the given dict such that the value found by keys becomes data
+
+        Args:
+            dct (dict): the metadata that needs to be modified
+            keys (list): list representing the path through nested dictionaries to the desired key
+            data (Any): the value to be inserted at the location of keys
+        Returns:
+            (dict): dct after it has been modified
+        Raises:
+            ValueError: if keys does not point to a valid location
+        """
+        # the user is not meant to modify any property within the dlhub field
+        if "dlhub" in keys:
+            warnings.warn(f"The property ({'.'.join(keys)}) cannot be modified without administrator attention", PermissionWarning, stacklevel=2)
+            return dct
+        try:
+            reduce(dict.__getitem__, keys[:-1], dct)[keys[-1]] = data  # folds keys to get to the penultimate key and assigns to it
+            return dct
+        except KeyError:
+            raise ValueError(f"dl.edit_servable was supplied an invalid property: {'.'.join(keys)}") from None  # hide KeyError from the traceback
 
     def search(self, query, advanced=False, limit=None, only_latest=True):
         """Query the DLHub servable library
