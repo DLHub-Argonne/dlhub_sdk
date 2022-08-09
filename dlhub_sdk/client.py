@@ -2,7 +2,7 @@ import logging
 import json
 import os
 from tempfile import mkstemp
-from typing import Union, Any, Optional, Tuple, Dict
+from typing import Sequence, Union, Any, Optional, Tuple, Dict
 import requests
 import globus_sdk
 
@@ -347,7 +347,8 @@ class DLHubClient(BaseClient):
             result = result[0]
         return result
 
-    def easy_publish(self, title: str, creators: Union[str, list[str]], short_name: str, servable_type: str, serv_options: dict[str, Any]):
+    def easy_publish(self, title: str, creators: Union[str, list[str]], short_name: str, servable_type: str, serv_options: dict[str, Any],
+                     affiliations: list[Sequence[str]] = None):
         """Simplified publishing method for servables
 
         Args:
@@ -362,6 +363,7 @@ class DLHubClient(BaseClient):
                                                                                    "sklearn") more information on servable types can be found here:
                                                                                    https://dlhub-sdk.readthedocs.io/en/latest/servable-types.html
             serv_options (dict): the servable_type specific arguments that are necessary for publishing
+            affiliations (list): list of affiliations for each author
         Returns:
             (string): task id of this submission, can be used to check for success
         Raises:
@@ -392,7 +394,7 @@ class DLHubClient(BaseClient):
         # set the required datacite fields
         model_info.set_title(title)
         creators = [creators] if isinstance(creators, str) else creators  # handle the case where creators is a string
-        model_info.set_creators(creators, [])  # we do not ask for affiliations
+        model_info.set_creators(creators, affiliations or [])  # affiliations if provided, else empty list
         model_info.set_name(short_name)
 
         # perform the publish
