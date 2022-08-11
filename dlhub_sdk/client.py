@@ -418,7 +418,7 @@ class DLHubClient(BaseClient):
         task_id = response.data['task_id']
         return task_id
 
-    def edit_servable(self, servable_name: str, *, model: BaseServableModel = None, changes: dict[str, str] = None) -> str:
+    def edit_servable(self, servable_name: str, *, model: BaseServableModel = None, changes: dict[str, str] = None) -> dict:
         """Edit servable metadata from its name and model object or dict of changes
 
         Args:
@@ -428,7 +428,7 @@ class DLHubClient(BaseClient):
                             e.g. the input description is located at `servable.methods.run.input.description`
                             the full structure of the metadata can be found at <INSERT LINK TO DOCS HERE>
         Returns:
-            (string): status of the edit request
+            (dict): the result of the edit request
         Raises:
             ValueError: if the user provides an invalid key in changes or an unsatisfactory servable_name (points to more than one servable)
             Exception: if the user attempts to edit a servable they do not own or a property they cannot edit
@@ -448,9 +448,9 @@ class DLHubClient(BaseClient):
         except SchemaError:
             raise ValueError("dl.edit_servable was supplied invalid replacement data")  # traceback will show the SchemaError
 
-        res = self.post(f"/servables/{self.get_username()}/{servable_name}", json_body=metadata)
+        res = self.put(f"/servables/{self.get_username()}/{servable_name}", json_body=metadata)
 
-        return res["status"]
+        return res
 
     def _edit_dict(self, dct: dict, keys: list[str], data: Any) -> dict:
         """Edit the given dict such that the value found by keys becomes data
