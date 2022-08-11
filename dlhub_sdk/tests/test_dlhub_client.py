@@ -88,6 +88,12 @@ def test_submit(dl):
     dl.publish_servable(model)
 
 
+def test_edit(dl):
+    res = dl.edit_servable("noop_v10", changes={"servable.methods.run.output.description": "'Hello, world!'"})
+    with open("test_res.txt", "w") as f:
+        f.write(str(res))
+
+
 def test_describe_model(dl):
     # Find the 1d_norm function from the test user (should be there)
     description = dl.describe_servable('dlhub.test_gmail/1d_norm')
