@@ -348,7 +348,7 @@ class DLHubClient(BaseClient):
         return result
 
     def easy_publish(self, title: str, creators: Union[str, list[str]], short_name: str, servable_type: str, serv_options: dict[str, Any],
-                     affiliations: list[Sequence[str]] = None):
+                     affiliations: list[Sequence[str]] = None, paper_doi: Sequence[str] = None):
         """Simplified publishing method for servables
 
         Args:
@@ -364,6 +364,9 @@ class DLHubClient(BaseClient):
                                                                                    https://dlhub-sdk.readthedocs.io/en/latest/servable-types.html
             serv_options (dict): the servable_type specific arguments that are necessary for publishing
             affiliations (list): list of affiliations for each author
+            paper_doi (list | tuple): sequence containing first the DOI of a paper related to the servable,
+                                      and second a member of ("isDescribedBy", "IsDocumentedBy", "IsDerviedFrom") that defines how the paper and
+                                      servable relate
         Returns:
             (string): task id of this submission, can be used to check for success
         Raises:
@@ -396,6 +399,9 @@ class DLHubClient(BaseClient):
         creators = [creators] if isinstance(creators, str) else creators  # handle the case where creators is a string
         model_info.set_creators(creators, affiliations or [])  # affiliations if provided, else empty list
         model_info.set_name(short_name)
+
+        if paper_doi is not None:
+            model_info.add_related_resource(paper_doi[0], "DOI", paper_doi[1])
 
         # perform the publish
         task_id = self.publish_servable(model_info)
