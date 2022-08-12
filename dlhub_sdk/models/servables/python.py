@@ -144,9 +144,7 @@ class PythonClassMethodModel(BasePythonServableModel):
         if auto_inspect:
             func = getattr(obj, method)
 
-            sig = Signature.from_callable(func)
-            output = output.set_inputs(**_signature_to_input(sig))
-            output = output.set_outputs(**_signature_to_output(sig))
+            output = _add_extracted_metadata(func, output)
 
         return output
 
@@ -176,14 +174,16 @@ class PythonStaticMethodModel(BasePythonServableModel):
                 Calls :code:`map(f, list)`
             function_kwargs (dict): Names and values of any other argument of the function to set
                 the values must be JSON serializable.
-            f (object): A function pointer
+            f (object): function pointer to the desired python function
             auto_inspect (boolean): Whether or not to attempt to automatically extract inputs from the function
         Raises:
             TypeError: If there is no valid way to process the given arguments
         """
+        # if a pointer is provided, get the module and method
         if f is not None:
             module, method = f.__module__, f.__name__
             func = f
+        # if it is not, ensure both the module and method are provided and get the function pointer
         elif module is not None and method is not None:
             module_obj = importlib.import_module(module)
             func = getattr(module_obj, method)
@@ -199,9 +199,7 @@ class PythonStaticMethodModel(BasePythonServableModel):
         })
 
         if auto_inspect:
-            sig = Signature.from_callable(func)
-            output = output.set_inputs(**_signature_to_input(sig))
-            output = output.set_outputs(**_signature_to_output(sig))
+            output = _add_extracted_metadata(func, output)
 
         return output
 
@@ -223,18 +221,19 @@ class PythonStaticMethodModel(BasePythonServableModel):
 
 
 def _signature_to_input(sig: Signature) -> dict[str, Any]:
+    """Use a function signature to generate the input to set_inputs()"""
     if len(sig.parameters.values()) == 0:
-        return {"data_type": "python object", "description": "", "python_type": "builtins.NoneType"}  # mirros behavior of LN#276-7
+        return {"data_type": "python object", "description": "", "python_type": "builtins.NoneType"}  # mirros last clause of _type_hint_to_metadata
 
     metadata = []
     for param in sig.parameters.values():
-        # if the parameter is not type hinted, no information can be extracted for the metadata
+        # if the parameter is not type hinted, auto-extraction cannot proceed
         if param.annotation is param.empty:
             raise TypeError(f"Please provide a type hint for the parameter: {param.name}")
-        # if the parameter is an iterable and its element type(s) were not provided, not enough information can be extracted
+        # if the parameter is an iterable and its element type(s) were not provided, auto-extraction cannot proceed
         # this condition is sufficient because a proper type hint of such a type will be a GenericAlias and not the type itself
         elif param.annotation in {list, tuple}:  # dict could be included, but those values are unused in _type_hint_to_metadata as of now
-            raise TypeError(f"Please provide the types that the parameter: {param.name} is expected to accept")
+            raise TypeError(f"Please provide the type(s) that the parameter: {param.name} is expected to accept")
 
         metadata.append(_type_hint_to_metadata(param.annotation))
 
@@ -246,15 +245,29 @@ def _signature_to_input(sig: Signature) -> dict[str, Any]:
 
 
 def _signature_to_output(sig: Signature) -> dict[str, Any]:
+    """Use a function signature to generate the input to set_outputs()"""
+    # if the return value is not type hinted, auto-extraction cannot proceed
     if sig.return_annotation is sig.empty:
         raise TypeError(f"Please provide a type hint for the return type of your function")
+    if sig.return_annotation in {list, tuple}:  # dict could be included, but those values are unused in _type_hint_to_metadata as of now
+            raise TypeError(f"Please provide the type(s) of elements in the return type hint")
 
     metadata = _type_hint_to_metadata(sig.return_annotation)
 
     return {"data_type": metadata.pop("type"), **metadata}  # change the name of the "type" property and merge the rest in
 
+
 def _type_hint_to_metadata(hint: Union[GenericAlias, type]) -> dict[str, str]:
+    """Take a type hint and convert it into valid DLHub metadata
+    Args:
+        hint (GenericAlias | type): a type hint can be either a type (e.g. int) or a GenericAlias (e.g. list[int]),
+                                    these objects are retrieved from Signature object properties
+    Returns:
+        (dict): the metadata for the given hint
+    """
     if isinstance(hint, GenericAlias):
+        # in a GenericAlias, the __origin__ is the outer type (e.g. list in list[int])
+        # and the inner type, int, would be at __args__[0]
         if hint.__origin__ is ndarray:
             return compose_argument_block("ndarray", "", shape="Any", item_type=_type_hint_to_metadata(hint.__args__[0]))
         elif hint.__origin__ is list:
@@ -275,3 +288,17 @@ def _type_hint_to_metadata(hint: Union[GenericAlias, type]) -> dict[str, str]:
 
         if hint is None: hint = type(None)
         return compose_argument_block("python object", "", python_type=f"{hint.__module__}.{hint.__qualname__}")
+
+
+def _add_extracted_metadata(func, model: BasePythonServableModel) -> BasePythonServableModel:
+    """Helper function for adding generated input/output metadata to a model object
+    Args:
+        func: a pointer to the function whose data is to be extracted
+        model (BasePythonServableModel): the model who needs its data to be updated
+    Returns:
+        (BasePythonServableModel): the model that was given after it is updated
+    """
+    sig = Signature.from_callable(func)
+    model = model.set_inputs(**_signature_to_input(sig))
+    model = model.set_outputs(**_signature_to_output(sig))
+    return model
