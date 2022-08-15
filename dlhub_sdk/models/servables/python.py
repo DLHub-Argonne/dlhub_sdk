@@ -248,9 +248,9 @@ def _signature_to_output(sig: Signature) -> dict[str, Any]:
     """Use a function signature to generate the input to set_outputs()"""
     # if the return value is not type hinted, auto-extraction cannot proceed
     if sig.return_annotation is sig.empty:
-        raise TypeError(f"Please provide a type hint for the return type of your function")
+        raise TypeError("Please provide a type hint for the return type of your function")
     if sig.return_annotation in {list, tuple}:  # dict could be included, but those values are unused in _type_hint_to_metadata as of now
-            raise TypeError(f"Please provide the type(s) of elements in the return type hint")
+        raise TypeError("Please provide the type(s) of elements in the return type hint")
 
     metadata = _type_hint_to_metadata(sig.return_annotation)
 
@@ -286,7 +286,8 @@ def _type_hint_to_metadata(hint: Union[GenericAlias, type]) -> dict[str, str]:
         if json_name:
             return compose_argument_block(json_name, "")
 
-        if hint is None: hint = type(None)
+        if hint is None:
+            hint = type(None)
         return compose_argument_block("python object", "", python_type=f"{hint.__module__}.{hint.__qualname__}")
 
 
