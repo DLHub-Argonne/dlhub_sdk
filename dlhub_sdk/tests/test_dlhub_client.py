@@ -99,7 +99,8 @@ def test_submit(dl, mocker):
     assert task_id == "bf06d72e-0478-11ed-97f9-4b1381555b22"
 
     # Submit the model using easy publish
-    task_id = dl.easy_publish("Norm of a 1D Array", "Developer, Some", "1d_norm", "static_method", {"module": "numpy.linalg", "method": "norm"})
+    task_id = dl.easy_publish("Norm of a 1D Array", "Developer, Some", "1d_norm", "static_method", {"module": "numpy.linalg", "method": "norm"},
+                              [["University of Chicago"]], "not-a-real-doi")
     assert task_id == "bf06d72e-0478-11ed-97f9-4b1381555b22"
 
 
