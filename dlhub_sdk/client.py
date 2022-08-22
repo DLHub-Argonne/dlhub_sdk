@@ -18,6 +18,7 @@ from dlhub_sdk.utils.futures import DLHubFuture
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 from dlhub_sdk.utils.search import DLHubSearchHelper, get_method_details, filter_latest
 from dlhub_sdk.utils.validation import validate
+from dlhub_sdk.utils.funcx_login_manager import FuncXLoginManager
 
 # Directory for authentication tokens
 _token_dir = os.path.expanduser("~/.dlhub/credentials")
@@ -110,11 +111,10 @@ class DLHubClient(BaseClient):
             search_authorizer = auth_res['search']
 
         # Define the subclients needed by the service
-        self._fx_client = FuncXClient(fx_authorizer=fx_authorizer,
-                                      search_authorizer=search_authorizer,
-                                      openid_authorizer=openid_authorizer,
-                                      no_local_server=kwargs.get("no_local_server", True),
-                                      no_browser=kwargs.get("no_browser", True))
+
+        login_manager = FuncXLoginManager(authorizers=auth_res)
+        self._fx_client = FuncXClient(login_manager=login_manager)
+
         self._search_client = globus_sdk.SearchClient(authorizer=search_authorizer,
                                                       transport_params={"http_timeout": http_timeout})
 
