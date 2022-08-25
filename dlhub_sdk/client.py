@@ -12,6 +12,7 @@ from globus_sdk.authorizers import GlobusAuthorizer
 from mdf_toolbox import login, logout
 from mdf_toolbox.globus_search.search_helper import SEARCH_LIMIT
 from funcx.sdk.client import FuncXClient
+from globus_sdk.scopes import AuthScopes, SearchScopes
 
 from dlhub_sdk.config import DLHUB_SERVICE_ADDRESS, CLIENT_ID
 from dlhub_sdk.utils.futures import DLHubFuture
@@ -93,9 +94,8 @@ class DLHubClient(BaseClient):
                 logger.warning('You have defined some of the authorizers but not all. DLHub is falling back to login. '
                                'You must provide authorizers for DLHub, Search, OpenID, FuncX.')
 
-            fx_scope = "https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/all"
             auth_res = login(services=["search", "dlhub",
-                                       fx_scope, "openid"],
+                                       FuncXClient.FUNCX_SCOPE, "openid"],
                              app_name="DLHub_Client",
                              make_clients=False,
                              client_id=CLIENT_ID,
@@ -106,13 +106,20 @@ class DLHubClient(BaseClient):
 
             # Unpack the authorizers
             dlh_authorizer = auth_res["dlhub"]
-            fx_authorizer = auth_res[fx_scope]
+            fx_authorizer = auth_res[FuncXClient.FUNCX_SCOPE]
             openid_authorizer = auth_res['openid']
             search_authorizer = auth_res['search']
 
         # Define the subclients needed by the service
 
-        login_manager = FuncXLoginManager(authorizers=auth_res)
+        auth_dict = {
+            FuncXClient.FUNCX_SCOPE: fx_authorizer,
+            AuthScopes.openid: openid_authorizer,
+            SearchScopes.all: search_authorizer,
+            'dlhub': dlh_authorizer,
+         }
+
+        login_manager = FuncXLoginManager(authorizers=auth_dict)
         self._fx_client = FuncXClient(login_manager=login_manager)
 
         self._search_client = globus_sdk.SearchClient(authorizer=search_authorizer,
