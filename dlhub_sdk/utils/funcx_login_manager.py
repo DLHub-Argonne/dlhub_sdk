@@ -47,4 +47,3 @@ class FuncXLoginManager:
 
     def logout(self):
         log.warning("logout cannot be invoked from here!")
-
