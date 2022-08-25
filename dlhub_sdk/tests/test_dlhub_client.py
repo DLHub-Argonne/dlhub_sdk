@@ -88,6 +88,7 @@ def test_submit(dl):
     dl.publish_servable(model)
 
 
+@mark.skip  # unimplemented on the service currently
 def test_edit(dl):
     res = dl.edit_servable("noop_v10", changes={"servable.methods.run.output.description": "'Hello, world!'"})
     with open("test_res.txt", "w") as f:
