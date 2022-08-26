@@ -36,7 +36,7 @@ def _type_name_to_type(name: str) -> Union[type, Tuple[type]]:
     try:
         return type_table.get(name) or __builtins__[name]  # getattr(__builtins__, name) if __builtins__ is a module
     except KeyError:  # AttributeError if __builtins__ is a module
-        raise ValueError(f"found an unknown type name in servable metadata: {name}")
+        raise ValueError(f"found an unknown type name in servable metadata: {name}") from None
 
 
 def _generate_err(err_type: Exception, path: List[Tuple[str, Hashable]], expected: type = None, given: type = None, *, msg: str = None) -> Exception:
