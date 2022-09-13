@@ -1,4 +1,5 @@
 import os
+from typing import Dict
 
 import mdf_toolbox
 from pytest import fixture, raises, mark
@@ -90,7 +91,7 @@ def test_submit(dl, mocker):  # noqa: F811 (flake8 does not understand usage)
         def __init__(self) -> None:
             self.status_code = 200
 
-        def json(self) -> dict[str, str]:
+        def json(self) -> Dict[str, str]:
             return {"task_id": "bf06d72e-0478-11ed-97f9-4b1381555b22"}  # valid task id, status is known to be FAILED
 
     # patch requests.post
