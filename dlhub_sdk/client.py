@@ -2,7 +2,7 @@ import logging
 import json
 import os
 from tempfile import mkstemp
-from typing import Sequence, Union, Any, Optional, Tuple, Dict
+from typing import Sequence, Union, Any, Optional, Tuple, Dict, List
 import requests
 import globus_sdk
 
@@ -347,8 +347,8 @@ class DLHubClient(BaseClient):
             result = result[0]
         return result
 
-    def easy_publish(self, title: str, creators: Union[str, list[str]], short_name: str, servable_type: str, serv_options: dict[str, Any],
-                     affiliations: list[Sequence[str]] = None, paper_doi: str = None):
+    def easy_publish(self, title: str, creators: Union[str, List[str]], short_name: str, servable_type: str, serv_options: Dict[str, Any],
+                     affiliations: List[Sequence[str]] = None, paper_doi: str = None):
         """Simplified publishing method for servables
 
         Args:
