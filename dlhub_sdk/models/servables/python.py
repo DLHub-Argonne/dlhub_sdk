@@ -2,8 +2,7 @@
 import pickle as pkl
 import importlib
 from inspect import Signature
-from types import GenericAlias
-from typing import Any, Union
+from typing import Any, Dict, List, Tuple, Union
 from numpy import ndarray
 
 from dlhub_sdk.models.servables import BaseServableModel, ArgumentTypeMetadata
@@ -220,7 +219,7 @@ class PythonStaticMethodModel(BasePythonServableModel):
         return 'Python static method'
 
 
-def _signature_to_input(sig: Signature) -> dict[str, Any]:
+def _signature_to_input(sig: Signature) -> Dict[str, Any]:
     """Use a function signature to generate the input to set_inputs()"""
     if len(sig.parameters.values()) == 0:
         return {"data_type": "python object", "description": "", "python_type": "builtins.NoneType"}  # mirros last clause of _type_hint_to_metadata
@@ -244,7 +243,7 @@ def _signature_to_input(sig: Signature) -> dict[str, Any]:
     return {"data_type": "tuple", "description": "", "element_types": metadata}
 
 
-def _signature_to_output(sig: Signature) -> dict[str, Any]:
+def _signature_to_output(sig: Signature) -> Dict[str, Any]:
     """Use a function signature to generate the input to set_outputs()"""
     # if the return value is not type hinted, auto-extraction cannot proceed
     if sig.return_annotation is sig.empty:
@@ -257,16 +256,16 @@ def _signature_to_output(sig: Signature) -> dict[str, Any]:
     return {"data_type": metadata.pop("type"), **metadata}  # change the name of the "type" property and merge the rest in
 
 
-def _type_hint_to_metadata(hint: Union[GenericAlias, type]) -> dict[str, str]:
+def _type_hint_to_metadata(hint: Union[Tuple, List, Dict, type]) -> Dict[str, str]:
     """Take a type hint and convert it into valid DLHub metadata
     Args:
-        hint (GenericAlias | type): a type hint can be either a type (e.g. int) or a GenericAlias (e.g. list[int]),
-                                    these objects are retrieved from Signature object properties
+        hint (type hint | type): a type hint can be either a type (e.g. int) or a GenericAlias (e.g. list[int]),
+                                 these objects are retrieved from Signature object properties
     Returns:
         (dict): the metadata for the given hint
     """
-    if isinstance(hint, GenericAlias):
-        # in a GenericAlias, the __origin__ is the outer type (e.g. list in list[int])
+    if hasattr(hint, "__origin__"):  # differentiates type hint objects from others
+        # in a type hint, the __origin__ is the outer type (e.g. list in list[int])
         # and the inner type, int, would be at __args__[0]
         if hint.__origin__ is ndarray:
             return compose_argument_block("ndarray", "", shape="Any", item_type=_type_hint_to_metadata(hint.__args__[0]))
