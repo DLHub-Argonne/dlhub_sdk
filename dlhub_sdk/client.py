@@ -4,7 +4,7 @@ import json
 from jsonschema import SchemaError
 import os
 from tempfile import mkstemp
-from typing import Union, Any, Optional, Tuple, Dict
+from typing import Union, Any, Optional, Tuple, Dict, List
 import requests
 import warnings
 import globus_sdk
@@ -425,7 +425,7 @@ class DLHubClient(BaseClient):
         task_id = response.data['task_id']
         return task_id
 
-    def edit_servable(self, servable_name: str, *, model: BaseServableModel = None, changes: dict[str, str] = None) -> dict:
+    def edit_servable(self, servable_name: str, *, model: BaseServableModel = None, changes: Dict[str, str] = None) -> dict:
         """Edit servable metadata from its name and model object or dict of changes
 
         Args:
@@ -459,7 +459,7 @@ class DLHubClient(BaseClient):
 
         return res
 
-    def _edit_dict(self, dct: dict, keys: list[str], data: Any) -> dict:
+    def _edit_dict(self, dct: dict, keys: List[str], data: Any) -> dict:
         """Edit the given dict such that the value found by keys becomes data
 
         Args:
