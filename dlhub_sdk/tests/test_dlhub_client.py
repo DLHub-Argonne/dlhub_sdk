@@ -1,8 +1,9 @@
 import os
+from typing import Dict
 
 import mdf_toolbox
 from pytest import fixture, raises, mark
-from pytest_mock import mocker  # your editor may fail to detect its usage
+from pytest_mock import mocker  # noqa: F401 (flake8 cannot detect usage)
 
 from dlhub_sdk.models.servables.python import PythonStaticMethodModel
 from dlhub_sdk.utils.futures import DLHubFuture
@@ -74,7 +75,9 @@ def test_run(dl):
     assert res.result(timeout=60) == 'Hello world!'
 
 
-def test_submit(dl, mocker):
+# @mark.skipif(not is_gha, reason='Avoid running this test except on larger-scale tests of the system')
+# @mark.skip
+def test_submit(dl, mocker):  # noqa: F811 (flake8 does not understand usage)
     # Make an example function
     model = PythonStaticMethodModel.create_model('numpy.linalg', 'norm')
     model.dlhub.test = True
@@ -88,7 +91,7 @@ def test_submit(dl, mocker):
         def __init__(self) -> None:
             self.status_code = 200
 
-        def json(self) -> dict[str, str]:
+        def json(self) -> Dict[str, str]:
             return {"task_id": "bf06d72e-0478-11ed-97f9-4b1381555b22"}  # valid task id, status is known to be FAILED
 
     # patch requests.post

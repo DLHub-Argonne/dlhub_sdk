@@ -393,6 +393,10 @@ class DLHubClient(BaseClient):
 
         # attempt to construct the model and raise a helpful error if needed
         try:
+            # if the servable is a python function, set the parameter to attempt to auto-generate the inputs/outputs
+            if servable_type in {"static_method", "class_method"}:
+                serv_options["auto_inspect"] = True
+
             model_info = model.create_model(**serv_options)
         except Exception as e:
             help_err = HelpMessage(f"Help can be found here:\nhttps://dlhub-sdk.readthedocs.io/en/latest/source/dlhub_sdk.models.servables.html#"
