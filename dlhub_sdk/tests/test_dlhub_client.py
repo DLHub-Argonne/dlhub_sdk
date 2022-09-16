@@ -100,7 +100,7 @@ def test_submit(dl, mocker):  # noqa: F811 (flake8 does not understand usage)
     assert task_id == "bf06d72e-0478-11ed-97f9-4b1381555b22"
 
     # test auto_inspect for class methods
-    model = PythonClassMethodModel.create_model("TestClass.pkl", "say_hello", {"name": "test"}, auto_inspect=True)
+    model = PythonClassMethodModel.create_model("dlhub_sdk/tests/TestClass.pkl", "say_hello", {"name": "test"}, auto_inspect=True)
     model.dlhub.test = True
     model.set_name('say_hello')
     model.set_title('Say Hello')
