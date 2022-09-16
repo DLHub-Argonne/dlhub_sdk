@@ -182,8 +182,9 @@ class DataciteRelationType(Enum):
 class DataciteRelatedIdentifier(BaseModel):
     """Identifier of a related resource. Use this property to indicate subsets of properties, as appropriate."""
     relatedIdentifier: str
-    relatedIdentifierType: DataciteRelatedIdentifierType
-    relatedMetadataScheme: str
+    relatedIdentifierType: Union[str, DataciteRelatedIdentifierType]
+    relationType: Union[str, DataciteRelationType]
+    relatedMetadataScheme: Optional[str]
     schemeURI: Optional[AnyUrl] = None
 
 
