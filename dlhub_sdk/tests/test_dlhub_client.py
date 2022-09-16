@@ -5,7 +5,7 @@ import mdf_toolbox
 from pytest import fixture, raises, mark
 from pytest_mock import mocker  # noqa: F401 (flake8 cannot detect usage)
 
-from dlhub_sdk.models.servables.python import PythonStaticMethodModel
+from dlhub_sdk.models.servables.python import PythonClassMethodModel, PythonStaticMethodModel
 from dlhub_sdk.utils.futures import DLHubFuture
 from dlhub_sdk.client import DLHubClient
 
@@ -99,11 +99,11 @@ def test_submit(dl, mocker):  # noqa: F811 (flake8 does not understand usage)
     task_id = dl.publish_servable(model)
     assert task_id == "bf06d72e-0478-11ed-97f9-4b1381555b22"
 
-    # test auto_inspect
-    model = PythonStaticMethodModel.create_model("dlhub_sdk.utils.validation", "validate", auto_inspect=True)
+    # test auto_inspect for class methods
+    model = PythonClassMethodModel.create_model("TestClass.pkl", "say_hello", {"name": "test"}, auto_inspect=True)
     model.dlhub.test = True
-    model.set_name('validate_run')
-    model.set_title('Validate dl.run Calls')
+    model.set_name('say_hello')
+    model.set_title('Say Hello')
 
     # Submit the model
     task_id = dl.publish_servable(model)
