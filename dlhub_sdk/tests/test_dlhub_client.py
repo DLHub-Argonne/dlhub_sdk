@@ -99,6 +99,20 @@ def test_submit(dl, mocker):  # noqa: F811 (flake8 does not understand usage)
     task_id = dl.publish_servable(model)
     assert task_id == "bf06d72e-0478-11ed-97f9-4b1381555b22"
 
+    # test auto_inspect
+    model = PythonStaticMethodModel.create_model("dlhub_sdk.utils.validation", "validate", auto_inspect=True)
+    model.dlhub.test = True
+    model.set_name('validate_run')
+    model.set_title('Validate dl.run Calls')
+
+    # Submit the model
+    task_id = dl.publish_servable(model)
+    assert task_id == "bf06d72e-0478-11ed-97f9-4b1381555b22"
+
+    # make sure invalid call raises proper error
+    with raises(TypeError):
+        model = PythonStaticMethodModel.create_model("dlhub_sdk.utils.validation")
+
     # Submit the model using easy publish
     task_id = dl.easy_publish("Validate dl.run Calls", "Darling, Isaac", "validate_run", "static_method",
                               {"module": "dlhub_sdk.utils.validation", "method": "validate"}, [["University of Chicago"]], "not-a-real-doi")
