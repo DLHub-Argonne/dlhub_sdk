@@ -50,7 +50,7 @@ def type_hint_to_metadata(hint: Union[Tuple, List, Dict, type]) -> Dict[str, str
     Returns:
         (dict): the metadata for the given hint
     """
-    if hasattr(hint, "__origin__") and hasattr(hint, "__args__"):  # differentiates subscripted type hint objects from others
+    if hasattr(hint, "__origin__") and hasattr(hint, "__args__") and len(hint.__args__) > 0:  # differentiates subscripted type hint objects
         # in a type hint, the __origin__ is the outer type (e.g. list in list[int])
         # and the inner type, int, would be at __args__[0]
         if hint.__origin__ is ndarray:
