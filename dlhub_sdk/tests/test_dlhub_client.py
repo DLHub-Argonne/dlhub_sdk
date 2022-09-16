@@ -1,4 +1,5 @@
 import os
+import pickle as pkl
 from typing import Dict
 
 import mdf_toolbox
@@ -15,6 +16,16 @@ client_id = os.getenv('CLIENT_ID')
 client_secret = os.getenv('CLIENT_SECRET')
 fx_scope = "https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/all"
 is_gha = os.getenv('GITHUB_ACTIONS')
+_pickle_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "pickle.pkl"))
+
+
+# make dummy reply for mocker patch to return
+class DummyReply:
+    def __init__(self) -> None:
+        self.status_code = 200
+
+    def json(self) -> Dict[str, str]:
+        return {"task_id": "bf06d72e-0478-11ed-97f9-4b1381555b22"}  # valid task id, status is known to be FAILED
 
 
 @fixture()
@@ -84,14 +95,6 @@ def test_submit(dl, mocker):  # noqa: F811 (flake8 does not understand usage)
     model.set_inputs('ndarray', 'Array to be normed', shape=[None])
     model.set_outputs('number', 'Norm of the array')
 
-    # make dummy reply for patch to return
-    class DummyReply:
-        def __init__(self) -> None:
-            self.status_code = 200
-
-        def json(self) -> Dict[str, str]:
-            return {"task_id": "bf06d72e-0478-11ed-97f9-4b1381555b22"}  # valid task id, status is known to be FAILED
-
     # patch requests.post
     mocker.patch("requests.post", return_value=DummyReply())
 
@@ -99,11 +102,15 @@ def test_submit(dl, mocker):  # noqa: F811 (flake8 does not understand usage)
     task_id = dl.publish_servable(model)
     assert task_id == "bf06d72e-0478-11ed-97f9-4b1381555b22"
 
+    # pickle class method to test
+    with open(_pickle_path, 'wb') as fp:
+        pkl.dump(DummyReply(), fp)
+
     # test auto_inspect for class methods
-    model = PythonClassMethodModel.create_model("dlhub_sdk/tests/TestClass.pkl", "say_hello", {"name": "test"}, auto_inspect=True)
+    model = PythonClassMethodModel.create_model(_pickle_path, "json", auto_inspect=True)
     model.dlhub.test = True
-    model.set_name('say_hello')
-    model.set_title('Say Hello')
+    model.set_name("dummy_json")
+    model.set_title("Dummy JSON")
 
     # Submit the model
     task_id = dl.publish_servable(model)
