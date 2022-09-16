@@ -116,7 +116,7 @@ class PythonClassMethodModel(BasePythonServableModel):
     any arguments of the class that should be set as defaults."""
 
     @classmethod
-    def create_model(cls, path, method, function_kwargs=None, *, auto_inspect=True) -> 'PythonClassMethodModel':
+    def create_model(cls, path, method, function_kwargs=None, *, auto_inspect=False) -> 'PythonClassMethodModel':
         """Initialize a model for a python object
 
         Args:
@@ -162,7 +162,7 @@ class PythonStaticMethodModel(BasePythonServableModel):
     """
 
     @classmethod
-    def create_model(cls, module=None, method=None, autobatch=False, function_kwargs=None, *, f=None, auto_inspect=True):
+    def create_model(cls, module=None, method=None, autobatch=False, function_kwargs=None, *, f=None, auto_inspect=False):
         """Initialize the method based on the provided arguments
 
         Args:
