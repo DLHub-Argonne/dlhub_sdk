@@ -18,8 +18,9 @@ class DLHubSearchHelper(SearchHelper):
         """
         super(DLHubSearchHelper, self).__init__("dlhub", search_client=search_client, **kwargs)
 
-    def search(self, q=None, advanced=False, limit=None, info=False, reset_query=True):
-        return super(DLHubSearchHelper, self.exclude_field("dlhub.deleted", True)).search(q, advanced, limit, info, reset_query)
+    # a verison of this functionality needs to be implemented to handle the not yet implemented dl.delete_seravble() function
+    # def search(self, q=None, advanced=False, limit=None, info=False, reset_query=True):
+    #    return super(DLHubSearchHelper, self.exclude_field("dlhub.deleted", True)).search(q, advanced, limit, info, reset_query)
 
     def match_owner(self, owner):
         """Add a model owner to the query.
