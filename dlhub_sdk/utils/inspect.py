@@ -73,4 +73,18 @@ def type_hint_to_metadata(hint: Union[Tuple, List, Dict, type]) -> Dict[str, str
 
         if hint is None:
             hint = type(None)
-        return compose_argument_block("python object", "", python_type=f"{hint.__module__}.{hint.__qualname__}")
+        return compose_argument_block("python object", "", python_type=f"{hint.__module__}.{name(hint)}")
+
+
+def name(t: type) -> str:
+    """Return the name of type t
+       (typing types do not have the normal __qualname__ attribute in some Python versions, in those versions they have a _name instead)
+    Args:
+        t (type): the type which needs to be identified
+    Returns:
+        (string): the name of type t
+    """
+    if hasattr(t, "__qualname__"):
+        return t.__qualname__
+
+    return t._name
