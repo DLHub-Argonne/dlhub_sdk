@@ -53,7 +53,7 @@ def test_get_servables(dl):
 
 def test_run(dl):
     user = "aristana_uchicago"
-    name = "noop_v10"
+    name = "noop_v11"  # published 2/22/2022
     data = True  # accepts anything as input, but listed as Boolean in DLHub
 
     # Test a synchronous request
@@ -86,6 +86,13 @@ def test_submit(dl):
 
     # Submit the model
     dl.publish_servable(model)
+
+
+@mark.skip  # unimplemented on the service currently
+def test_edit(dl):
+    res = dl.edit_servable("noop_v10", changes={"servable.methods.run.output.description": "'Hello, world!'"})
+    with open("test_res.txt", "w") as f:
+        f.write(str(res))
 
 
 def test_describe_model(dl):
@@ -220,6 +227,6 @@ def test_namespace(dl):
 
 
 def test_status(dl):
-    future = dl.run('aristana_uchicago/noop_v10', True, asynchronous=True)
+    future = dl.run('aristana_uchicago/noop_v11', True, asynchronous=True)
     # Need spec for Fx status returns
     assert isinstance(dl.get_task_status(future.task_id), dict)
