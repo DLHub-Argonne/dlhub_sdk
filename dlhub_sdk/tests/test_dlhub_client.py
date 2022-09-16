@@ -100,8 +100,8 @@ def test_submit(dl, mocker):  # noqa: F811 (flake8 does not understand usage)
     assert task_id == "bf06d72e-0478-11ed-97f9-4b1381555b22"
 
     # Submit the model using easy publish
-    task_id = dl.easy_publish("Norm of a 1D Array", "Developer, Some", "1d_norm", "static_method", {"module": "numpy.linalg", "method": "norm"},
-                              [["University of Chicago"]], "not-a-real-doi")
+    task_id = dl.easy_publish("Validate dl.run Calls", "Darling, Isaac", "validate_run", "static_method",
+                              {"module": "dlhub_sdk.utils.validation", "method": "validate"}, [["University of Chicago"]], "not-a-real-doi")
     assert task_id == "bf06d72e-0478-11ed-97f9-4b1381555b22"
 
 
