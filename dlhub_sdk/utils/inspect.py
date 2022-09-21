@@ -53,8 +53,6 @@ def type_hint_to_metadata(hint: Union[Tuple, List, Dict, type]) -> Dict[str, str
     if hasattr(hint, "__origin__") and hasattr(hint, "__args__") and len(hint.__args__) > 0:  # differentiates subscripted type hint objects
         # in a type hint, the __origin__ is the outer type (e.g. list in list[int])
         # and the inner type, int, would be at __args__[0]
-        if hint.__origin__ is ndarray:
-            return compose_argument_block("ndarray", "", shape="Any", item_type=type_hint_to_metadata(hint.__args__[0]))
         if hint.__origin__ is list:
             return compose_argument_block("list", "", item_type=type_hint_to_metadata(hint.__args__[0]))  # __args__ is a tuple even if it's length=1
         if hint.__origin__ is tuple:
