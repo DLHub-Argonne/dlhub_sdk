@@ -13,6 +13,8 @@ def test_validation() -> None:
         {"item_type": {"type": "integer"}, "type": "list"},
         {"element_types": [{"type": "integer"}, {"type": "integer"}, {"type": "string"}], "type": "tuple"},
         {"properties": {"a": {"type": "integer"}, "b": {"type": "integer"}, "c": {"type": "integer"}}, "type": "dict"},
+        {"shape": "Any", "type": "ndarray"},
+        {"shape": "Any", "type": "ndarray"},
         {"shape": ["None", "2"], "item_type": {"type": "integer"}, "type": "ndarray"},
         {"shape": ["1"], "item_type": {"properties": {"a": {"type": "integer"}}, "type": "dict"}, "type": "ndarray"},
         {"item_type": {"properties": {"a": {"item_type": {"type": "integer"}, "type": "list"}}, "type": "dict"}, "type": "list"}
@@ -25,6 +27,8 @@ def test_validation() -> None:
         [1, 2, 3],
         (1, 2, "hello"),
         {"a": 1, "b": 2, "c": 3},
+        array([1, 2, 3]),
+        array([[1], [2]]),
         array([[1, 2], [3, 4]]),
         array([{"a": 1}]),
         [{"a": [1, 2, 3, 4]}]

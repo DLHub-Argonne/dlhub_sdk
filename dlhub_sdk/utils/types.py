@@ -1,5 +1,18 @@
 """Utilities for generating descriptions of data types"""
+from datetime import datetime, timedelta
 from six import string_types
+
+
+PY_TYPENAME_TO_JSON = {
+    bool: "boolean",
+    int: "integer",
+    float: "float",
+    complex: "complex",
+    timedelta: "timedelta",
+    datetime: "datetime",
+    str: "string"
+    # use with dict.get(key) to handle "python object"
+}
 
 
 def simplify_numpy_dtype(dtype):
@@ -37,7 +50,7 @@ def compose_argument_block(data_type, description, shape=None, item_type=None,
     Args:
         data_type (string): Type of the input data
         description (string): Human-friendly description of the data
-        shape (list): Required for data_type of list or ndarray. Use `None` for dimensions that
+        shape (list): Required for data_type = ndarray. Use `None` for dimensions that
             can have any numbers of values
         item_type (string/dict): Description of the item type. Required for data_type = list.
             Can either be a string type, or a dict that is a valid type for an argument type block
@@ -60,7 +73,8 @@ def compose_argument_block(data_type, description, shape=None, item_type=None,
     if data_type == "ndarray":
         if shape is None:
             raise ValueError('Shape must be specified for ndarrays')
-        args['shape'] = list(shape)
+        # this checks for NaN because NaN is the only value that is not equal to itself (more sensical to store NaN than [NaN])
+        args['shape'] = shape if isinstance(shape, str) else list(shape)
 
     # Check if the item_type needs to be defined
     if data_type == "list":
@@ -75,7 +89,7 @@ def compose_argument_block(data_type, description, shape=None, item_type=None,
     # If the type is "python object", python_type must be specified
     if data_type == "python object":
         if python_type is None:
-            raise ValueError('Python type must be defined ')
+            raise ValueError('Python type must be defined')
         args['python_type'] = python_type
 
     # Check if the keys need to be defined

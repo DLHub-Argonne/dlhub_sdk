@@ -2,7 +2,7 @@ import logging
 import json
 import os
 from tempfile import mkstemp
-from typing import Union, Any, Optional, Tuple, Dict
+from typing import Sequence, Union, Any, Optional, Tuple, Dict, List
 import requests
 import globus_sdk
 
@@ -14,6 +14,13 @@ from mdf_toolbox.globus_search.search_helper import SEARCH_LIMIT
 from funcx.sdk.client import FuncXClient
 from globus_sdk.scopes import AuthScopes, SearchScopes
 
+from dlhub_sdk.models.servables.keras import KerasModel
+from dlhub_sdk.models.servables.pytorch import TorchModel
+from dlhub_sdk.models.servables.python import PythonClassMethodModel
+from dlhub_sdk.models.servables.python import PythonStaticMethodModel
+from dlhub_sdk.models.servables.tensorflow import TensorFlowModel
+from dlhub_sdk.models.servables.sklearn import ScikitLearnModel
+
 from dlhub_sdk.config import DLHUB_SERVICE_ADDRESS, CLIENT_ID
 from dlhub_sdk.utils.futures import DLHubFuture
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
@@ -24,6 +31,10 @@ from dlhub_sdk.utils.funcx_login_manager import FuncXLoginManager
 # Directory for authentication tokens
 _token_dir = os.path.expanduser("~/.dlhub/credentials")
 logger = logging.getLogger(__name__)
+
+
+class HelpMessage(Exception):
+    """Raised from another error to provide the user an additional message"""
 
 
 class DLHubClient(BaseClient):
@@ -342,6 +353,70 @@ class DLHubClient(BaseClient):
         if isinstance(result, tuple) and not verbose:
             result = result[0]
         return result
+
+    def easy_publish(self, title: str, creators: Union[str, List[str]], short_name: str, servable_type: str, serv_options: Dict[str, Any],
+                     affiliations: List[Sequence[str]] = None, paper_doi: str = None):
+        """Simplified publishing method for servables
+
+        Args:
+            title (string): title for the servable
+            creators (string | list): either the creator's name (FamilyName, GivenName) or a list of the creators' names
+            short_name (string): shorthand name for the servable
+            servable_type (string): the type of the servable, must be a member of ("static_method",
+                                                                                   "class_method",
+                                                                                   "keras",
+                                                                                   "pytorch",
+                                                                                   "tensorflow",
+                                                                                   "sklearn") more information on servable types can be found here:
+                                                                                   https://dlhub-sdk.readthedocs.io/en/latest/servable-types.html
+            serv_options (dict): the servable_type specific arguments that are necessary for publishing
+            affiliations (list): list of affiliations for each author
+            paper_doi (str): DOI of a paper that describes the servable
+        Returns:
+            (string): task id of this submission, can be used to check for success
+        Raises:
+            ValueError: If the given servable_type is not in the list of acceptable types
+            Exception: If the serv_options are incomplete or the request to publish results in an error
+        """
+        # conversion table for model string names to classes
+        models = {"static_method": PythonStaticMethodModel,
+                  "class_method": PythonClassMethodModel,
+                  "keras": KerasModel,
+                  "pytorch": TorchModel,
+                  "tensorflow": TensorFlowModel,
+                  "sklearn": ScikitLearnModel}
+
+        # raise an error if the provided servable_type is invalid
+        model = models.get(servable_type)
+        if model is None:
+            raise ValueError(f"dl.easy_publish given invalid servable type: {servable_type}, please refer to the docstring")
+
+        # attempt to construct the model and raise a helpful error if needed
+        try:
+            # if the servable is a python function, set the parameter to attempt to auto-generate the inputs/outputs
+            if servable_type in {"static_method", "class_method"}:
+                serv_options["auto_inspect"] = True
+
+            model_info = model.create_model(**serv_options)
+        except Exception as e:
+            help_err = HelpMessage(f"Help can be found here:\nhttps://dlhub-sdk.readthedocs.io/en/latest/source/dlhub_sdk.models.servables.html#"
+                                   f"{model.__module__}.{model.__name__}.create_model")
+            raise help_err from e
+
+        # set the required datacite fields
+        model_info.set_title(title)
+        creators = [creators] if isinstance(creators, str) else creators  # handle the case where creators is a string
+        model_info.set_creators(creators, affiliations or [])  # affiliations if provided, else empty list
+        model_info.set_name(short_name)
+
+        if paper_doi is not None:
+            model_info.add_related_resource(paper_doi, "DOI", "IsDescribedBy")
+
+        # perform the publish
+        task_id = self.publish_servable(model_info)
+
+        # return the id of the publish task
+        return task_id
 
     def publish_servable(self, model):
         """Submit a servable to DLHub
