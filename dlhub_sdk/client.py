@@ -444,6 +444,24 @@ class DLHubClient(BaseClient):
         # Wipe the fx cache so we don't keep reusing an old servable
         self.clear_funcx_cache()
 
+        # automatically add version numbers to duplicately named servables from the same owner
+        prev_versions = self.query.search(f"dlhub.owner: {self.get_username()} AND"
+                                          f"(dlhub.name: {metadata['dlhub']['name']} OR dlhub.name: {metadata['dlhub']['name']}_v*)", advanced=True)
+        if prev_versions:
+            max_version = 0
+
+            for data in prev_versions:
+                try:
+                    name = data["dlhub"]["name"]
+                    version = int(name[name.rindex("_v")+2:])
+                    max_version = max(version, max_version)
+                except ValueError:  # either "_v" is not found (it is the original version) or the data after "_v" is not an int
+                    if name == metadata['dlhub']['name']:  # if it is the original version, check if the max_version should be set to 1
+                        max_version = max(1, max_version)
+
+            if max_version:
+                metadata['dlhub']['name'] = f"{metadata['dlhub']['name']}_v{max_version+1}"
+
         # Get the data to be submitted as a ZIP file
         fp, zip_filename = mkstemp('.zip')
         os.close(fp)
