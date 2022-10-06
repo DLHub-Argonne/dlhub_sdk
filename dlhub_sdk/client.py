@@ -445,7 +445,7 @@ class DLHubClient(BaseClient):
         self.clear_funcx_cache()
 
         # automatically add version numbers to duplicately named servables from the same owner
-        prev_versions = self.query.search(f"dlhub.owner: {self.get_username()} AND"
+        prev_versions = self.query.search(f"dlhub.owner: {self.get_username()} AND "
                                           f"(dlhub.name: {metadata['dlhub']['name']} OR dlhub.name: {metadata['dlhub']['name']}_v*)", advanced=True)
         if prev_versions:
             max_version = 0
