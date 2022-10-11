@@ -1,4 +1,5 @@
 import os
+import time
 import pickle as pkl
 from typing import Dict
 
@@ -16,6 +17,7 @@ client_id = os.getenv('CLIENT_ID')
 client_secret = os.getenv('CLIENT_SECRET')
 fx_scope = "https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/all"
 is_gha = os.getenv('GITHUB_ACTIONS')
+current_branch = os.getenv("BRANCH_NAME")
 _pickle_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "pickle.pkl"))
 
 
@@ -124,6 +126,17 @@ def test_submit(dl, mocker):  # noqa: F811 (flake8 does not understand usage)
     task_id = dl.easy_publish("Validate dl.run Calls", "Darling, Isaac", "validate_run", "static_method",
                               {"module": "dlhub_sdk.utils.validation", "method": "validate"}, [["University of Chicago"]], "not-a-real-doi")
     assert task_id == "bf06d72e-0478-11ed-97f9-4b1381555b22"
+
+
+@mark.skipif(current_branch != "master", reason="Avoids publishing material unnecessarily")
+def test_versioning(dl):
+    max_version = 4
+    name = f"version_test_at_{int(time.time())}"
+
+    for _ in range(max_version):
+        dl.publish_servable()
+
+    assert len(dl.query.search()) == 1
 
 
 def test_describe_model(dl):
