@@ -456,11 +456,11 @@ class DLHubClient(BaseClient):
                     version = int(name[name.rindex("_v")+2:])
                     max_version = max(version, max_version)
                 except ValueError:  # either "_v" is not found (it is the original version) or the data after "_v" is not an int and can be ignored
-                    if name == metadata['dlhub']['name']:  # if it is the original version, check if the max_version should be set to 1
+                    if name == metadata["dlhub"]["name"]:  # if it is the original version, check if the max_version should be set to 1
                         max_version = max(1, max_version)
 
             if max_version:
-                metadata['dlhub']['name'] = f"{metadata['dlhub']['name']}_v{max_version+1}"
+                metadata["dlhub"]["name"] = f"{metadata['dlhub']['name']}_v{max_version+1}"
 
         # Get the data to be submitted as a ZIP file
         fp, zip_filename = mkstemp('.zip')
