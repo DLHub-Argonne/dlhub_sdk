@@ -132,13 +132,13 @@ def test_submit(dl, mocker):  # noqa: F811 (flake8 does not understand usage)
 @mark.skip
 def test_versioning(dl):
     max_version = 4
-    # name = f"version_test_at_{int(time.time())}"
+    name = f"version_test_at_{int(time.time())}"
 
     # make model
 
     for _ in range(max_version):
         # publish that model
-        ...
+        name
 
     # search for each version, ensuring it exists and there is exactly 1
     ...
