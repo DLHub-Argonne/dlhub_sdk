@@ -243,7 +243,7 @@ class DLHubClient(BaseClient):
         return get_method_details(metadata, method)
 
     def run(self, name: str, inputs: Any, parameters: Optional[Dict[str, Any]] = None,
-            asynchronous: bool = False, debug: bool = False, validate_input: bool = True,
+            asynchronous: bool = False, debug: bool = False, validate_input: bool = False,
             async_wait: float = 5, timeout: Optional[float] = None)\
             -> Union[
                 DLHubFuture,
