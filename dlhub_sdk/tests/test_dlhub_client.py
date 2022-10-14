@@ -61,6 +61,11 @@ def test_run(dl):
     # res[0] contains model results, res[1] contains event data JSON
     assert res == 'Hello world!'
 
+    # Do the same thing with input validation
+    res = dl.run("{}/{}".format(user, name), data, timeout=60, validate_input=True)
+    # res[0] contains model results, res[1] contains event data JSON
+    assert res == 'Hello world!'
+
     # Do the same thing with debug mode
     res = dl.run("{}/{}".format(user, name), data, timeout=60, debug=True)
     # res[0] contains model results, res[1] contains event data JSON
