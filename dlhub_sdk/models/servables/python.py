@@ -1,8 +1,11 @@
 """Tools to annotate generic operations (e.g., class method calls) in Python"""
 import pickle as pkl
+import importlib
+from inspect import Signature
 
 from dlhub_sdk.models.servables import BaseServableModel, ArgumentTypeMetadata
 from dlhub_sdk.utils.types import compose_argument_block
+from dlhub_sdk.utils.inspect import signature_to_input, signature_to_output
 
 
 class BasePythonServableModel(BaseServableModel):
@@ -113,7 +116,7 @@ class PythonClassMethodModel(BasePythonServableModel):
     any arguments of the class that should be set as defaults."""
 
     @classmethod
-    def create_model(cls, path, method, function_kwargs=None) -> 'PythonClassMethodModel':
+    def create_model(cls, path, method, function_kwargs=None, *, auto_inspect=False) -> 'PythonClassMethodModel':
         """Initialize a model for a python object
 
         Args:
@@ -121,6 +124,7 @@ class PythonClassMethodModel(BasePythonServableModel):
             method (string): Name of the method for this class
             function_kwargs (dict): Names and values of any other argument of the function to set
                 the values must be JSON serializable.
+            auto_inspect (boolean): Whether or not to attempt to automatically extract inputs from the function
         """
         output = super(PythonClassMethodModel, cls).create_model(method, function_kwargs)
 
@@ -134,6 +138,11 @@ class PythonClassMethodModel(BasePythonServableModel):
         output.servable.methods["run"].method_details.update({
             'class_name': class_name
         })
+
+        if auto_inspect:
+            func = getattr(obj, method)
+
+            output = add_extracted_metadata(func, output)
 
         return output
 
@@ -153,8 +162,8 @@ class PythonStaticMethodModel(BasePythonServableModel):
     """
 
     @classmethod
-    def create_model(cls, module, method, autobatch=False, function_kwargs=None):
-        """Initialize the method
+    def create_model(cls, module=None, method=None, autobatch=False, function_kwargs=None, *, f=None, auto_inspect=False):
+        """Initialize the method based on the provided arguments
 
         Args:
             module (string): Name of the module holding the function
@@ -163,28 +172,61 @@ class PythonStaticMethodModel(BasePythonServableModel):
                 Calls :code:`map(f, list)`
             function_kwargs (dict): Names and values of any other argument of the function to set
                 the values must be JSON serializable.
+            f (object): function pointer to the desired python function
+            auto_inspect (boolean): Whether or not to attempt to automatically extract inputs from the function
+        Raises:
+            TypeError: If there is no valid way to process the given arguments
         """
+        # if a pointer is provided, get the module and method
+        if f is not None:
+            module, method = f.__module__, f.__name__
+            func = f
+        # if it is not, ensure both the module and method are provided and get the function pointer
+        elif module is not None and method is not None:
+            module_obj = importlib.import_module(module)
+            func = getattr(module_obj, method)
+        else:
+            raise TypeError("PythonStaticMethodModel.create_model was not provided valid arguments. Please provide either a funtion pointer"
+                            " or the module and name of the desired static function")
+
         output = super(PythonStaticMethodModel, cls).create_model(method, function_kwargs)
 
         output.servable.methods["run"].method_details.update({
             'module': module,
             'autobatch': autobatch
         })
+
+        if auto_inspect:
+            output = add_extracted_metadata(func, output)
+
         return output
 
     @classmethod
     def from_function_pointer(cls, f, autobatch=False, function_kwargs=None):
         """Construct the module given a function pointer
-
         Args:
-            f (object): A function pointer
+            f (object): Function pointer to the Python function to be published
             autobatch (bool): Whether to run function on an iterable of entries
             function_kwargs (dict): Any default options for this function
         """
-        return cls.create_model(f.__module__, f.__name__, autobatch, function_kwargs)
+        return cls.create_model(f=f, autobatch=autobatch, function_kwargs=function_kwargs)
 
     def _get_handler(self):
         return 'python.PythonStaticMethodServable'
 
     def _get_type(self):
         return 'Python static method'
+
+
+def add_extracted_metadata(func, model: BasePythonServableModel) -> BasePythonServableModel:
+    """Helper function for adding generated input/output metadata to a model object
+    Args:
+        func: a pointer to the function whose data is to be extracted
+        model (BasePythonServableModel): the model who needs its data to be updated
+    Returns:
+        (BasePythonServableModel): the model that was given after it is updated
+    """
+    sig = Signature.from_callable(func)
+    model = model.set_inputs(**signature_to_input(sig))
+    model = model.set_outputs(**signature_to_output(sig))
+    return model
