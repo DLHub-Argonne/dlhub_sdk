@@ -1,3 +1,4 @@
+import importlib
 import logging
 import json
 import os
@@ -13,13 +14,6 @@ from mdf_toolbox import login, logout
 from mdf_toolbox.globus_search.search_helper import SEARCH_LIMIT
 from funcx.sdk.client import FuncXClient
 from globus_sdk.scopes import AuthScopes, SearchScopes
-
-from dlhub_sdk.models.servables.keras import KerasModel
-from dlhub_sdk.models.servables.pytorch import TorchModel
-from dlhub_sdk.models.servables.python import PythonClassMethodModel
-from dlhub_sdk.models.servables.python import PythonStaticMethodModel
-from dlhub_sdk.models.servables.tensorflow import TensorFlowModel
-from dlhub_sdk.models.servables.sklearn import ScikitLearnModel
 
 from dlhub_sdk.config import DLHUB_SERVICE_ADDRESS, CLIENT_ID
 from dlhub_sdk.utils.futures import DLHubFuture
@@ -128,7 +122,7 @@ class DLHubClient(BaseClient):
             AuthScopes.openid: openid_authorizer,
             SearchScopes.all: search_authorizer,
             'dlhub': dlh_authorizer,
-         }
+        }
 
         login_manager = FuncXLoginManager(authorizers=auth_dict)
         self._fx_client = FuncXClient(login_manager=login_manager)
@@ -255,7 +249,7 @@ class DLHubClient(BaseClient):
 
     def run(self, name: str, inputs: Any, parameters: Optional[Dict[str, Any]] = None,
             asynchronous: bool = False, debug: bool = False, validate_input: bool = False,
-            async_wait: float = 5, timeout: Optional[float] = None)\
+            async_wait: float = 5, timeout: Optional[float] = None) \
             -> Union[
                 DLHubFuture,
                 Tuple[Any, Dict[str, Any]],
@@ -378,18 +372,22 @@ class DLHubClient(BaseClient):
             ValueError: If the given servable_type is not in the list of acceptable types
             Exception: If the serv_options are incomplete or the request to publish results in an error
         """
-        # conversion table for model string names to classes
-        models = {"static_method": PythonStaticMethodModel,
-                  "class_method": PythonClassMethodModel,
-                  "keras": KerasModel,
-                  "pytorch": TorchModel,
-                  "tensorflow": TensorFlowModel,
-                  "sklearn": ScikitLearnModel}
+        # conversion table for model string names to class paths
+        model_paths = {"static_method": ("dlhub_sdk.models.servables.python", "PythonStaticMethodModel"),
+                       "class_method": ("dlhub_sdk.models.servables.python", "PythonClassMethodModel"),
+                       "keras": ("dlhub_sdk.models.servables.keras", "KerasModel"),
+                       "pytorch": ("dlhub_sdk.models.servables.pytorch", "TorchModel"),
+                       "tensorflow": ("dlhub_sdk.models.servables.tensorflow", "TensorFlowModel"),
+                       "sklearn": ("dlhub_sdk.models.servables.sklearn", "ScikitLearnModel")}
 
         # raise an error if the provided servable_type is invalid
-        model = models.get(servable_type)
-        if model is None:
+        if servable_type not in model_paths:
             raise ValueError(f"dl.easy_publish given invalid servable type: {servable_type}, please refer to the docstring")
+
+        # Load the model in using importlib
+        module_name, class_name = model_paths[servable_type]
+        mod = importlib.import_module(module_name)
+        model = getattr(mod, class_name)
 
         # attempt to construct the model and raise a helpful error if needed
         try:
