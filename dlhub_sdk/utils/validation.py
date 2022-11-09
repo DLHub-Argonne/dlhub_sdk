@@ -193,17 +193,19 @@ def _validate_ndarray(arr: ndarray, shape: List[str], db_entry: dict, path: List
         ValueError: If arr.shape does not match shape
         TypeError: If any of the items' types do not match
     """
-    shape = tuple(int(x) if x != "None" else x for x in shape)  # convert the string metadata into integers, if applicable
+    # do not need to check shape if Any are acceptable
+    if shape != "Any":
+        shape = tuple(int(x) if x != "None" else x for x in shape)  # convert the string metadata into integers, if applicable
 
-    # store an error to make code more readable
-    shape_err = _generate_err(ValueError, path, msg=f"dl.run given improper input: expected ndarray.shape = {shape}, received shape: {arr.shape}"
-                                                    + "{loc}")
+        # store an error to make code more readable
+        shape_err = _generate_err(ValueError, path, msg=f"dl.run given improper input: expected ndarray.shape = {shape}, received shape: {arr.shape}"
+                                                        + "{loc}")
 
-    # if the shape of the array does not match the metadata, an error can be raised immediately
-    if len(arr.shape) != len(shape):
-        raise shape_err
-    if not all(map(lambda t: t[0] == t[1] or t[1] == "None", zip(arr.shape, shape))):
-        raise shape_err
+        # if the shape of the array does not match the metadata, an error can be raised immediately
+        if len(arr.shape) != len(shape):
+            raise shape_err
+        if not all(map(lambda t: t[0] == t[1] or t[1] == "None", zip(arr.shape, shape))):
+            raise shape_err
 
     # it is not required for there to be an "item_type" field, but it should be checked if present
     entry = db_entry.get("item_type")

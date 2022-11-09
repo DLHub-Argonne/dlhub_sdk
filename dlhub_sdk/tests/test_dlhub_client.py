@@ -1,9 +1,12 @@
 import os
+import pickle as pkl
+from typing import Dict
 
 import mdf_toolbox
 from pytest import fixture, raises, mark
+from pytest_mock import mocker  # noqa: F401 (flake8 cannot detect usage)
 
-from dlhub_sdk.models.servables.python import PythonStaticMethodModel
+from dlhub_sdk.models.servables.python import PythonClassMethodModel, PythonStaticMethodModel
 from dlhub_sdk.utils.futures import DLHubFuture
 from dlhub_sdk.client import DLHubClient
 
@@ -13,6 +16,16 @@ client_id = os.getenv('CLIENT_ID')
 client_secret = os.getenv('CLIENT_SECRET')
 fx_scope = "https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/all"
 is_gha = os.getenv('GITHUB_ACTIONS')
+_pickle_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "pickle.pkl"))
+
+
+# make dummy reply for mocker patch to return
+class DummyReply:
+    def __init__(self) -> None:
+        self.status_code = 200
+
+    def json(self) -> Dict[str, str]:
+        return {"task_id": "bf06d72e-0478-11ed-97f9-4b1381555b22"}  # valid task id, status is known to be FAILED
 
 
 @fixture()
@@ -61,6 +74,11 @@ def test_run(dl):
     # res[0] contains model results, res[1] contains event data JSON
     assert res == 'Hello world!'
 
+    # Do the same thing with input validation
+    res = dl.run("{}/{}".format(user, name), data, timeout=60, validate_input=True)
+    # res[0] contains model results, res[1] contains event data JSON
+    assert res == 'Hello world!'
+
     # Do the same thing with debug mode
     res = dl.run("{}/{}".format(user, name), data, timeout=60, debug=True)
     # res[0] contains model results, res[1] contains event data JSON
@@ -73,9 +91,7 @@ def test_run(dl):
     assert res.result(timeout=60) == 'Hello world!'
 
 
-@mark.skipif(not is_gha, reason='Avoid running this test except on larger-scale tests of the system')
-@mark.skip
-def test_submit(dl):
+def test_submit(dl, mocker):  # noqa: F811 (flake8 does not understand usage)
     # Make an example function
     model = PythonStaticMethodModel.create_model('numpy.linalg', 'norm')
     model.dlhub.test = True
@@ -84,8 +100,35 @@ def test_submit(dl):
     model.set_inputs('ndarray', 'Array to be normed', shape=[None])
     model.set_outputs('number', 'Norm of the array')
 
+    # patch requests.post
+    mocker.patch("requests.post", return_value=DummyReply())
+
     # Submit the model
-    dl.publish_servable(model)
+    task_id = dl.publish_servable(model)
+    assert task_id == "bf06d72e-0478-11ed-97f9-4b1381555b22"
+
+    # pickle class method to test
+    with open(_pickle_path, 'wb') as fp:
+        pkl.dump(DummyReply(), fp)
+
+    # test auto_inspect for class methods
+    model = PythonClassMethodModel.create_model(_pickle_path, "json", auto_inspect=True)
+    model.dlhub.test = True
+    model.set_name("dummy_json")
+    model.set_title("Dummy JSON")
+
+    # Submit the model
+    task_id = dl.publish_servable(model)
+    assert task_id == "bf06d72e-0478-11ed-97f9-4b1381555b22"
+
+    # make sure invalid call raises proper error
+    with raises(TypeError):
+        model = PythonStaticMethodModel.create_model("dlhub_sdk.utils.validation")
+
+    # Submit the model using easy publish
+    task_id = dl.easy_publish("Validate dl.run Calls", "Darling, Isaac", "validate_run", "static_method",
+                              {"module": "dlhub_sdk.utils.validation", "method": "validate"}, [["University of Chicago"]], "not-a-real-doi")
+    assert task_id == "bf06d72e-0478-11ed-97f9-4b1381555b22"
 
 
 def test_describe_model(dl):

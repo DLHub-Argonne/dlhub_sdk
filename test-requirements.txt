@@ -7,3 +7,4 @@ pytest
 pytest-cov
 mdf-connect-client>=0.3.8
 pytest-timeout
+pytest-mock
