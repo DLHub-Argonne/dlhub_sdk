@@ -242,7 +242,7 @@ class DLHubClient(BaseClient):
         metadata = self.describe_servable(name)
         return get_method_details(metadata, method)
 
-    def run(self, name: str, inputs: Any, parameters: Optional[Dict[str, Any]] = None,
+    def run(self, identifier: str, inputs: Any, parameters: Optional[Dict[str, Any]] = None,
             asynchronous: bool = False, debug: bool = False, validate_input: bool = True,
             async_wait: float = 5, timeout: Optional[float] = None)\
             -> Union[
@@ -253,7 +253,7 @@ class DLHubClient(BaseClient):
         """Invoke a DLHub servable
 
         Args:
-            name: DLHub name of the servable of the form <user>/<servable_name>
+            identifier: DOI of desired servable or DLHub name of the form <user>/<servable_name>
             inputs: Data to be used as input to the function. Can be a string of file paths or URLs
             parameters: Any optional parameters to pass to the function.
             asynchronous: Whether to return from the function immediately or wait for the execution to finish.
@@ -271,13 +271,24 @@ class DLHubClient(BaseClient):
                 - error_message: Exception traceback
             If neither, the output of the function
         """
+        # if identifier is a DOI
+        if identifier.startswith("10.") or identifier.startswith("https://doi.org/"):
+            # get the DOI part of the string
+            identifier = identifier[identifier.index("10."):]
+            res = self.search(f"datacite.identifier.identifierType: DOI AND datacite.identifier.identifier: {identifier}",
+                              advanced=True,
+                              only_latest=True)
+            if not res:
+                raise ValueError("dl.run encountered an unknown DOI, please confirm the provided DOI is tied to a servable.")
+            # change identifier to the name of the servable
+            identifier = res[0]["dlhub"]["shorthand_name"]
 
-        if name not in self.fx_cache:
+        if identifier not in self.fx_cache:
             # Look it up and add it to the cache, this will raise an exception if not found.
-            serv = self.describe_servable(name)
-            self.fx_cache.update({name: serv['dlhub']['funcx_id']})
+            serv = self.describe_servable(identifier)
+            self.fx_cache.update({identifier: serv['dlhub']['funcx_id']})
 
-        funcx_id = self.fx_cache[name]
+        funcx_id = self.fx_cache[identifier]
         payload = {
             'inputs': inputs,
             'parameters': parameters,
@@ -285,7 +296,7 @@ class DLHubClient(BaseClient):
         }
 
         if validate_input:
-            self._validate_input(name, inputs)
+            self._validate_input(identifier, inputs)
 
         task_id = self._fx_client.run(payload, endpoint_id=self.fx_endpoint, function_id=funcx_id)
 
