@@ -13,8 +13,8 @@ on:
       - master
       - dev
   schedule:
-    # daily testing to occur at 7:30 CST every Monday
-    - cron: '30 13 * * 1'
+    # daily testing to occur at 4:00am CST every morning
+    - cron: '00 10 * * *'
 jobs:
   build:
     runs-on: ubuntu-latest
