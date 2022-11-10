@@ -31,14 +31,8 @@ jobs:
           - python_version: "3.8"
             label: latest libraries
 
-          # Support for changes in Keras
           - python_version: "3.7"
-            keras-version: "2.1.3"
-            label: keras-2.1.3
-
-          - python_version: "3.7"
-            keras-version: "2.2.3"
-            label: keras-2.2.3
+            label: latest libraries
 
     name: "Python ${{ matrix.cfg.python_version }} - ${{ matrix.cfg.label }}"
 
@@ -64,21 +58,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e .
           pip install flake8 pytest
-          pip install -r test-requirements.txt
-
-          # Adding keras and TF1 for some tests
-          if [ -n "${{matrix.cfg.keras-version}}" ]; then
-            pip install keras==${{matrix.cfg.keras-version}} "tensorflow<2" "h5py<3" "pyyaml<6" "protobuf<4"
-          else
-            # Otherwise, use TF2
-            pip uninstall keras
-            pip install "tensorflow>2"
-          fi
-
-          # Manually-specifying the version of scikit-learn
-          if [ -n "${{matrix.cfg.scikit-learn}}" ]; then
-            pip install scikit-learn==${{matrix.cfg.scikit-learn}}
-          fi
+          pip install -r test-requirements.txt      
 
           # Print out the environment for record-keeping
           pip list
