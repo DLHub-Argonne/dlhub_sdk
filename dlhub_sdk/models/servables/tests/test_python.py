@@ -42,15 +42,13 @@ def test_pickle():
     # Add some requirements
     model.add_requirement('scikit-learn', 'detect')
     model.add_requirement('numpy', 'detect')
-    model.add_requirement('sklearn', 'latest')  # Dummy project, version # shouldn't change
 
     # Check the model output
     output = model.to_dict()
     assert output['dlhub']['files'] == {'pickle': _pickle_path}
     assert output['dlhub']['dependencies']['python'] == {
         'scikit-learn': skl_version,
-        'numpy': numpy_version,
-        'sklearn': '0.0'
+        'numpy': numpy_version
     }
     assert output['servable']['shim'] == 'python.PythonClassMethodServable'
     assert 'run' in output['servable']['methods']
