@@ -117,17 +117,24 @@ def compose_argument_block(data_type, description, shape=None, item_type=None,
 
 
 def enum_types_to_values(data: Union[dict, list]) -> Union[dict, list]:
+    """Return the provided data type with all contained Enums converted to their values
+
+    Args:
+        data (dict | list): structure whose contents are to be converted
+    Returns:
+        (dict | list) the input with its values converted
+    """
+    # decide whether to iterate over dict keys or list indices
     if isinstance(data, dict):
-        for key in data:
-            if isinstance(data[key], Enum):
-                data[key] = data[key].value
-            elif isinstance(data[key], dict) or isinstance(data[key], list):
-                data[key] = enum_types_to_values(data[key])
+        iter_var = data
     else:
-        for i, ele in enumerate(data):
-            if isinstance(ele, Enum):
-                data[i] = data[i].value
-            elif isinstance(ele, dict) or isinstance(ele, list):
-                data[i] = enum_types_to_values(ele)
+        iter_var = range(len(data))
+
+    # convert all enums to their values or recursively check for conversions
+    for i in iter_var:
+        if isinstance(data[i], Enum):
+            data[i] = data[i].value
+        elif isinstance(data[i], dict) or isinstance(data[i], list):
+            data[i] = enum_types_to_values(data[i])
 
     return data
