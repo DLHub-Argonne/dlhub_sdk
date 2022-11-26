@@ -16,6 +16,7 @@ import os
 import re
 
 from dlhub_sdk.models.datacite import Datacite, DataciteRelatedIdentifierType, DataciteRelationType
+from dlhub_sdk.utils.types import enum_types_to_values
 from dlhub_sdk.version import __version__
 
 name_re = re.compile(r'^\S+$')
@@ -404,6 +405,9 @@ class BaseMetadataModel(BaseModel):
 
         # Make a copy of the output
         out = self.dict(exclude_none=True).copy()
+
+        # Convert enums to their values
+        out = enum_types_to_values(out)
 
         # Prepare the files
         if simplify_paths:

@@ -1,5 +1,7 @@
 """Utilities for generating descriptions of data types"""
 from datetime import datetime, timedelta
+from enum import Enum
+from typing import Union
 from six import string_types
 
 
@@ -112,3 +114,20 @@ def compose_argument_block(data_type, description, shape=None, item_type=None,
     # Add in any kwargs
     args.update(**kwargs)
     return args
+
+
+def enum_types_to_values(data: Union[dict, list]) -> Union[dict, list]:
+    if isinstance(data, dict):
+        for key in data:
+            if isinstance(data[key], Enum):
+                data[key] = data[key].value
+            elif isinstance(data[key], dict) or isinstance(data[key], list):
+                data[key] = enum_types_to_values(data[key])
+    else:
+        for i, ele in enumerate(data):
+            if isinstance(ele, Enum):
+                data[i] = data[i].value
+            elif isinstance(ele, dict) or isinstance(ele, list):
+                data[i] = enum_types_to_values(ele)
+
+    return data
