@@ -147,6 +147,7 @@ def test_datacite_validation():
     # Confirm validation runs as expected
     validate_against_dlhub_schema(model.to_dict(), "servable")
 
+
 def test_describe_model(dl):
     # Find the 1d_norm function from the test user (should be there)
     description = dl.describe_servable('dlhub.test_gmail/1d_norm')
