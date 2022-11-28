@@ -9,6 +9,7 @@ from pytest_mock import mocker  # noqa: F401 (flake8 cannot detect usage)
 from dlhub_sdk.models.servables.python import PythonClassMethodModel, PythonStaticMethodModel
 from dlhub_sdk.utils.futures import DLHubFuture
 from dlhub_sdk.client import DLHubClient
+from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 
 
 # github specific declarations
@@ -129,6 +130,22 @@ def test_submit(dl, mocker):  # noqa: F811 (flake8 does not understand usage)
     task_id = dl.easy_publish("Validate dl.run Calls", "Darling, Isaac", "validate_run", "static_method",
                               {"module": "dlhub_sdk.utils.validation", "method": "validate"}, [["University of Chicago"]], "not-a-real-doi")
     assert task_id == "bf06d72e-0478-11ed-97f9-4b1381555b22"
+
+
+def test_datacite_validation():
+    # Make an example function
+    model = PythonStaticMethodModel.create_model("numpy.linalg", "norm")
+    model.set_name("1d_norm")
+    model.set_title("Norm of a 1D Array")
+    model.set_inputs("ndarray", "Array to be normed", shape=[None])
+    model.set_outputs("number", "Norm of the array")
+
+    # Set some datacite fields
+    model.set_abstract("THIS IS AN ABSTRACT.")
+    model.set_doi("10.NOT/REAL")
+
+    # Confirm validation runs as expected
+    validate_against_dlhub_schema(model.to_dict(), "servable")
 
 
 def test_describe_model(dl):
