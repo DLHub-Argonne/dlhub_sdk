@@ -1,7 +1,5 @@
 """Utilities for generating descriptions of data types"""
 from datetime import datetime, timedelta
-from enum import Enum
-from typing import Union
 from six import string_types
 
 
@@ -114,27 +112,3 @@ def compose_argument_block(data_type, description, shape=None, item_type=None,
     # Add in any kwargs
     args.update(**kwargs)
     return args
-
-
-def enum_types_to_values(data: Union[dict, list]) -> Union[dict, list]:
-    """Return the provided data type with all contained Enums converted to their values
-
-    Args:
-        data (dict | list): structure whose contents are to be converted
-    Returns:
-        (dict | list) the input with its values converted
-    """
-    # decide whether to iterate over dict keys or list indices
-    if isinstance(data, dict):
-        iter_var = data
-    else:
-        iter_var = range(len(data))
-
-    # convert all enums to their values or recursively check for conversions
-    for i in iter_var:
-        if isinstance(data[i], Enum):
-            data[i] = data[i].value
-        elif isinstance(data[i], dict) or isinstance(data[i], list):
-            data[i] = enum_types_to_values(data[i])
-
-    return data

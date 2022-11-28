@@ -47,7 +47,7 @@ class DataciteCreator(BaseModel):
 
 
 class DataciteTitle(BaseModel):
-    class DataciteTitleType(Enum):
+    class DataciteTitleType(str, Enum):
         AlternativeTitle = "AlternativeTitle"
         Subtitle = "Subtitle"
         TranslatedTitle = "TranslatedTitle"
@@ -66,7 +66,7 @@ class DataciteSubject(BaseModel):
     lang: str = ""
 
 
-class DataciteResourceTypeGeneral(Enum):
+class DataciteResourceTypeGeneral(str, Enum):
     Audiovisual = "Audiovisual"
     Collection = "Collection"
     Dataset = "Dataset"
@@ -89,7 +89,7 @@ class DataciteResourceType(BaseModel):
 
 
 class DataciteContributor(BaseModel):
-    class DataciteContributorType(Enum):
+    class DataciteContributorType(str, Enum):
         ContactPerson = "ContactPerson"
         DataCollector = "DataCollector"
         DataCurator = "DataCurator"
@@ -128,7 +128,7 @@ class DataciteAlternateIdentifier(BaseModel):
     alternateIdentifierType: str
 
 
-class DataciteRelatedIdentifierType(Enum):
+class DataciteRelatedIdentifierType(str, Enum):
     """Types of identifiers for different objects"""
     ARK = "ARK"
     arXiv = "arXiv"
@@ -150,7 +150,7 @@ class DataciteRelatedIdentifierType(Enum):
     URN = "URN"
 
 
-class DataciteRelationType(Enum):
+class DataciteRelationType(str, Enum):
     """Ways another object is related to the object describe by our DataCite record"""
     IsCitedBy = "IsCitedBy"
     Cites = "Cites"
@@ -193,7 +193,7 @@ class DataciteDescription(BaseModel):
 
     May be used for technical information. It is a best practice to supply a description."""
 
-    class DataciteDescriptionType(Enum):
+    class DataciteDescriptionType(str, Enum):
         abstract = "Abstract"
         methods = "Methods"
         seriesInformation = "SeriesInformation"
@@ -220,7 +220,7 @@ class DataciteFundingReference(BaseModel):
     class FunderIdentifier(BaseModel):
         """Uniquely identifies a funding entity, according to various types."""
 
-        class FunderIdentifierType(Enum):
+        class FunderIdentifierType(str, Enum):
             ISNI = "ISNI"
             GRID = "GRID"
             CrossRef = "Crossref Funder ID"
