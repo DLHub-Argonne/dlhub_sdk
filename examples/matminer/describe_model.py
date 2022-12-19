@@ -12,10 +12,10 @@ feat_info = PythonClassMethodModel.create_model('featurizer.pkl',
 #   Add reference information
 feat_info.set_title('Composition featurizer of Ward et al. 2016')
 feat_info.set_name("ward_npj_2016_featurizer")
-feat_info.set_creators(['Ward, Logan'], ['University of Chicago'])
+feat_info.set_creators(['Ward, Logan'], [['University of Chicago']])
 
 #   Add citation information
-feat_info.add_related_identifier('10.1038/npjcompumats.2016.28', 'DOI', 'IsDescribedBy')
+feat_info.datacite.add_related_identifier('10.1038/npjcompumats.2016.28', 'DOI', 'IsDescribedBy')
 
 #   Describe the software requirements
 feat_info.add_requirement('matminer', 'detect')
