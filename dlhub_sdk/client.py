@@ -26,8 +26,8 @@ from time import sleep
 import mdf_toolbox
 import urllib
 
-from identifiers_client.identifiers_api import identifiers_client, IdentifierClient
-from identifiers_client.config import config
+# from identifiers_client.identifiers_api import identifiers_client, IdentifierClient
+# from identifiers_client.config import config
 
 # Directory for authentication tokens
 _token_dir = os.path.expanduser("~/.dlhub/credentials")
@@ -261,7 +261,7 @@ class DLHubClient(BaseClient):
                 DLHubFuture,
                 Tuple[Any, Dict[str, Any]],
                 Any
-            ]:
+    ]:
         """Invoke a DLHub servable
 
         Args:
@@ -319,270 +319,6 @@ class DLHubClient(BaseClient):
         """
         res = self.search(f"dlhub.name: {name}", advanced=True, limit=1)
         validate(inputs, res[0]["servable"]["methods"]["run"]["input"])
-
-
-def ingest(metadata):
-    """
-    Ingest the model
-
-    :param metadata:
-    :return:
-    """
-
-    logger.debug("Starting ingest")
-    if 'dlhub' not in metadata:
-        metadata['dlhub'] = {}
-    if 'test' not in metadata['dlhub']:
-        metadata['dlhub']['test'] = False
-
-    fxc = FuncXClient(funcx_service_address="https://containersvc.dev.funcx.org/v2")
-    container_spec = create_container_spec(metadata)
-
-    container_uuid = fxc.build_container(container_spec)
-
-    while True:
-        status = fxc.get_container_build_status(container_uuid)
-        logger.debug(f"status is {status}")
-        if status in ["ready", "failed"]:
-            break
-        sleep(5)
-
-    if status == "failed":
-        raise Exception("ContainerService build failed")
-
-    funcx_id = register_funcx(metadata, container_uuid)
-    if 'funcx_token' in metadata['dlhub']:
-        del (metadata['dlhub']['funcx_token'])
-
-    metadata['dlhub']['funcx_id'] = funcx_id
-#    identifier = mint_identifier(task)
-    identifier = None
-    if identifier:
-        metadata['dlhub']['identifier'] = identifier
-        try:
-            # Check if an identifier exists:
-            if metadata['dlhub']['identifier'] == "10.YET/UNASSIGNED":
-                metadata['datacite']['identifier']['identifier'] = identifier
-                metadata['datacite']['identifier']['identifierType'] = 'Globus'
-            else:
-                # If one exists, add as a related identifier
-                rel_iden = {'relatedIdentifier': identifier, 'relatedIdentifierType': 'Globus',
-                            'relationType': 'IsDescribedBy'}
-                if 'relatedIdentifiers' in metadata['datacite']:
-                    metadata['datacite']['relatedIdentifiers'].append(rel_iden)
-                else:
-                    metadata['datacite']['relatedIdentifiers'] = [rel_iden]
-        except Exception as e:
-            logger.debug(e)
-    # Ingest metadata to search
-    try:
-        search_ingest(metadata)
-    except Exception as e:
-        logger.debug("Failed to ingest to search. {}".format(e))
-
-    return metadata
-
-
-def create_container_spec(metadata):
-    """
-    Create the container spec for the Container Service. Iterate through
-    the dependencies and add them. Also include parsl, toolbox, home_run, etc.
-
-    :param metadata:
-    :return:
-    """
-
-    # Get the list of requirements from the schema
-    dependencies = []
-    container_spec = {}
-    try:
-        for k, v in metadata['dlhub']['dependencies']['python'].items():
-            dependencies.append("{0}=={1}".format(k, v))
-    except:
-        # There are no python dependencies
-        pass
-
-    model_location = None
-    if 'S3' in metadata['dlhub']['transfer_method']:
-        model_location = metadata['dlhub']['transfer_method']['S3']
-    elif 'POST' in metadata['dlhub']['transfer_method']:
-        model_location = metadata['dlhub']['transfer_method']['path']
-    if 'repository' in metadata:
-        model_location = metadata['repository']
-
-    container_spec['name'] = metadata['dlhub']['shorthand_name']
-    container_spec['description'] = metadata['dlhub']['description']
-    container_spec['pip'] = dependencies
-    container_spec['payload_url'] = model_location
-
-    return container_spec
-
-
-def mint_identifier(task):
-    """Mint a new identifier and return it."""
-    identifiers_namespace = '1EGOGHSs9RAtq'
-    identifier = None
-    logger.debug("Creating identifier")
-    try:
-        client = identifiers_client(config)
-        serv_location = "https://%s%s" % ("dlhub.org/servables/", task['dlhub']['id'])
-        # safe encode the location
-        serv_location = urllib.parse.quote_plus(serv_location, safe='')
-        # can't be too safe!
-        serv_location = urllib.parse.quote_plus(serv_location, safe='')
-        # Create the petrel link
-        serv_location = f'https://petreldata.net/dlhub/detail/{serv_location}'
-        visible_to = ['public']
-
-        dataset_identifier = client.create_identifier(
-            namespace=identifiers_namespace,
-            location=[serv_location],
-            metadata={
-                'uuid': task['dlhub']['id'],
-                'shorthand_name': task['dlhub']['shorthand_name']
-            },
-            landing_page=serv_location,
-            visible_to=visible_to)
-
-        res = dataset_identifier.data
-        identifier = res['identifier']
-        logger.debug(f"Created identifier: {identifier}")
-    except Exception as e:
-        logger.error(e)
-    return identifier
-
-
-def dlhub_run(event):
-    """Invoke the DLHub servable"""
-    import json
-    import time
-    import os
-
-    from os.path import expanduser
-    path = expanduser("~")
-    os.chdir(path)
-
-    # Check to see if event is from old client
-    if 'data' in event:
-        raise ValueError('Upgrade your DLHub SDK to a newer version: pip install -U dlhub_sdk')
-
-    start = time.time()
-    global shim
-    if "shim" not in globals():
-        from home_run import create_servable
-        with open("dlhub.json") as fp:
-            shim = create_servable(json.load(fp))
-    x = shim.run(event["inputs"],
-                 debug=event.get("debug", False),
-                 parameters=event.get("parameters", None))
-    end = time.time()
-    return (x, (end-start) * 1000)
-
-
-def register_funcx(task, container_uuid):
-    """Register the function and the container with funcX.
-
-    Parameters
-    ----------
-    task : dict
-        A dict of the task to publish
-    container_uuid:  str
-
-    Returns
-    -------
-    str
-        The funcX function id
-    """
-
-    # Get the funcX dependent token
-    fx_token = task['dlhub']['funcx_token']
-    # Create a client using this token
-    fx_auth = globus_sdk.AccessTokenAuthorizer(fx_token)
-    fxc = FuncXClient(fx_authorizer=fx_auth, use_offprocess_checker=False)
-    description = f"A container for the DLHub model {task['dlhub']['shorthand_name']}"
-    try:
-        description = task['datacite']['descriptions'][0]['description']
-    except:
-        # It doesn't have a simple description
-        pass
-    # I believe that the Container Service registers the container w/ funcx
-    # Register the container with funcX
-    # container_id = fxc.register_container(task['dlhub']['ecr_uri'], 'docker', name=task['dlhub']['shorthand_name'],
-    #                                      description=description)
-
-    # Register a function
-    funcx_id = fxc.register_function(dlhub_run, function_name=task['dlhub']['name'],
-                                     container_uuid=container_uuid, description=description, public=True)
-
-    # Whitelist the function on DLHub's endpoint
-    # First create a new fxc client on DLHub's behalf
-    fxc = FuncXClient(use_offprocess_checker=False)
-    endpoint_uuid = '86a47061-f3d9-44f0-90dc-56ddc642c000'
-    res = fxc.add_to_whitelist(endpoint_uuid, [funcx_id])
-    print(res)
-    return funcx_id
-
-
-def convert_dict(data, conversion_function=str):
-    if type(data) is dict:
-        string_dict = {}
-        for k, v in data.items():
-            if type(v) is dict:
-                string_dict[k] = convert_dict(v, conversion_function)
-            elif type(v) is list:
-                string_dict[k] = [convert_dict(item, conversion_function) for item in data[k]]
-            else:
-                string_dict[k] = conversion_function(v)
-        return string_dict
-    elif type(data) is list:
-        return [convert_dict(item, conversion_function) for item in data]
-    else:
-        return conversion_function(data)
-
-
-def search_ingest(task):
-    """
-    Ingest the servable data into a Globus Search index.
-
-    Args:
-        task (dict): the task description.
-    """
-    logger.debug("Ingesting servable into Search.")
-
-#    idx = "dlhub"
-    # idx = '847c9105-18a0-4ffb-8a71-03dd76dfcc9d'
-    iden = "https://dlhub.org/servables/{}".format(task['dlhub']['id'])
-    # index = mdf_toolbox.translate_index(idx)
-
-    ingestable = task
-    d = [convert_dict(ingestable, str)]
-
-    glist = []
-    visible_to = task['dlhub'].get('visible_to', ['public'])
-
-    # Add public so it isn't an empty list
-    if len(visible_to) == 0:
-        visible_to = ['public']
-
-    for document in d:
-        gmeta_entry = mdf_toolbox.format_gmeta(document, visible_to, iden)
-        glist.append(gmeta_entry)
-    gingest = mdf_toolbox.format_gmeta(glist)
-
-    logger.info("ingesting to search")
-    logger.info(gingest)
-
-    GLOBUS_SEARCH_WRITER_LAMBDA = "endpoint of globus search writer lambda"
-
-    # Get the authorization header token (string for the headers dict)
-    header = self.authorizer.get_authorization_header()
-
-    http_response = requests.post(
-        GLOBUS_SEARCH_WRITER_LAMBDA,
-        json = gingest)
-    if http_response.status_code != 200:
-        raise Exception(http_response.text)
-    logger.info("Ingestion of {} to DLHub servables complete".format(iden))
 
     def run_serial(self, servables, inputs, async_wait=5):
         """Invoke each servable in a serial pipeline.
@@ -726,8 +462,9 @@ def search_ingest(task):
 
             # Use signed URL to upload zip file
             SIGNED_URL_ENDPOINT = "https://api.dlhub.org/api/v1/publish/signed_url"
+            S3_DOWNLOAD_PREFIX = "https://dlhub-anl.s3.us-east-1.amazonaws.com/container_uploads/"
             reply = requests.get(
-                        SIGNED_URL_ENDPOINT)
+                SIGNED_URL_ENDPOINT)
             signed_url = reply.json()
             logger.debug(f'signed_url["url"] is {signed_url["url"]}')
 
@@ -736,12 +473,12 @@ def search_ingest(task):
                     signed_url['url'],
                     data=signed_url['fields'],
                     files={
-                            'file': (signed_url['fields']['key'], zf, 'application/octet-stream')
+                        'file': (signed_url['fields']['key'], zf, 'application/octet-stream')
                     }
                 )
             if http_response.status_code != 200:
                 raise Exception(http_response.text)
-            metadata['dlhub']['transfer_method']['S3'] = signed_url['fields']['key']
+            metadata['dlhub']['transfer_method']['S3'] = S3_DOWNLOAD_PREFIX + signed_url['fields']['key']
 
             # Ingest Model to DLHub
             task = ingest(metadata)
@@ -766,10 +503,12 @@ def search_ingest(task):
         # Wipe the fx cache so we don't keep reusing an old servable
         self.clear_funcx_cache()
 
-        response = self.post('publish_repo', json_body=metadata)
+        # Ingest Model to DLHub
+        task = ingest(metadata)
+        # response = self.post('publish_repo', json_body=metadata)
 
-        task_id = response.data['task_id']
-        return task_id
+        # task_id = response.data['task_id']
+        # return task_id
 
     def search(self, query, advanced=False, limit=None, only_latest=True):
         """Query the DLHub servable library
@@ -889,3 +628,268 @@ def search_ingest(task):
             self.fx_cache = {}
 
         return self.fx_cache
+
+
+def ingest(metadata):
+    """
+    Ingest the model
+
+    :param metadata:
+    :return:
+    """
+
+    logger.debug("Starting ingest")
+    if 'dlhub' not in metadata:
+        metadata['dlhub'] = {}
+    if 'test' not in metadata['dlhub']:
+        metadata['dlhub']['test'] = False
+
+    fxc = FuncXClient()
+
+    container_spec = create_container_spec(metadata)
+
+    container_uuid = fxc.build_container(container_spec)
+
+    while True:
+        status = fxc.get_container_build_status(container_uuid)
+        logger.debug(f"status is {status}")
+        if status in ["ready", "failed"]:
+            break
+        sleep(5)
+
+    if status == "failed":
+        raise Exception("ContainerService build failed")
+
+    funcx_id = register_funcx(metadata, container_uuid)
+    if 'funcx_token' in metadata['dlhub']:
+        del (metadata['dlhub']['funcx_token'])
+
+    metadata['dlhub']['funcx_id'] = funcx_id
+#    identifier = mint_identifier(task)
+    identifier = None
+    if identifier:
+        metadata['dlhub']['identifier'] = identifier
+        try:
+            # Check if an identifier exists:
+            if metadata['dlhub']['identifier'] == "10.YET/UNASSIGNED":
+                metadata['datacite']['identifier']['identifier'] = identifier
+                metadata['datacite']['identifier']['identifierType'] = 'Globus'
+            else:
+                # If one exists, add as a related identifier
+                rel_iden = {'relatedIdentifier': identifier, 'relatedIdentifierType': 'Globus',
+                            'relationType': 'IsDescribedBy'}
+                if 'relatedIdentifiers' in metadata['datacite']:
+                    metadata['datacite']['relatedIdentifiers'].append(rel_iden)
+                else:
+                    metadata['datacite']['relatedIdentifiers'] = [rel_iden]
+        except Exception as e:
+            logger.debug(e)
+    # Ingest metadata to search
+    try:
+        search_ingest(metadata)
+    except Exception as e:
+        logger.debug("Failed to ingest to search. {}".format(e))
+
+    return metadata
+
+
+def create_container_spec(metadata):
+    """
+    Create the container spec for the Container Service. Iterate through
+    the dependencies and add them. Also include parsl, toolbox, home_run, etc.
+
+    :param metadata:
+    :return:
+    """
+
+    # Get the list of requirements from the schema
+    dependencies = []
+    container_spec = {}
+    try:
+        for k, v in metadata['dlhub']['dependencies']['python'].items():
+            dependencies.append("{0}=={1}".format(k, v))
+    except:
+        # There are no python dependencies
+        pass
+
+    model_location = None
+    if 'S3' in metadata['dlhub']['transfer_method']:
+        model_location = metadata['dlhub']['transfer_method']['S3']
+    elif 'POST' in metadata['dlhub']['transfer_method']:
+        model_location = metadata['dlhub']['transfer_method']['path']
+    if 'repository' in metadata:
+        model_location = metadata['repository']
+
+    container_spec['name'] = metadata['dlhub']['shorthand_name']
+    container_spec['description'] = metadata['dlhub']['description']
+    container_spec['pip'] = dependencies
+    container_spec['payload_url'] = model_location
+
+    return container_spec
+
+
+def search_ingest(task):
+    """
+    Ingest the servable data into a Globus Search index.
+
+    Args:
+        task (dict): the task description.
+    """
+    logger.debug("Ingesting servable into Search.")
+
+#    idx = "dlhub"
+    # idx = '847c9105-18a0-4ffb-8a71-03dd76dfcc9d'
+    iden = "https://dlhub.org/servables/{}".format(task['dlhub']['id'])
+    # index = mdf_toolbox.translate_index(idx)
+
+    ingestable = task
+    d = [convert_dict(ingestable, str)]
+
+    glist = []
+    visible_to = task['dlhub'].get('visible_to', ['public'])
+
+    # Add public so it isn't an empty list
+    if len(visible_to) == 0:
+        visible_to = ['public']
+
+    for document in d:
+        gmeta_entry = mdf_toolbox.format_gmeta(document, visible_to, iden)
+        glist.append(gmeta_entry)
+    gingest = mdf_toolbox.format_gmeta(glist)
+
+    logger.info("ingesting to search")
+    logger.info(gingest)
+
+    GLOBUS_SEARCH_WRITER_LAMBDA = "endpoint of globus search writer lambda"
+
+    # Get the authorization header token (string for the headers dict)
+    header = self.authorizer.get_authorization_header()
+
+    http_response = requests.post(
+        GLOBUS_SEARCH_WRITER_LAMBDA,
+        json=gingest)
+    if http_response.status_code != 200:
+        raise Exception(http_response.text)
+    logger.info("Ingestion of {} to DLHub servables complete".format(iden))
+
+
+def mint_identifier(task):
+    """Mint a new identifier and return it."""
+    identifiers_namespace = '1EGOGHSs9RAtq'
+    identifier = None
+    logger.debug("Creating identifier")
+    try:
+        # client = identifiers_client(config)
+        serv_location = "https://%s%s" % ("dlhub.org/servables/", task['dlhub']['id'])
+        # safe encode the location
+        serv_location = urllib.parse.quote_plus(serv_location, safe='')
+        # can't be too safe!
+        serv_location = urllib.parse.quote_plus(serv_location, safe='')
+        # Create the petrel link
+        serv_location = f'https://petreldata.net/dlhub/detail/{serv_location}'
+        visible_to = ['public']
+
+        dataset_identifier = client.create_identifier(
+            namespace=identifiers_namespace,
+            location=[serv_location],
+            metadata={
+                'uuid': task['dlhub']['id'],
+                'shorthand_name': task['dlhub']['shorthand_name']
+            },
+            landing_page=serv_location,
+            visible_to=visible_to)
+
+        res = dataset_identifier.data
+        identifier = res['identifier']
+        logger.debug(f"Created identifier: {identifier}")
+    except Exception as e:
+        logger.error(e)
+    return identifier
+
+
+def register_funcx(task, container_uuid):
+    """Register the function and the container with funcX.
+
+    Parameters
+    ----------
+    task : dict
+        A dict of the task to publish
+    container_uuid:  str
+
+    Returns
+    -------
+    str
+        The funcX function id
+    """
+
+    # Get the funcX dependent token
+    fx_token = task['dlhub']['funcx_token']
+    # Create a client using this token
+    fx_auth = globus_sdk.AccessTokenAuthorizer(fx_token)
+    fxc = FuncXClient(fx_authorizer=fx_auth, use_offprocess_checker=False)
+    description = f"A container for the DLHub model {task['dlhub']['shorthand_name']}"
+    try:
+        description = task['datacite']['descriptions'][0]['description']
+    except:
+        # It doesn't have a simple description
+        pass
+    # I believe that the Container Service registers the container w/ funcx
+    # Register the container with funcX
+    # container_id = fxc.register_container(task['dlhub']['ecr_uri'], 'docker', name=task['dlhub']['shorthand_name'],
+    #                                      description=description)
+
+    # Register a function
+    funcx_id = fxc.register_function(dlhub_run, function_name=task['dlhub']['name'],
+                                     container_uuid=container_uuid, description=description, public=True)
+
+    # Whitelist the function on DLHub's endpoint
+    # First create a new fxc client on DLHub's behalf
+    fxc = FuncXClient(use_offprocess_checker=False)
+    endpoint_uuid = '86a47061-f3d9-44f0-90dc-56ddc642c000'
+    res = fxc.add_to_whitelist(endpoint_uuid, [funcx_id])
+    print(res)
+    return funcx_id
+
+
+def dlhub_run(event):
+    """Invoke the DLHub servable"""
+    import json
+    import time
+    import os
+
+    from os.path import expanduser
+    path = expanduser("~")
+    os.chdir(path)
+
+    # Check to see if event is from old client
+    if 'data' in event:
+        raise ValueError('Upgrade your DLHub SDK to a newer version: pip install -U dlhub_sdk')
+
+    start = time.time()
+    global shim
+    if "shim" not in globals():
+        from home_run import create_servable
+        with open("dlhub.json") as fp:
+            shim = create_servable(json.load(fp))
+    x = shim.run(event["inputs"],
+                 debug=event.get("debug", False),
+                 parameters=event.get("parameters", None))
+    end = time.time()
+    return (x, (end-start) * 1000)
+
+
+def convert_dict(data, conversion_function=str):
+    if type(data) is dict:
+        string_dict = {}
+        for k, v in data.items():
+            if type(v) is dict:
+                string_dict[k] = convert_dict(v, conversion_function)
+            elif type(v) is list:
+                string_dict[k] = [convert_dict(item, conversion_function) for item in data[k]]
+            else:
+                string_dict[k] = conversion_function(v)
+        return string_dict
+    elif type(data) is list:
+        return [convert_dict(item, conversion_function) for item in data]
+    else:
+        return conversion_function(data)
