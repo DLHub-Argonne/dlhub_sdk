@@ -13,6 +13,7 @@ from globus_sdk.authorizers import GlobusAuthorizer
 from mdf_toolbox import login, logout
 from mdf_toolbox.globus_search.search_helper import SEARCH_LIMIT
 from funcx.sdk.client import FuncXClient
+from funcx import ContainerSpec
 from globus_sdk.scopes import AuthScopes, SearchScopes
 
 from dlhub_sdk.config import DLHUB_SERVICE_ADDRESS, CLIENT_ID
@@ -21,7 +22,9 @@ from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 from dlhub_sdk.utils.search import DLHubSearchHelper, get_method_details, filter_latest
 from dlhub_sdk.utils.validation import validate
 from dlhub_sdk.utils.funcx_login_manager import FuncXLoginManager
-from time import sleep
+from time import sleep, time
+from github import Github
+import base64
 
 import mdf_toolbox
 import urllib
@@ -107,7 +110,7 @@ class DLHubClient(BaseClient):
                                'You must provide authorizers for DLHub, Search, OpenID, FuncX.')
 
             auth_res = login(services=["search", "dlhub",
-                                       FuncXClient.FUNCX_SCOPE, "openid"],
+                                       FuncXClient.FUNCX_SCOPE, "openid", "email", "profile"],
                              app_name="DLHub_Client",
                              make_clients=False,
                              client_id=CLIENT_ID,
@@ -136,6 +139,11 @@ class DLHubClient(BaseClient):
 
         self._search_client = globus_sdk.SearchClient(authorizer=search_authorizer,
                                                       transport_params={"http_timeout": http_timeout})
+
+        self._openid_client = globus_sdk.AuthClient(authorizer=openid_authorizer,
+                                                    transport_params={"http_timeout": http_timeout})
+
+        self.userinfo = self._openid_client.oauth2_userinfo()
 
         # funcX endpoint to use
         self.fx_endpoint = '86a47061-f3d9-44f0-90dc-56ddc642c000'
@@ -496,19 +504,44 @@ class DLHubClient(BaseClient):
         Returns:
             (string): Task ID of this submission, used for checking for success
         """
+        # Get dlhub.json from github repo
+        try:
+            metadata = _get_dlhub_file(repository)
+        except Exception as e:
+            help_err = HelpMessage(f"No dlhub.json file was found in repository")
+            raise help_err from e
 
-        # Publish to DLHub
-        metadata = {"repository": repository}
+        # Set repository location in metadata
+        metadata['repository'] = repository
+
+        # Insert owner name and time-stamp into metadata
+        # user_name = self.get_username()
+        # print(self.userinfo)
+        user_name = self.userinfo['preferred_username']
+        if '@' in user_name:
+            short_name = "{name}_{org}".format(name=user_name.split(
+                "@")[0], org=user_name.split("@")[1].split(".")[0])
+        else:
+            short_name = user_name
+        metadata['dlhub']['owner'] = short_name
+        metadata['dlhub']['publication_date'] = int(round(time() * 1000))
+        metadata['dlhub']['user_id'] = self.userinfo['sub']
+
+        # Make name from repository ID
+        model_name = metadata['dlhub']['name']
+        shorthand_name = "{name}/{model}".format(name=short_name, model=model_name.replace(" ", "_"))
+        metadata['dlhub']['shorthand_name'] = shorthand_name
 
         # Wipe the fx cache so we don't keep reusing an old servable
         self.clear_funcx_cache()
 
         # Ingest Model to DLHub
-        task = ingest(metadata)
+        task = ingest(metadata, self._fx_client)
         # response = self.post('publish_repo', json_body=metadata)
 
         # task_id = response.data['task_id']
         # return task_id
+        return task['task_id']
 
     def search(self, query, advanced=False, limit=None, only_latest=True):
         """Query the DLHub servable library
@@ -630,7 +663,7 @@ class DLHubClient(BaseClient):
         return self.fx_cache
 
 
-def ingest(metadata):
+def ingest(metadata, fxc):
     """
     Ingest the model
 
@@ -644,7 +677,7 @@ def ingest(metadata):
     if 'test' not in metadata['dlhub']:
         metadata['dlhub']['test'] = False
 
-    fxc = FuncXClient()
+    # fxc = FuncXClient()
 
     container_spec = create_container_spec(metadata)
 
@@ -713,19 +746,27 @@ def create_container_spec(metadata):
         pass
 
     model_location = None
-    if 'S3' in metadata['dlhub']['transfer_method']:
-        model_location = metadata['dlhub']['transfer_method']['S3']
-    elif 'POST' in metadata['dlhub']['transfer_method']:
-        model_location = metadata['dlhub']['transfer_method']['path']
+    if 'transfer_method' in metadata['dlhub']:
+        if 'S3' in metadata['dlhub']['transfer_method']:
+            model_location = metadata['dlhub']['transfer_method']['S3']
+        elif 'POST' in metadata['dlhub']['transfer_method']:
+            model_location = metadata['dlhub']['transfer_method']['path']
     if 'repository' in metadata:
         model_location = metadata['repository']
+    cs = ContainerSpec(
+        name=metadata['dlhub']['shorthand_name'],
+        pip=dependencies,
+        python_version="3.7",
+        payload_url=model_location,
+        conda=[],
+    )
 
-    container_spec['name'] = metadata['dlhub']['shorthand_name']
-    container_spec['description'] = metadata['dlhub']['description']
-    container_spec['pip'] = dependencies
-    container_spec['payload_url'] = model_location
+    # container_spec['name'] = metadata['dlhub']['shorthand_name']
+    # container_spec['description'] = metadata['datacite']['titles'][0]['title']
+    # container_spec['pip'] = dependencies
+    # container_spec['payload_url'] = model_location
 
-    return container_spec
+    return cs
 
 
 def search_ingest(task):
@@ -893,3 +934,24 @@ def convert_dict(data, conversion_function=str):
         return [convert_dict(item, conversion_function) for item in data]
     else:
         return conversion_function(data)
+
+
+def _get_dlhub_file(repository):
+    """
+    Use the github rest api to ensure the dlhub.json file exists.
+
+    :param repository:
+    :return:
+    """
+
+    repo = repository.replace("https://github.com/", "")
+    repo = repo.replace(".git", "")
+
+    try:
+        g = Github()
+        r = g.get_repo(repo)
+        contents = r.get_contents("dlhub.json")
+        decoded = base64.b64decode(contents.content)
+        return json.loads(decoded)
+    except:
+        return None
