@@ -5,6 +5,7 @@ from tempfile import mkstemp
 from typing import Sequence, Union, Any, Optional, Tuple, Dict, List
 import requests
 import globus_sdk
+import uuid
 
 from globus_sdk import BaseClient
 from globus_sdk.authorizers import GlobusAuthorizer
@@ -524,6 +525,9 @@ class DLHubClient(BaseClient):
         shorthand_name = "{name}/{model}".format(name=short_name, model=model_name.replace(" ", "_"))
         metadata['dlhub']['shorthand_name'] = shorthand_name
 
+        servable_uuid = str(uuid.uuid4())
+        metadata['dlhub']['id'] = servable_uuid
+
         # Wipe the fx cache so we don't keep reusing an old servable
         self.clear_funcx_cache()
 
@@ -671,6 +675,14 @@ class DLHubClient(BaseClient):
         fxc = self._fx_client
 
         container_spec = create_container_spec(metadata)
+
+        # Uncomment to test search ingest while container service is broken
+        # Real search ingest happens below
+        #header = self.authorizer.get_authorization_header()
+        #try:
+        #    search_ingest(metadata, header)
+        #except Exception as e:
+        #    print("Failed to ingest to search. {}".format(e))
 
         container_uuid = fxc.build_container(container_spec)
 

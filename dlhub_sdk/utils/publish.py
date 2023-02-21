@@ -94,14 +94,15 @@ def search_ingest(task, header):
     logger.info("ingesting to search")
     logger.info(gingest)
 
-    GLOBUS_SEARCH_WRITER_LAMBDA = "endpoint of globus search writer lambda"
+    GLOBUS_SEARCH_WRITER_LAMBDA = "https://7v5g6s33utz4l7jx6dkxuh77mu0cqdhb.lambda-url.us-east-2.on.aws/"
 
     # Get the authorization header token (string for the headers dict)
     #header = self.authorizer.get_authorization_header()
 
     http_response = requests.post(
         GLOBUS_SEARCH_WRITER_LAMBDA,
-        document_file=gingest)
+        headers={"Authorization": header},
+        json={'document_file': gingest})
     if http_response.status_code != 200:
         raise Exception(http_response.text)
     logger.info("Ingestion of {} to DLHub servables complete".format(iden))
