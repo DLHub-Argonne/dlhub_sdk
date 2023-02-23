@@ -21,8 +21,8 @@ from dlhub_sdk.utils.search import DLHubSearchHelper, get_method_details, filter
 from dlhub_sdk.utils.validation import validate
 from dlhub_sdk.utils.funcx_login_manager import FuncXLoginManager
 # from dlhub_sdk.utils.publish import *
-from dlhub_sdk.utils.publish import create_container_spec, search_ingest, get_dlhub_file
-from time import time
+from dlhub_sdk.utils.publish import create_container_spec, search_ingest, get_dlhub_file, register_funcx
+from time import time, sleep
 
 
 # Directory for authentication tokens
@@ -128,7 +128,7 @@ class DLHubClient(BaseClient):
         }
 
         login_manager = FuncXLoginManager(authorizers=auth_dict)
-        self._fx_client = FuncXClient(login_manager=login_manager)
+        self._fx_client = FuncXClient(funcx_service_address="https://api.dev.funcx.org/v2",login_manager=login_manager)
 
         self._search_client = globus_sdk.SearchClient(authorizer=search_authorizer,
                                                       transport_params={"http_timeout": http_timeout})
@@ -138,8 +138,10 @@ class DLHubClient(BaseClient):
 
         self.userinfo = self._openid_client.oauth2_userinfo()
 
+
         # funcX endpoint to use
-        self.fx_endpoint = '86a47061-f3d9-44f0-90dc-56ddc642c000'
+        #self.fx_endpoint = '86a47061-f3d9-44f0-90dc-56ddc642c000'
+        self.fx_endpoint = '2238617a-8756-4030-a8ab-44ffb1446092'
         self.fx_cache = {}
 
         super(DLHubClient, self).__init__(environment='dlhub',
@@ -419,10 +421,10 @@ class DLHubClient(BaseClient):
             model_info.add_related_resource(paper_doi, "DOI", "IsDescribedBy")
 
         # perform the publish
-        task_id = self.publish_servable(model_info)
+        container_id = self.publish_servable(model_info)
 
         # return the id of the publish task
-        return task_id
+        return container_id
 
     def publish_servable(self, model):
         """Submit a servable to DLHub
@@ -485,7 +487,7 @@ class DLHubClient(BaseClient):
             task = self.ingest(metadata)
 
             # Return the task id
-            return task['task_id']
+            return task['container_id']
         finally:
             os.unlink('function.zip')
 
@@ -530,14 +532,11 @@ class DLHubClient(BaseClient):
 
         # Wipe the fx cache so we don't keep reusing an old servable
         self.clear_funcx_cache()
-
+        
         # Ingest Model to DLHub
         task = self.ingest(metadata)
-        # response = self.post('publish_repo', json_body=metadata)
 
-        # task_id = response.data['task_id']
-        # return task_id
-        return task['task_id']
+        return task['container_id']
 
     def search(self, query, advanced=False, limit=None, only_latest=True):
         """Query the DLHub servable library
@@ -676,16 +675,13 @@ class DLHubClient(BaseClient):
 
         container_spec = create_container_spec(metadata)
 
-        # Uncomment to test search ingest while container service is broken
-        # Real search ingest happens below
-        #header = self.authorizer.get_authorization_header()
-        #try:
-        #    search_ingest(metadata, header)
-        #except Exception as e:
-        #    print("Failed to ingest to search. {}".format(e))
-
         container_uuid = fxc.build_container(container_spec)
+        
+        # Putting container_uuid in metadata instead of task_id, as we don't
+        # have a task to monitor, just a container
+        metadata['container_id'] = container_uuid
 
+        # This loop means that we are blocking on the container build.
         while True:
             status = fxc.get_container_build_status(container_uuid)
             logger.debug(f"status is {status}")
@@ -695,8 +691,10 @@ class DLHubClient(BaseClient):
 
         if status == "failed":
             raise Exception("ContainerService build failed")
+        print(f"Container uuid: {container_uuid} status: {status}")
+        print(fxc.get_container(container_uuid, container_type="docker"))
 
-        funcx_id = register_funcx(metadata, container_uuid)
+        funcx_id = register_funcx(metadata, container_uuid, fxc)
         if 'funcx_token' in metadata['dlhub']:
             del (metadata['dlhub']['funcx_token'])
 
@@ -721,6 +719,7 @@ class DLHubClient(BaseClient):
             except Exception as e:
                 logger.debug(e)
         # Ingest metadata to search
+        # Get header from the search lambda authorizer
         header = self.authorizer.get_authorization_header()
         try:
             search_ingest(metadata, header)

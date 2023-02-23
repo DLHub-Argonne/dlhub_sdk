@@ -13,16 +13,11 @@ import base64
 import mdf_toolbox
 import urllib
 
+#Uncomment if we are trying to mint identifiers
 # from identifiers_client.identifiers_api import identifiers_client, IdentifierClient
 # from identifiers_client.config import config
 
-# Directory for authentication tokens
-_token_dir = os.path.expanduser("~/.dlhub/credentials")
 logger = logging.getLogger(__name__)
-
-
-class HelpMessage(Exception):
-    """Raised from another error to provide the user an additional message"""
 
 
 def create_container_spec(metadata):
@@ -142,7 +137,7 @@ def mint_identifier(task):
     return identifier
 
 
-def register_funcx(task, container_uuid):
+def register_funcx(task, container_uuid, funcx_client):
     """Register the function and the container with funcX.
 
     Parameters
@@ -150,6 +145,7 @@ def register_funcx(task, container_uuid):
     task : dict
         A dict of the task to publish
     container_uuid:  str
+    funcx_client:  the funcx client to register with
 
     Returns
     -------
@@ -157,11 +153,8 @@ def register_funcx(task, container_uuid):
         The funcX function id
     """
 
-    # Get the funcX dependent token
-    fx_token = task['dlhub']['funcx_token']
-    # Create a client using this token
-    fx_auth = globus_sdk.AccessTokenAuthorizer(fx_token)
-    fxc = FuncXClient(fx_authorizer=fx_auth, use_offprocess_checker=False)
+    fxc = funcx_client
+
     description = f"A container for the DLHub model {task['dlhub']['shorthand_name']}"
     try:
         description = task['datacite']['descriptions'][0]['description']
@@ -178,9 +171,9 @@ def register_funcx(task, container_uuid):
                                      container_uuid=container_uuid, description=description, public=True)
 
     # Whitelist the function on DLHub's endpoint
-    # First create a new fxc client on DLHub's behalf
-    fxc = FuncXClient(use_offprocess_checker=False)
-    endpoint_uuid = '86a47061-f3d9-44f0-90dc-56ddc642c000'
+    #endpoint_uuid = '86a47061-f3d9-44f0-90dc-56ddc642c000'
+    endpoint_uuid = '2238617a-8756-4030-a8ab-44ffb1446092'
+
     res = fxc.add_to_whitelist(endpoint_uuid, [funcx_id])
     print(res)
     return funcx_id
