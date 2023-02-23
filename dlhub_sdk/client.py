@@ -60,6 +60,7 @@ class DLHubClient(BaseClient):
                  search_authorizer: Optional[GlobusAuthorizer] = None,
                  fx_authorizer: Optional[GlobusAuthorizer] = None,
                  openid_authorizer: Optional[GlobusAuthorizer] = None,
+                 sl_authorizer: Optional[GlobusAuthorizer] = None,
                  http_timeout: Optional[int] = None,
                  force_login: bool = False, **kwargs):
         """Initialize the client
@@ -90,11 +91,14 @@ class DLHubClient(BaseClient):
             openid_authorizer (:class:`GlobusAuthorizer
                             <globus_sdk.authorizers.base.GlobusAuthorizer>`):
                 An authorizer instance used to communicate with OpenID.
+            sl_authorizer (:class:`GlobusAuthorizer
+                            <globus_sdk.authorizers.base.GlobusAuthorizer>`):
+                An authorizer instance used to communicate with the search lambda..
                 If ``None``, will be created from your account's credentials.
         Keyword arguments are the same as for :class:`BaseClient <globus_sdk.base.BaseClient>`.
         """
 
-        authorizers = [dlh_authorizer, search_authorizer, openid_authorizer, fx_authorizer]
+        authorizers = [dlh_authorizer, search_authorizer, openid_authorizer, fx_authorizer,sl_authorizer]
         # Get authorizers through Globus login if any are not provided
         if not all(a is not None for a in authorizers):
             # If some but not all were provided, warn the user they could be making a mistake
@@ -103,7 +107,7 @@ class DLHubClient(BaseClient):
                                'You must provide authorizers for DLHub, Search, OpenID, FuncX.')
 
             auth_res = login(services=["search", "dlhub",
-                                       FuncXClient.FUNCX_SCOPE, "openid", "email", "profile"],
+                                       FuncXClient.FUNCX_SCOPE, "openid", "email", "profile",'https://auth.globus.org/scopes/44420d77-7931-4d0e-9d2b-173aca040c0e/action_all'],
                              app_name="DLHub_Client",
                              make_clients=False,
                              client_id=CLIENT_ID,
@@ -117,6 +121,7 @@ class DLHubClient(BaseClient):
             fx_authorizer = auth_res[FuncXClient.FUNCX_SCOPE]
             openid_authorizer = auth_res['openid']
             search_authorizer = auth_res['search']
+            sl_authorizer = auth_res['https://auth.globus.org/scopes/44420d77-7931-4d0e-9d2b-173aca040c0e/action_all']
 
         # Define the subclients needed by the service
 
@@ -137,6 +142,7 @@ class DLHubClient(BaseClient):
                                                     transport_params={"http_timeout": http_timeout})
 
         self.userinfo = self._openid_client.oauth2_userinfo()
+        self.sl_authorizer = sl_authorizer
 
 
         # funcX endpoint to use
@@ -720,7 +726,7 @@ class DLHubClient(BaseClient):
                 logger.debug(e)
         # Ingest metadata to search
         # Get header from the search lambda authorizer
-        header = self.authorizer.get_authorization_header()
+        header = self.sl_authorizer.get_authorization_header()
         try:
             search_ingest(metadata, header)
         except Exception as e:
