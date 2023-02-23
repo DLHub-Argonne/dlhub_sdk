@@ -490,7 +490,7 @@ class DLHubClient(BaseClient):
             metadata['dlhub']['transfer_method']['S3'] = S3_DOWNLOAD_PREFIX + signed_url['fields']['key']
 
             # Ingest Model to DLHub
-            task = self.ingest(metadata)
+            task = self._ingest(metadata)
 
             # Return the task id
             return task['container_id']
@@ -540,7 +540,7 @@ class DLHubClient(BaseClient):
         self.clear_funcx_cache()
         
         # Ingest Model to DLHub
-        task = self.ingest(metadata)
+        task = self._ingest(metadata)
 
         return task['container_id']
 
@@ -663,7 +663,7 @@ class DLHubClient(BaseClient):
 
         return self.fx_cache
 
-    def ingest(self, metadata):
+    def _ingest(self, metadata):
         """
         Ingest the model
 
