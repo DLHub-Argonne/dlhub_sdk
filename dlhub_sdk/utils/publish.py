@@ -139,7 +139,9 @@ def register_funcx(task, container_uuid, funcx_client):
                                      container_uuid=container_uuid, description=description, public=True)
 
     # Whitelist the function on DLHub's endpoint
-    #endpoint_uuid = '86a47061-f3d9-44f0-90dc-56ddc642c000'
+    # Production endpoint is '86a47061-f3d9-44f0-90dc-56ddc642c000'
+    # Dev endpoint is '2238617a-8756-4030-a8ab-44ffb1446092'
+    # endpoint_uuid = '86a47061-f3d9-44f0-90dc-56ddc642c000'
     endpoint_uuid = '2238617a-8756-4030-a8ab-44ffb1446092'
 
     res = fxc.add_to_whitelist(endpoint_uuid, [funcx_id])
