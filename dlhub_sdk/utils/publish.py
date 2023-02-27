@@ -13,9 +13,6 @@ import base64
 import mdf_toolbox
 import urllib
 
-#Uncomment if we are trying to mint identifiers
-# from identifiers_client.identifiers_api import identifiers_client, IdentifierClient
-# from identifiers_client.config import config
 
 logger = logging.getLogger(__name__)
 
@@ -129,11 +126,7 @@ def register_funcx(task, container_uuid, funcx_client):
     except:
         description = f"A container for the DLHub model {task['dlhub']['shorthand_name']}"
 
-    # I believe that the Container Service registers the container w/ funcx
-    # Register the container with funcX
-    # container_id = fxc.register_container(task['dlhub']['ecr_uri'], 'docker', name=task['dlhub']['shorthand_name'],
-    #                                      description=description)
-
+    # The Container Service registers the container w/ funcx
     # Register a function
     funcx_id = fxc.register_function(dlhub_run, function_name=task['dlhub']['name'],
                                      container_uuid=container_uuid, description=description, public=True)
