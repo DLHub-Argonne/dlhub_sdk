@@ -21,7 +21,7 @@ from dlhub_sdk.utils.search import DLHubSearchHelper, get_method_details, filter
 from dlhub_sdk.utils.validation import validate
 from dlhub_sdk.utils.funcx_login_manager import FuncXLoginManager
 # from dlhub_sdk.utils.publish import *
-from dlhub_sdk.utils.publish import create_container_spec, search_ingest, get_dlhub_file, register_funcx
+from dlhub_sdk.utils.publish import create_container_spec, search_ingest, get_dlhub_file, register_funcx, check_container_build_status
 from time import time, sleep
 
 
@@ -686,13 +686,9 @@ class DLHubClient(BaseClient):
         # have a task to monitor, just a container
         metadata['container_id'] = container_uuid
 
-        # This loop means that we are blocking on the container build.
-        while True:
-            status = fxc.get_container_build_status(container_uuid)
-            logger.debug(f"status is {status}")
-            if status in ["ready", "failed"]:
-                break
-            sleep(5)
+        # check_container_build_status will block until container builds,
+        # or build fails, or timeout after 10 minutes
+        status = check_container_build_status(fxc,container_uuid)
 
         if status == "failed":
             raise Exception("ContainerService build failed")

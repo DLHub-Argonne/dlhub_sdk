@@ -58,6 +58,21 @@ def create_container_spec(metadata):
 
     return cs
 
+def check_container_build_status(funcx_client, container_uuid):
+    # Set timeout at 10 minutes
+    timeout_at = 600
+    i = 0
+    # This loop means that we are blocking on the container build.
+    while i < timeout_at:
+        status = funcx_client.get_container_build_status(container_uuid)
+        logger.debug(f"status is {status}")
+        if status in ["ready", "failed"]:
+            break
+        sleep(5)
+        i += 5
+    else:
+        raise Exception(f"Container Build Timeout after {timeout_at} seconds")
+    return status
 
 def search_ingest(task, header):
     """
