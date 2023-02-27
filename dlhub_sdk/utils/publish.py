@@ -36,13 +36,18 @@ def create_container_spec(metadata):
         pass
 
     model_location = None
+    # If the model was uploaded using a signed URL, it will have a 
+    # transfer_method of S3 in its metadata.
+    # If the model is being built from a repo, it will not have a 
+    # transfer_method, but will have a 'repository'
     if 'transfer_method' in metadata['dlhub']:
         if 'S3' in metadata['dlhub']['transfer_method']:
             model_location = metadata['dlhub']['transfer_method']['S3']
-        elif 'POST' in metadata['dlhub']['transfer_method']:
-            model_location = metadata['dlhub']['transfer_method']['path']
     if 'repository' in metadata:
         model_location = metadata['repository']
+    if model_location is None:
+        raise Exception("No model location exists in metadata")
+
     cs = ContainerSpec(
         name=metadata['dlhub']['shorthand_name'],
         pip=dependencies,
