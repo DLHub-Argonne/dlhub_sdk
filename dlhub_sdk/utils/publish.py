@@ -199,7 +199,8 @@ def get_dlhub_file(repository):
     :param repository:
     :return:
     """
-
+    # Github.get_repo() wants just the username/reponame (or orgname/reponame)
+    # so we parse the URL to get this
     repo = repository.replace("https://github.com/", "")
     repo = repo.replace(".git", "")
 
