@@ -63,24 +63,27 @@ def search_ingest(task, header):
 
     Args:
         task (dict): the task description.
+        header (str): the authorization header for the Globus Search Writer Lambda
     """
     logger.debug("Ingesting servable into Search.")
 
-#    idx = "dlhub"
-    # idx = '847c9105-18a0-4ffb-8a71-03dd76dfcc9d'
+    # Construct the subject for the search index metadata as the container id
     iden = "https://dlhub.org/servables/{}".format(task['dlhub']['id'])
-    # index = mdf_toolbox.translate_index(idx)
 
+    # We need to construct a "gingest" document to submit to Globus Search
+    # for ingestion https://docs.globus.org/api/search/reference/ingest/#gingest
+    # For this, we need a copy of the metadata dict where all values are strings
+    # to ingest to Globus Search
     ingestable = task
     d = [convert_dict(ingestable, str)]
 
     glist = []
+
+    # Get model visibility from metadata; if there is no 'visible_to' entry
+    # in the metadata, set the visibilty to default to ['public']
     visible_to = task['dlhub'].get('visible_to', ['public'])
 
-    # Add public so it isn't an empty list
-    if len(visible_to) == 0:
-        visible_to = ['public']
-
+    
     for document in d:
         gmeta_entry = mdf_toolbox.format_gmeta(document, visible_to, iden)
         glist.append(gmeta_entry)
@@ -91,8 +94,8 @@ def search_ingest(task, header):
 
     GLOBUS_SEARCH_WRITER_LAMBDA = "https://7v5g6s33utz4l7jx6dkxuh77mu0cqdhb.lambda-url.us-east-2.on.aws/"
 
-    # Get the authorization header token (string for the headers dict)
-    #header = self.authorizer.get_authorization_header()
+    # POST the gingest document to the GLOBUS_SEARCH_WRITER_LAMBDA
+    # which will ingest it to the search index.  
 
     http_response = requests.post(
         GLOBUS_SEARCH_WRITER_LAMBDA,
