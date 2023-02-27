@@ -103,40 +103,6 @@ def search_ingest(task, header):
     logger.info("Ingestion of {} to DLHub servables complete".format(iden))
 
 
-def mint_identifier(task):
-    """Mint a new identifier and return it."""
-    identifiers_namespace = '1EGOGHSs9RAtq'
-    identifier = None
-    logger.debug("Creating identifier")
-    try:
-        # client = identifiers_client(config)
-        serv_location = "https://%s%s" % ("dlhub.org/servables/", task['dlhub']['id'])
-        # safe encode the location
-        serv_location = urllib.parse.quote_plus(serv_location, safe='')
-        # can't be too safe!
-        serv_location = urllib.parse.quote_plus(serv_location, safe='')
-        # Create the petrel link
-        serv_location = f'https://petreldata.net/dlhub/detail/{serv_location}'
-        visible_to = ['public']
-
-        dataset_identifier = client.create_identifier(
-            namespace=identifiers_namespace,
-            location=[serv_location],
-            metadata={
-                'uuid': task['dlhub']['id'],
-                'shorthand_name': task['dlhub']['shorthand_name']
-            },
-            landing_page=serv_location,
-            visible_to=visible_to)
-
-        res = dataset_identifier.data
-        identifier = res['identifier']
-        logger.debug(f"Created identifier: {identifier}")
-    except Exception as e:
-        logger.error(e)
-    return identifier
-
-
 def register_funcx(task, container_uuid, funcx_client):
     """Register the function and the container with funcX.
 

@@ -705,25 +705,7 @@ class DLHubClient(BaseClient):
             del (metadata['dlhub']['funcx_token'])
 
         metadata['dlhub']['funcx_id'] = funcx_id
-        # identifier = mint_identifier(task)
-        identifier = None
-        if identifier:
-            metadata['dlhub']['identifier'] = identifier
-            try:
-                # Check if an identifier exists:
-                if metadata['dlhub']['identifier'] == "10.YET/UNASSIGNED":
-                    metadata['datacite']['identifier']['identifier'] = identifier
-                    metadata['datacite']['identifier']['identifierType'] = 'Globus'
-                else:
-                    # If one exists, add as a related identifier
-                    rel_iden = {'relatedIdentifier': identifier, 'relatedIdentifierType': 'Globus',
-                                'relationType': 'IsDescribedBy'}
-                    if 'relatedIdentifiers' in metadata['datacite']:
-                        metadata['datacite']['relatedIdentifiers'].append(rel_iden)
-                    else:
-                        metadata['datacite']['relatedIdentifiers'] = [rel_iden]
-            except Exception as e:
-                logger.debug(e)
+
         # Ingest metadata to search
         # Get header from the search lambda authorizer
         header = self.sl_authorizer.get_authorization_header()
