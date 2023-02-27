@@ -1,17 +1,13 @@
 import logging
 import json
-import os
 import requests
-import globus_sdk
 
-from funcx.sdk.client import FuncXClient
 from funcx import ContainerSpec
 from time import sleep
 from github import Github
 import base64
 
 import mdf_toolbox
-import urllib
 
 
 logger = logging.getLogger(__name__)
@@ -36,9 +32,9 @@ def create_container_spec(metadata):
         pass
 
     model_location = None
-    # If the model was uploaded using a signed URL, it will have a 
+    # If the model was uploaded using a signed URL, it will have a
     # transfer_method of S3 in its metadata.
-    # If the model is being built from a repo, it will not have a 
+    # If the model is being built from a repo, it will not have a
     # transfer_method, but will have a 'repository'
     if 'transfer_method' in metadata['dlhub']:
         if 'S3' in metadata['dlhub']['transfer_method']:
@@ -58,6 +54,7 @@ def create_container_spec(metadata):
 
     return cs
 
+
 def check_container_build_status(funcx_client, container_uuid):
     # Set timeout at 10 minutes
     timeout_at = 600
@@ -73,6 +70,7 @@ def check_container_build_status(funcx_client, container_uuid):
     else:
         raise Exception(f"Container Build Timeout after {timeout_at} seconds")
     return status
+
 
 def search_ingest(task, header):
     """
@@ -100,7 +98,6 @@ def search_ingest(task, header):
     # in the metadata, set the visibilty to default to ['public']
     visible_to = task['dlhub'].get('visible_to', ['public'])
 
-    
     for document in d:
         gmeta_entry = mdf_toolbox.format_gmeta(document, visible_to, iden)
         glist.append(gmeta_entry)
@@ -112,7 +109,7 @@ def search_ingest(task, header):
     GLOBUS_SEARCH_WRITER_LAMBDA = "https://7v5g6s33utz4l7jx6dkxuh77mu0cqdhb.lambda-url.us-east-2.on.aws/"
 
     # POST the gingest document to the GLOBUS_SEARCH_WRITER_LAMBDA
-    # which will ingest it to the search index.  
+    # which will ingest it to the search index.
 
     http_response = requests.post(
         GLOBUS_SEARCH_WRITER_LAMBDA,

@@ -22,8 +22,7 @@ from dlhub_sdk.utils.validation import validate
 from dlhub_sdk.utils.funcx_login_manager import FuncXLoginManager
 # from dlhub_sdk.utils.publish import *
 from dlhub_sdk.utils.publish import create_container_spec, search_ingest, get_dlhub_file, register_funcx, check_container_build_status
-from time import time, sleep
-
+from time import time
 
 # Directory for authentication tokens
 _token_dir = os.path.expanduser("~/.dlhub/credentials")
@@ -98,7 +97,7 @@ class DLHubClient(BaseClient):
         Keyword arguments are the same as for :class:`BaseClient <globus_sdk.base.BaseClient>`.
         """
 
-        authorizers = [dlh_authorizer, search_authorizer, openid_authorizer, fx_authorizer,sl_authorizer]
+        authorizers = [dlh_authorizer, search_authorizer, openid_authorizer, fx_authorizer, sl_authorizer]
         # Get authorizers through Globus login if any are not provided
         if not all(a is not None for a in authorizers):
             # If some but not all were provided, warn the user they could be making a mistake
@@ -107,7 +106,11 @@ class DLHubClient(BaseClient):
                                'You must provide authorizers for DLHub, Search, OpenID, FuncX.')
 
             auth_res = login(services=["search", "dlhub",
-                                       FuncXClient.FUNCX_SCOPE, "openid", "email", "profile",'https://auth.globus.org/scopes/44420d77-7931-4d0e-9d2b-173aca040c0e/action_all'],
+                                       FuncXClient.FUNCX_SCOPE,
+                                       "openid",
+                                       "email",
+                                       "profile",
+                                       'https://auth.globus.org/scopes/44420d77-7931-4d0e-9d2b-173aca040c0e/action_all'],
                              app_name="DLHub_Client",
                              make_clients=False,
                              client_id=CLIENT_ID,
@@ -133,7 +136,7 @@ class DLHubClient(BaseClient):
         }
 
         login_manager = FuncXLoginManager(authorizers=auth_dict)
-        self._fx_client = FuncXClient(funcx_service_address="https://api.dev.funcx.org/v2",login_manager=login_manager)
+        self._fx_client = FuncXClient(funcx_service_address="https://api.dev.funcx.org/v2", login_manager=login_manager)
 
         self._search_client = globus_sdk.SearchClient(authorizer=search_authorizer,
                                                       transport_params={"http_timeout": http_timeout})
@@ -144,9 +147,8 @@ class DLHubClient(BaseClient):
         self.userinfo = self._openid_client.oauth2_userinfo()
         self.sl_authorizer = sl_authorizer
 
-
         # funcX endpoint to use
-        #self.fx_endpoint = '86a47061-f3d9-44f0-90dc-56ddc642c000'
+        # self.fx_endpoint = '86a47061-f3d9-44f0-90dc-56ddc642c000'
         self.fx_endpoint = '2238617a-8756-4030-a8ab-44ffb1446092'
         self.fx_cache = {}
 
@@ -537,7 +539,7 @@ class DLHubClient(BaseClient):
 
         # Wipe the fx cache so we don't keep reusing an old servable
         self.clear_funcx_cache()
-        
+
         # Ingest Model to DLHub
         task = self._ingest(metadata)
 
@@ -681,14 +683,14 @@ class DLHubClient(BaseClient):
         container_spec = create_container_spec(metadata)
 
         container_uuid = fxc.build_container(container_spec)
-        
+
         # Putting container_uuid in metadata instead of task_id, as we don't
         # have a task to monitor, just a container
         metadata['container_id'] = container_uuid
 
         # check_container_build_status will block until container builds,
         # or build fails, or timeout after 10 minutes
-        status = check_container_build_status(fxc,container_uuid)
+        status = check_container_build_status(fxc, container_uuid)
 
         if status == "failed":
             raise Exception("ContainerService build failed")
