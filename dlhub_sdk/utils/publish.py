@@ -177,6 +177,7 @@ def dlhub_run(event):
 
 
 def convert_dict(data, conversion_function=str):
+    """Convert dict to string representations for publishing"""
     if type(data) is dict:
         string_dict = {}
         for k, v in data.items():
