@@ -124,12 +124,11 @@ def register_funcx(task, container_uuid, funcx_client):
 
     fxc = funcx_client
 
-    description = f"A container for the DLHub model {task['dlhub']['shorthand_name']}"
     try:
         description = task['datacite']['descriptions'][0]['description']
     except:
-        # It doesn't have a simple description
-        pass
+        description = f"A container for the DLHub model {task['dlhub']['shorthand_name']}"
+
     # I believe that the Container Service registers the container w/ funcx
     # Register the container with funcX
     # container_id = fxc.register_container(task['dlhub']['ecr_uri'], 'docker', name=task['dlhub']['shorthand_name'],
