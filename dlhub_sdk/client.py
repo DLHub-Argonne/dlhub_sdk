@@ -136,7 +136,9 @@ class DLHubClient(BaseClient):
         }
 
         login_manager = FuncXLoginManager(authorizers=auth_dict)
-        self._fx_client = FuncXClient(funcx_service_address="https://api.dev.funcx.org/v2", login_manager=login_manager)
+        # Dev funcx_service_address="https://api.dev.funcx.org/v2"
+        # self._fx_client = FuncXClient(funcx_service_address="https://api.dev.funcx.org/v2", login_manager=login_manager)
+        self._fx_client = FuncXClient(login_manager=login_manager)
 
         self._search_client = globus_sdk.SearchClient(authorizer=search_authorizer,
                                                       transport_params={"http_timeout": http_timeout})
@@ -148,8 +150,10 @@ class DLHubClient(BaseClient):
         self.sl_authorizer = sl_authorizer
 
         # funcX endpoint to use
-        # self.fx_endpoint = '86a47061-f3d9-44f0-90dc-56ddc642c000'
-        self.fx_endpoint = '2238617a-8756-4030-a8ab-44ffb1446092'
+        # Production endpoint is '86a47061-f3d9-44f0-90dc-56ddc642c000'
+        # Dev endpoint is '2238617a-8756-4030-a8ab-44ffb1446092'
+        # self.fx_endpoint = '2238617a-8756-4030-a8ab-44ffb1446092'
+        self.fx_endpoint = '86a47061-f3d9-44f0-90dc-56ddc642c000'
         self.fx_cache = {}
 
         super(DLHubClient, self).__init__(environment='dlhub',
