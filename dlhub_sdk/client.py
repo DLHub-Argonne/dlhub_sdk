@@ -713,6 +713,6 @@ class DLHubClient(BaseClient):
         try:
             search_ingest(metadata, header)
         except Exception as e:
-            logger.debug("Failed to ingest to search. {}".format(e))
+            raise Exception("Failed to ingest to search. {}".format(e))
 
         return metadata
