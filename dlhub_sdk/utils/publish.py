@@ -78,7 +78,7 @@ def search_ingest(task, header):
     Ingest the servable data into a Globus Search index.
 
     Args:
-        task (dict): the task description.
+        task (dict): the metadata of the servable to be ingested.
         header (str): the authorization header for the Globus Search Writer Lambda
     """
     logger.debug("Ingesting servable into Search.")

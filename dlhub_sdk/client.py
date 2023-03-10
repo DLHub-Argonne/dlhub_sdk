@@ -449,7 +449,7 @@ class DLHubClient(BaseClient):
         Args:
             model (BaseMetadataModel): Servable to be submitted
         Returns:
-            (string): Task ID of this submission, used for checking for success
+            (string): Container ID of this submission, as returned from the Container Service
         """
 
         # Get the metadata
@@ -509,7 +509,7 @@ class DLHubClient(BaseClient):
         Args:
             repository (string): Repository to publish
         Returns:
-            (string): Task ID of this submission, used for checking for success
+            (string): Container ID of this submission, as returned from the Container Service
         """
         # Get dlhub.json from github repo
         try:
@@ -669,11 +669,13 @@ class DLHubClient(BaseClient):
         return self.fx_cache
 
     def _ingest(self, metadata):
-        """
-        Ingest the model
+        """Ingest the model: build container using container service, and ingest metadata into search index.
 
-        :param metadata:
-        :return:
+        Args:
+            Metadata: dict
+                The metadata of the model to build/ingest.
+        Returns:
+            dict: The metadata of the ingested model
         """
 
         logger.debug("Starting ingest")
