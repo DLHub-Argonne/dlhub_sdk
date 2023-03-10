@@ -14,7 +14,7 @@ from mdf_toolbox.globus_search.search_helper import SEARCH_LIMIT
 from funcx.sdk.client import FuncXClient
 from globus_sdk.scopes import AuthScopes, SearchScopes
 
-from dlhub_sdk.config import DLHUB_SERVICE_ADDRESS, CLIENT_ID
+from dlhub_sdk.config import DLHUB_SERVICE_ADDRESS, CLIENT_ID, GLOBUS_SEARCH_LAMBDA_SCOPE
 from dlhub_sdk.utils.futures import DLHubFuture
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 from dlhub_sdk.utils.search import DLHubSearchHelper, get_method_details, filter_latest
@@ -110,7 +110,7 @@ class DLHubClient(BaseClient):
                                        "openid",
                                        "email",
                                        "profile",
-                                       'https://auth.globus.org/scopes/44420d77-7931-4d0e-9d2b-173aca040c0e/action_all'],
+                                       GLOBUS_SEARCH_LAMBDA_SCOPE],
                              app_name="DLHub_Client",
                              make_clients=False,
                              client_id=CLIENT_ID,
@@ -124,7 +124,7 @@ class DLHubClient(BaseClient):
             fx_authorizer = auth_res[FuncXClient.FUNCX_SCOPE]
             openid_authorizer = auth_res['openid']
             search_authorizer = auth_res['search']
-            sl_authorizer = auth_res['https://auth.globus.org/scopes/44420d77-7931-4d0e-9d2b-173aca040c0e/action_all']
+            sl_authorizer = auth_res[GLOBUS_SEARCH_LAMBDA_SCOPE]
 
         # Define the subclients needed by the service
 

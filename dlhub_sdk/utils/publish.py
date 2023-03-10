@@ -5,6 +5,7 @@ import requests
 from funcx import ContainerSpec
 from time import sleep
 from github import Github
+from dlhub_sdk.config import GLOBUS_SEARCH_WRITER_LAMBDA
 import base64
 
 import mdf_toolbox
@@ -105,8 +106,6 @@ def search_ingest(task, header):
 
     logger.info("ingesting to search")
     logger.info(gingest)
-
-    GLOBUS_SEARCH_WRITER_LAMBDA = "https://7v5g6s33utz4l7jx6dkxuh77mu0cqdhb.lambda-url.us-east-2.on.aws/"
 
     # POST the gingest document to the GLOBUS_SEARCH_WRITER_LAMBDA
     # which will ingest it to the search index.
