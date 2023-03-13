@@ -11,7 +11,6 @@ from dlhub_sdk.utils.futures import DLHubFuture
 from dlhub_sdk.client import DLHubClient
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 
-
 # github specific declarations
 client_id = os.getenv('CLIENT_ID')
 client_secret = os.getenv('CLIENT_SECRET')
@@ -24,6 +23,7 @@ _pickle_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "pickle.p
 class DummyReply:
     def __init__(self) -> None:
         self.status_code = 200
+        self.text = "Exception that we shouldn't hit"
 
     def json(self) -> Dict[str, str]:
         return {"task_id": "bf06d72e-0478-11ed-97f9-4b1381555b22"}  # valid task id, status is known to be FAILED
@@ -93,20 +93,17 @@ def test_run(dl):
 
 
 def test_submit(dl, mocker):  # noqa: F811 (flake8 does not understand usage)
-    # Make an example function
-    model = PythonStaticMethodModel.create_model('numpy.linalg', 'norm')
-    model.dlhub.test = True
-    model.set_name('1d_norm')
-    model.set_title('Norm of a 1D Array')
-    model.set_inputs('ndarray', 'Array to be normed', shape=[None])
-    model.set_outputs('number', 'Norm of the array')
 
+    # patch build_container, register_funcx, and search_ingest
+    mocker.patch("funcx.sdk.client.FuncXClient.build_container", return_value="f53e2175-39c5-4522-bc6c-0e68625e3c20")
+    mocker.patch("dlhub_sdk.utils.publish.register_funcx", return_value="6af11a75-f751-4e6d-982f-9ae513c56d63")
+    mocker.patch("dlhub_sdk.utils.publish.search_ingest", return_value=None)
     # patch requests.post
     mocker.patch("requests.post", return_value=DummyReply())
 
-    # Submit the model
-    task_id = dl.publish_servable(model)
-    assert task_id == "bf06d72e-0478-11ed-97f9-4b1381555b22"
+    # Submit a test model
+    container_id = dl.publish_repository("https://github.com/ericblau/dlhub_noop_publish")
+    assert container_id == "f53e2175-39c5-4522-bc6c-0e68625e3c20"
 
     # pickle class method to test
     with open(_pickle_path, 'wb') as fp:
@@ -119,17 +116,17 @@ def test_submit(dl, mocker):  # noqa: F811 (flake8 does not understand usage)
     model.set_title("Dummy JSON")
 
     # Submit the model
-    task_id = dl.publish_servable(model)
-    assert task_id == "bf06d72e-0478-11ed-97f9-4b1381555b22"
+    container_id = dl.publish_servable(model)
+    assert container_id == "f53e2175-39c5-4522-bc6c-0e68625e3c20"
 
     # make sure invalid call raises proper error
     with raises(TypeError):
         model = PythonStaticMethodModel.create_model("dlhub_sdk.utils.validation")
 
     # Submit the model using easy publish
-    task_id = dl.easy_publish("Validate dl.run Calls", "Darling, Isaac", "validate_run", "static_method",
-                              {"module": "dlhub_sdk.utils.validation", "method": "validate"}, [["University of Chicago"]], "not-a-real-doi")
-    assert task_id == "bf06d72e-0478-11ed-97f9-4b1381555b22"
+    container_id = dl.easy_publish("Validate dl.run Calls", "Darling, Isaac", "validate_run", "static_method",
+                                   {"module": "dlhub_sdk.utils.validation", "method": "validate"}, [["University of Chicago"]], "not-a-real-doi")
+    assert container_id == "f53e2175-39c5-4522-bc6c-0e68625e3c20"
 
 
 def test_datacite_validation():
