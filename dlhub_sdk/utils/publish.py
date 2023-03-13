@@ -57,8 +57,8 @@ def create_container_spec(metadata):
 
 
 def check_container_build_status(funcx_client, container_uuid):
-    # Set timeout at 10 minutes
-    timeout_at = 600
+    # Set timeout to the internal timeout limit: 1800
+    timeout_at = 1800
     i = 0
     # This loop means that we are blocking on the container build.
     while i < timeout_at:
