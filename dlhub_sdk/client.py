@@ -457,7 +457,7 @@ class DLHubClient(BaseClient):
 
         # Mark the method used to submit the model
         # We're using signed_urls so it is S3
-        metadata['dlhub']['transfer_method'] = {'S3': 'file'}
+        metadata['dlhub']['transfer_method'] = {'S3': 's3://'}
 
         # Validate against the servable schema
         validate_against_dlhub_schema(metadata, 'servable')
@@ -477,13 +477,18 @@ class DLHubClient(BaseClient):
 
             # Use signed URL to upload zip file
             SIGNED_URL_ENDPOINT = "https://api.dlhub.org/api/v1/publish/signed_url"
-            S3_DOWNLOAD_PREFIX = "https://dlhub-anl.s3.us-east-1.amazonaws.com/container_uploads/"
+            S3_DOWNLOAD_PREFIX = "https://dlhub-anl.s3.us-east-1.amazonaws.com/"
             reply = requests.get(
                 SIGNED_URL_ENDPOINT)
             signed_url = reply.json()
             logger.debug(f'signed_url["url"] is {signed_url["url"]}')
 
-            with open('function.zip', 'rb') as zf:
+            # Per https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectPOST.html
+            # need to set success_action_status to 200 if you want a 200
+            # response on success.
+            signed_url['fields']['success_action_status'] = 200
+
+            with open(zip_filename, 'rb') as zf:
                 http_response = requests.post(
                     signed_url['url'],
                     data=signed_url['fields'],
@@ -495,13 +500,33 @@ class DLHubClient(BaseClient):
                 raise Exception(http_response.text)
             metadata['dlhub']['transfer_method']['S3'] = S3_DOWNLOAD_PREFIX + signed_url['fields']['key']
 
+            # Insert owner name and time-stamp into metadata
+            # We get user name from the OIDC userinfo from Globus Auth
+            user_name = self.userinfo['preferred_username']
+            if '@' in user_name:
+                short_name = "{name}_{org}".format(name=user_name.split(
+                    "@")[0], org=user_name.split("@")[1].split(".")[0])
+            else:
+                short_name = user_name
+            metadata['dlhub']['owner'] = short_name
+            metadata['dlhub']['publication_date'] = int(round(time() * 1000))
+            metadata['dlhub']['user_id'] = self.userinfo['sub']
+
+            # Make name from repository ID
+            model_name = metadata['dlhub']['name']
+            shorthand_name = "{name}/{model}".format(name=short_name, model=model_name.replace(" ", "_"))
+            metadata['dlhub']['shorthand_name'] = shorthand_name
+
+            servable_uuid = str(uuid.uuid4())
+            metadata['dlhub']['id'] = servable_uuid
+
             # Ingest Model to DLHub
             task = self._ingest(metadata)
 
             # Return the task id
             return task['container_id']
         finally:
-            os.unlink('function.zip')
+            os.unlink(zip_filename)
 
     def publish_repository(self, repository):
         """Submit a repository to DLHub for publication
