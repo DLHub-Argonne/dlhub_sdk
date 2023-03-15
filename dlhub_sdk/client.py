@@ -483,11 +483,6 @@ class DLHubClient(BaseClient):
             signed_url = reply.json()
             logger.debug(f'signed_url["url"] is {signed_url["url"]}')
 
-            # Per https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectPOST.html
-            # need to set success_action_status to 200 if you want a 200
-            # response on success.
-            signed_url['fields']['success_action_status'] = 200
-
             with open(zip_filename, 'rb') as zf:
                 http_response = requests.post(
                     signed_url['url'],
@@ -496,7 +491,11 @@ class DLHubClient(BaseClient):
                         'file': (signed_url['fields']['key'], zf, 'application/octet-stream')
                     }
                 )
-            if http_response.status_code != 200:
+            
+            # Per https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectPOST.html
+            # default success returns a 204, but it could be set to return 200
+            # response on success.  We'll accept either
+            if not (http_response.status_code == 204 or http_response.status_code == 200):
                 raise Exception(http_response.text)
             metadata['dlhub']['transfer_method']['S3'] = S3_DOWNLOAD_PREFIX + signed_url['fields']['key']
 
