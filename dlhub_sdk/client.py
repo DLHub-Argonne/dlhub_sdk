@@ -491,7 +491,7 @@ class DLHubClient(BaseClient):
                         'file': (signed_url['fields']['key'], zf, 'application/octet-stream')
                     }
                 )
-            
+
             # Per https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectPOST.html
             # default success returns a 204, but it could be set to return 200
             # response on success.  We'll accept either
@@ -712,7 +712,11 @@ class DLHubClient(BaseClient):
 
         container_spec = create_container_spec(metadata)
 
-        container_uuid = fxc.build_container(container_spec)
+        try: 
+            container_uuid = fxc.build_container(container_spec)
+        except Exception as e:
+            help_err = HelpMessage(f"Container build failed with exception: {e}")
+            raise help_err from e
 
         # Putting container_uuid in metadata instead of task_id, as we don't
         # have a task to monitor, just a container
@@ -724,8 +728,8 @@ class DLHubClient(BaseClient):
 
         if status == "failed":
             raise Exception("ContainerService build failed")
-        print(f"Container uuid: {container_uuid} status: {status}")
-        print(fxc.get_container(container_uuid, container_type="docker"))
+        # print(f"Container uuid: {container_uuid} status: {status}")
+        # print(fxc.get_container(container_uuid, container_type="docker"))
 
         funcx_id = register_funcx(metadata, container_uuid, fxc)
         if 'funcx_token' in metadata['dlhub']:
