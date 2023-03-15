@@ -4,7 +4,7 @@ import requests
 
 from funcx import ContainerSpec
 from time import sleep
-from github import Github
+import github
 from dlhub_sdk.config import GLOBUS_SEARCH_WRITER_LAMBDA
 import base64
 
@@ -28,7 +28,7 @@ def create_container_spec(metadata):
     try:
         for k, v in metadata['dlhub']['dependencies']['python'].items():
             dependencies.append("{0}=={1}".format(k, v))
-    except:
+    except Exception:
         # There are no python dependencies
         pass
 
@@ -139,7 +139,7 @@ def register_funcx(task, container_uuid, funcx_client):
 
     try:
         description = task['datacite']['descriptions'][0]['description']
-    except:
+    except Exception:
         description = f"A container for the DLHub model {task['dlhub']['shorthand_name']}"
 
     # The Container Service registers the container w/ funcx
@@ -211,10 +211,12 @@ def get_dlhub_file(repository):
     repo = repo.replace(".git", "")
 
     try:
-        g = Github()
+        g = github.Github()
         r = g.get_repo(repo)
         contents = r.get_contents("dlhub.json")
         decoded = base64.b64decode(contents.content)
         return json.loads(decoded)
-    except:
-        return None
+    except github.UnknownObjectException as e:
+        raise Exception(f"dlhub.json not found in {repo} or {repo} itself not found") from e
+    except Exception as e:
+        raise Exception(f"dlhub.json could not be retrieved from {repo} due to {e}")

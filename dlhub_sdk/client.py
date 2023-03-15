@@ -539,7 +539,7 @@ class DLHubClient(BaseClient):
         try:
             metadata = get_dlhub_file(repository)
         except Exception as e:
-            help_err = HelpMessage("No dlhub.json file was found in repository")
+            help_err = HelpMessage(f"No dlhub.json file could be retrieved from repository: {e}")
             raise help_err from e
 
         # Set repository location in metadata
