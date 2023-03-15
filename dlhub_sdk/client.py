@@ -712,7 +712,7 @@ class DLHubClient(BaseClient):
 
         container_spec = create_container_spec(metadata)
 
-        try: 
+        try:
             container_uuid = fxc.build_container(container_spec)
         except Exception as e:
             help_err = HelpMessage(f"Container build failed with exception: {e}")
@@ -723,7 +723,8 @@ class DLHubClient(BaseClient):
         metadata['container_id'] = container_uuid
 
         # check_container_build_status will block until container builds,
-        # or build fails, or timeout after 10 minutes
+        # or build fails, or timeout after 30 minutes (same timeout as the
+        # build itself)
         status = check_container_build_status(fxc, container_uuid)
 
         if status == "failed":
