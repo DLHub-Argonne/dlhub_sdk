@@ -499,25 +499,7 @@ class DLHubClient(BaseClient):
                 raise Exception(http_response.text)
             metadata['dlhub']['transfer_method']['S3'] = S3_DOWNLOAD_PREFIX + signed_url['fields']['key']
 
-            # Insert owner name and time-stamp into metadata
-            # We get user name from the OIDC userinfo from Globus Auth
-            user_name = self.userinfo['preferred_username']
-            if '@' in user_name:
-                short_name = "{name}_{org}".format(name=user_name.split(
-                    "@")[0], org=user_name.split("@")[1].split(".")[0])
-            else:
-                short_name = user_name
-            metadata['dlhub']['owner'] = short_name
-            metadata['dlhub']['publication_date'] = int(round(time() * 1000))
-            metadata['dlhub']['user_id'] = self.userinfo['sub']
-
-            # Make name from repository ID
-            model_name = metadata['dlhub']['name']
-            shorthand_name = "{name}/{model}".format(name=short_name, model=model_name.replace(" ", "_"))
-            metadata['dlhub']['shorthand_name'] = shorthand_name
-
-            servable_uuid = str(uuid.uuid4())
-            metadata['dlhub']['id'] = servable_uuid
+            self._prepare_metadata(metadata)
 
             # Ingest Model to DLHub
             task = self._ingest(metadata)
@@ -545,25 +527,7 @@ class DLHubClient(BaseClient):
         # Set repository location in metadata
         metadata['repository'] = repository
 
-        # Insert owner name and time-stamp into metadata
-        # We get user name from the OIDC userinfo from Globus Auth
-        user_name = self.userinfo['preferred_username']
-        if '@' in user_name:
-            short_name = "{name}_{org}".format(name=user_name.split(
-                "@")[0], org=user_name.split("@")[1].split(".")[0])
-        else:
-            short_name = user_name
-        metadata['dlhub']['owner'] = short_name
-        metadata['dlhub']['publication_date'] = int(round(time() * 1000))
-        metadata['dlhub']['user_id'] = self.userinfo['sub']
-
-        # Make name from repository ID
-        model_name = metadata['dlhub']['name']
-        shorthand_name = "{name}/{model}".format(name=short_name, model=model_name.replace(" ", "_"))
-        metadata['dlhub']['shorthand_name'] = shorthand_name
-
-        servable_uuid = str(uuid.uuid4())
-        metadata['dlhub']['id'] = servable_uuid
+        self._prepare_metadata(metadata)
 
         # Wipe the fx cache so we don't keep reusing an old servable
         self.clear_funcx_cache()
@@ -691,6 +655,29 @@ class DLHubClient(BaseClient):
             self.fx_cache = {}
 
         return self.fx_cache
+
+    def _prepare_metadata(self, metadata):
+        """Insert owner name, time-stamp, repository ID, and servable_uuid into metadata."""
+
+        # Insert owner name and time-stamp into metadata
+        # We get user name from the OIDC userinfo from Globus Auth
+        user_name = self.userinfo['preferred_username']
+        if '@' in user_name:
+            short_name = "{name}_{org}".format(name=user_name.split(
+                "@")[0], org=user_name.split("@")[1].split(".")[0])
+        else:
+            short_name = user_name
+        metadata['dlhub']['owner'] = short_name
+        metadata['dlhub']['publication_date'] = int(round(time() * 1000))
+        metadata['dlhub']['user_id'] = self.userinfo['sub']
+
+        # Make name from repository ID
+        model_name = metadata['dlhub']['name']
+        shorthand_name = "{name}/{model}".format(name=short_name, model=model_name.replace(" ", "_"))
+        metadata['dlhub']['shorthand_name'] = shorthand_name
+
+        servable_uuid = str(uuid.uuid4())
+        metadata['dlhub']['id'] = servable_uuid
 
     def _ingest(self, metadata):
         """Ingest the model: build container using container service, and ingest metadata into search index.
