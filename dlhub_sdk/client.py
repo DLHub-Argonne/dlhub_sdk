@@ -661,7 +661,10 @@ class DLHubClient(BaseClient):
 
         # Insert owner name and time-stamp into metadata
         # We get user name from the OIDC userinfo from Globus Auth
-        user_name = self.userinfo['preferred_username']
+        if "preferred_username" in self.userinfo:
+            user_name = self.userinfo['preferred_username']
+        else:
+            user_name = self.userinfo['sub']
         if '@' in user_name:
             short_name = "{name}_{org}".format(name=user_name.split(
                 "@")[0], org=user_name.split("@")[1].split(".")[0])
