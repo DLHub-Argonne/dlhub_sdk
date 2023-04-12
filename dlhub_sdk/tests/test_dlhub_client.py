@@ -42,6 +42,7 @@ def dl():
         return DLHubClient(
             dlh_authorizer=auth_res["dlhub"], fx_authorizer=auth_res[fx_scope],
             openid_authorizer=auth_res['openid'], search_authorizer=auth_res['search'],
+            sl_authorizer=auth_res[gsl_scope],
             force_login=False, http_timeout=10
         )
     else:
