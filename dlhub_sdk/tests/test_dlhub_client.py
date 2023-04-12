@@ -15,6 +15,7 @@ from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 client_id = os.getenv('CLIENT_ID')
 client_secret = os.getenv('CLIENT_SECRET')
 fx_scope = "https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/all"
+gsl_scope = "https://auth.globus.org/scopes/d31d4f5d-be37-4adc-a761-2f716b7af105/action_all"
 is_gha = os.getenv('GITHUB_ACTIONS')
 _pickle_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "pickle.pkl"))
 
@@ -33,7 +34,7 @@ class DummyReply:
 def dl():
     if is_gha:
         # Get the services via a confidential log in
-        services = ["search", "dlhub", fx_scope, "openid"]
+        services = ["search", "dlhub", fx_scope, "openid", "email", "profile", gsl_scope]
         auth_res = mdf_toolbox.confidential_login(client_id=client_id,
                                                   client_secret=client_secret,
                                                   services=services,
