@@ -10,6 +10,8 @@ import base64
 
 import mdf_toolbox
 
+from zipfile import ZipFile
+
 
 logger = logging.getLogger(__name__)
 
@@ -220,3 +222,8 @@ def get_dlhub_file(repository):
         raise Exception(f"dlhub.json not found in {repo} or {repo} itself not found") from e
     except Exception as e:
         raise Exception(f"dlhub.json could not be retrieved from {repo} due to {e}")
+
+def update_servable_zip_with_metadata(servablezip,metadata):
+
+    with ZipFile(servablezip, mode="a") as zf:
+        zf.writestr('dlhub.json',json.dumps(metadata))

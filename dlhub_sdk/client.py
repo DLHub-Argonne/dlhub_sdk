@@ -21,7 +21,7 @@ from dlhub_sdk.utils.search import DLHubSearchHelper, get_method_details, filter
 from dlhub_sdk.utils.validation import validate
 from dlhub_sdk.utils.funcx_login_manager import FuncXLoginManager
 # from dlhub_sdk.utils.publish import *
-from dlhub_sdk.utils.publish import create_container_spec, search_ingest, get_dlhub_file, register_funcx, check_container_build_status
+from dlhub_sdk.utils.publish import create_container_spec, search_ingest, get_dlhub_file, register_funcx, check_container_build_status, update_servable_zip_with_metadata
 from time import time
 
 # Directory for authentication tokens
@@ -462,6 +462,9 @@ class DLHubClient(BaseClient):
         # Validate against the servable schema
         validate_against_dlhub_schema(metadata, 'servable')
 
+        # Add username, etc. to metadata
+        self._prepare_metadata(metadata)
+
         # Wipe the fx cache so we don't keep reusing an old servable
         self.clear_funcx_cache()
 
@@ -471,6 +474,9 @@ class DLHubClient(BaseClient):
         os.unlink(zip_filename)
         try:
             model.get_zip_file(zip_filename)
+
+            # Add dlhub.json to zipfile
+            update_servable_zip_with_metadata(zip_filename, metadata)
 
             # Get the authorization header token (string for the headers dict)
             # header = self.authorizer.get_authorization_header()
@@ -498,8 +504,6 @@ class DLHubClient(BaseClient):
             if not (http_response.status_code == 204 or http_response.status_code == 200):
                 raise Exception(http_response.text)
             metadata['dlhub']['transfer_method']['S3'] = S3_DOWNLOAD_PREFIX + signed_url['fields']['key']
-
-            self._prepare_metadata(metadata)
 
             # Ingest Model to DLHub
             task = self._ingest(metadata)
