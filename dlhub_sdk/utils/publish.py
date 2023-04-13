@@ -183,7 +183,23 @@ def dlhub_run(event):
 
 
 def convert_dict(data, conversion_function=str):
-    """Convert dict to string representations for publishing"""
+    """
+    Convert dict to string representations for publishing
+    Recursively traverse the dict to ensure that all values are string
+    representations (or dicts or lists that contain only string representations)
+
+    Brought over from the DLHub Service ingestion scripts at:
+       https://github.com/DLHub-Argonne/dlhub_service/blob/a04fc9ed683f92c1e8549ac539a406f306ed2eff/ingestion/publish_dockerize.py#L224
+
+    Parameters:
+        data  -- your object to be string-ified
+        conversion_function  -- defaults to str.
+
+    Returns:
+        a deep copy of the original object, where all terminal values
+        are strings.
+
+    """
     if type(data) is dict:
         string_dict = {}
         for k, v in data.items():
