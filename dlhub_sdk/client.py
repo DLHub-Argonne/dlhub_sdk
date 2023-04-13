@@ -21,7 +21,8 @@ from dlhub_sdk.utils.search import DLHubSearchHelper, get_method_details, filter
 from dlhub_sdk.utils.validation import validate
 from dlhub_sdk.utils.funcx_login_manager import FuncXLoginManager
 # from dlhub_sdk.utils.publish import *
-from dlhub_sdk.utils.publish import create_container_spec, search_ingest, get_dlhub_file, register_funcx, check_container_build_status, update_servable_zip_with_metadata
+from dlhub_sdk.utils.publish import create_container_spec, search_ingest, get_dlhub_file, register_funcx, check_container_build_status
+from dlhub_sdk.utils.publish import update_servable_zip_with_metadata
 from time import time
 
 # Directory for authentication tokens
