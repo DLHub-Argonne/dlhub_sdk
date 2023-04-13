@@ -1,6 +1,7 @@
 import os
 import pickle as pkl
 from typing import Dict
+import re
 
 import mdf_toolbox
 from pytest import fixture, raises, mark
@@ -18,6 +19,12 @@ fx_scope = "https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/
 gsl_scope = "https://auth.globus.org/scopes/d31d4f5d-be37-4adc-a761-2f716b7af105/action_all"
 is_gha = os.getenv('GITHUB_ACTIONS')
 _pickle_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "pickle.pkl"))
+
+
+# Have each test run in its own subdir
+@fixture(autouse=True)
+def change_test_dir(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
 
 
 # make dummy reply for mocker patch to return
@@ -282,3 +289,49 @@ def test_status(dl):
     future = dl.run('aristana_uchicago/noop_v11', True, asynchronous=True)
     # Need spec for Fx status returns
     assert isinstance(dl.get_task_status(future.task_id), dict)
+
+
+@mark.timeout(600)
+def test_container_build_repo_end_to_end(dl):
+    containerid = dl.publish_repository("https://github.com/ericblau/dlhub_noop_publish")
+    assert isinstance(containerid, str)
+    container_desc = dl._fx_client.get_container(containerid, "docker")
+    assert isinstance(container_desc, dict)
+    assert container_desc['container_uuid'] == containerid
+    assert container_desc['build_status'] == 'ready'
+    assert re.match("docker.io/bengal1/funcx_.*:latest", container_desc['location'])
+    result = dl.run(container_desc['name'], True)
+    assert result == "Hello world!"
+
+
+@mark.timeout(600)
+def test_container_build_zip_end_to_end(dl):
+    from dlhub_sdk.models.servables.python import PythonStaticMethodModel
+    import sys
+
+    # We need to make the noop.py in the cwd()
+    cwd = os.getcwd()
+    with open("noop.py", "w") as f:
+        f.write('def run_noop(bool):\n    return "Hello world!"')
+    # Append cwd to sys.path so we can import the function
+    sys.path.append(cwd)
+    from noop import run_noop
+
+    model = PythonStaticMethodModel.from_function_pointer(run_noop)
+    model.set_title("DLHub No-op Publication Test zipfile")
+    model.set_name("noopz_v02")
+    model.set_inputs("boolean", "Any boolean value")
+    model.set_outputs("string", "'Hello world!'")
+    model.add_file("noop.py")
+
+    validate_against_dlhub_schema(model.to_dict(), 'servable')
+
+    containerid = dl.publish_servable(model)
+    assert isinstance(containerid, str)
+    container_desc = dl._fx_client.get_container(containerid, "docker")
+    assert isinstance(container_desc, dict)
+    assert container_desc['container_uuid'] == containerid
+    assert container_desc['build_status'] == 'ready'
+    assert re.match("docker.io/bengal1/funcx_.*:latest", container_desc['location'])
+    result = dl.run(container_desc['name'], True)
+    assert result == "Hello world!"
