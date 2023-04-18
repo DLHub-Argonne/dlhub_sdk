@@ -1,26 +1,29 @@
 import importlib
 import logging
-import json
 import os
 from tempfile import mkstemp
 from typing import Sequence, Union, Any, Optional, Tuple, Dict, List
 import requests
 import globus_sdk
+import uuid
 
 from globus_sdk import BaseClient
-from globus_sdk.utils import slash_join
 from globus_sdk.authorizers import GlobusAuthorizer
 from mdf_toolbox import login, logout
 from mdf_toolbox.globus_search.search_helper import SEARCH_LIMIT
 from funcx.sdk.client import FuncXClient
 from globus_sdk.scopes import AuthScopes, SearchScopes
 
-from dlhub_sdk.config import DLHUB_SERVICE_ADDRESS, CLIENT_ID
+from dlhub_sdk.config import DLHUB_SERVICE_ADDRESS, CLIENT_ID, GLOBUS_SEARCH_LAMBDA_SCOPE
 from dlhub_sdk.utils.futures import DLHubFuture
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 from dlhub_sdk.utils.search import DLHubSearchHelper, get_method_details, filter_latest
 from dlhub_sdk.utils.validation import validate
 from dlhub_sdk.utils.funcx_login_manager import FuncXLoginManager
+# from dlhub_sdk.utils.publish import *
+from dlhub_sdk.utils.publish import create_container_spec, search_ingest, get_dlhub_file, register_funcx, check_container_build_status
+from dlhub_sdk.utils.publish import update_servable_zip_with_metadata
+from time import time
 
 # Directory for authentication tokens
 _token_dir = os.path.expanduser("~/.dlhub/credentials")
@@ -57,6 +60,7 @@ class DLHubClient(BaseClient):
                  search_authorizer: Optional[GlobusAuthorizer] = None,
                  fx_authorizer: Optional[GlobusAuthorizer] = None,
                  openid_authorizer: Optional[GlobusAuthorizer] = None,
+                 sl_authorizer: Optional[GlobusAuthorizer] = None,
                  http_timeout: Optional[int] = None,
                  force_login: bool = False, **kwargs):
         """Initialize the client
@@ -87,11 +91,14 @@ class DLHubClient(BaseClient):
             openid_authorizer (:class:`GlobusAuthorizer
                             <globus_sdk.authorizers.base.GlobusAuthorizer>`):
                 An authorizer instance used to communicate with OpenID.
+            sl_authorizer (:class:`GlobusAuthorizer
+                            <globus_sdk.authorizers.base.GlobusAuthorizer>`):
+                An authorizer instance used to communicate with the search lambda..
                 If ``None``, will be created from your account's credentials.
         Keyword arguments are the same as for :class:`BaseClient <globus_sdk.base.BaseClient>`.
         """
 
-        authorizers = [dlh_authorizer, search_authorizer, openid_authorizer, fx_authorizer]
+        authorizers = [dlh_authorizer, search_authorizer, openid_authorizer, fx_authorizer, sl_authorizer]
         # Get authorizers through Globus login if any are not provided
         if not all(a is not None for a in authorizers):
             # If some but not all were provided, warn the user they could be making a mistake
@@ -100,7 +107,11 @@ class DLHubClient(BaseClient):
                                'You must provide authorizers for DLHub, Search, OpenID, FuncX.')
 
             auth_res = login(services=["search", "dlhub",
-                                       FuncXClient.FUNCX_SCOPE, "openid"],
+                                       FuncXClient.FUNCX_SCOPE,
+                                       "openid",
+                                       "email",
+                                       "profile",
+                                       GLOBUS_SEARCH_LAMBDA_SCOPE],
                              app_name="DLHub_Client",
                              make_clients=False,
                              client_id=CLIENT_ID,
@@ -114,6 +125,7 @@ class DLHubClient(BaseClient):
             fx_authorizer = auth_res[FuncXClient.FUNCX_SCOPE]
             openid_authorizer = auth_res['openid']
             search_authorizer = auth_res['search']
+            sl_authorizer = auth_res[GLOBUS_SEARCH_LAMBDA_SCOPE]
 
         # Define the subclients needed by the service
 
@@ -125,12 +137,23 @@ class DLHubClient(BaseClient):
         }
 
         login_manager = FuncXLoginManager(authorizers=auth_dict)
+        # Dev funcx_service_address="https://api.dev.funcx.org/v2"
+        # self._fx_client = FuncXClient(funcx_service_address="https://api.dev.funcx.org/v2", login_manager=login_manager)
         self._fx_client = FuncXClient(login_manager=login_manager)
 
         self._search_client = globus_sdk.SearchClient(authorizer=search_authorizer,
                                                       transport_params={"http_timeout": http_timeout})
 
+        self._openid_client = globus_sdk.AuthClient(authorizer=openid_authorizer,
+                                                    transport_params={"http_timeout": http_timeout})
+
+        self.userinfo = self._openid_client.oauth2_userinfo()
+        self.sl_authorizer = sl_authorizer
+
         # funcX endpoint to use
+        # Production endpoint is '86a47061-f3d9-44f0-90dc-56ddc642c000'
+        # Dev endpoint is '2238617a-8756-4030-a8ab-44ffb1446092'
+        # self.fx_endpoint = '2238617a-8756-4030-a8ab-44ffb1446092'
         self.fx_endpoint = '86a47061-f3d9-44f0-90dc-56ddc642c000'
         self.fx_cache = {}
 
@@ -254,7 +277,7 @@ class DLHubClient(BaseClient):
                 DLHubFuture,
                 Tuple[Any, Dict[str, Any]],
                 Any
-            ]:
+    ]:
         """Invoke a DLHub servable
 
         Args:
@@ -411,10 +434,10 @@ class DLHubClient(BaseClient):
             model_info.add_related_resource(paper_doi, "DOI", "IsDescribedBy")
 
         # perform the publish
-        task_id = self.publish_servable(model_info)
+        container_id = self.publish_servable(model_info)
 
         # return the id of the publish task
-        return task_id
+        return container_id
 
     def publish_servable(self, model):
         """Submit a servable to DLHub
@@ -427,17 +450,21 @@ class DLHubClient(BaseClient):
         Args:
             model (BaseMetadataModel): Servable to be submitted
         Returns:
-            (string): Task ID of this submission, used for checking for success
+            (string): Container ID of this submission, as returned from the Container Service
         """
 
         # Get the metadata
         metadata = model.to_dict(simplify_paths=True)
 
         # Mark the method used to submit the model
-        metadata['dlhub']['transfer_method'] = {'POST': 'file'}
+        # We're using signed_urls so it is S3
+        metadata['dlhub']['transfer_method'] = {'S3': 's3://'}
 
         # Validate against the servable schema
         validate_against_dlhub_schema(metadata, 'servable')
+
+        # Add username, etc. to metadata
+        self._prepare_metadata(metadata)
 
         # Wipe the fx cache so we don't keep reusing an old servable
         self.clear_funcx_cache()
@@ -449,24 +476,41 @@ class DLHubClient(BaseClient):
         try:
             model.get_zip_file(zip_filename)
 
-            # Get the authorization header token (string for the headers dict)
-            header = self.authorizer.get_authorization_header()
+            # Add dlhub.json to zipfile
+            update_servable_zip_with_metadata(zip_filename, metadata)
 
-            # Submit data to DLHub service
+            # Get the authorization header token (string for the headers dict)
+            # header = self.authorizer.get_authorization_header()
+
+            # Use signed URL to upload zip file
+            SIGNED_URL_ENDPOINT = "https://api.dlhub.org/api/v1/publish/signed_url"
+            S3_DOWNLOAD_PREFIX = "https://dlhub-anl.s3.us-east-1.amazonaws.com/"
+            reply = requests.get(
+                SIGNED_URL_ENDPOINT)
+            signed_url = reply.json()
+            logger.debug(f'signed_url["url"] is {signed_url["url"]}')
+
             with open(zip_filename, 'rb') as zf:
-                reply = requests.post(
-                    slash_join(self.base_url, 'publish'),
-                    headers={"Authorization": header},
+                http_response = requests.post(
+                    signed_url['url'],
+                    data=signed_url['fields'],
                     files={
-                        'json': ('dlhub.json', json.dumps(metadata), 'application/json'),
-                        'file': ('servable.zip', zf, 'application/octet-stream')
+                        'file': (signed_url['fields']['key'], zf, 'application/octet-stream')
                     }
                 )
 
+            # Per https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectPOST.html
+            # default success returns a 204, but it could be set to return 200
+            # response on success.  We'll accept either
+            if not (http_response.status_code == 204 or http_response.status_code == 200):
+                raise Exception(http_response.text)
+            metadata['dlhub']['transfer_method']['S3'] = S3_DOWNLOAD_PREFIX + signed_url['fields']['key']
+
+            # Ingest Model to DLHub
+            task = self._ingest(metadata)
+
             # Return the task id
-            if reply.status_code != 200:
-                raise Exception(reply.text)
-            return reply.json()['task_id']
+            return task['container_id']
         finally:
             os.unlink(zip_filename)
 
@@ -476,19 +520,27 @@ class DLHubClient(BaseClient):
         Args:
             repository (string): Repository to publish
         Returns:
-            (string): Task ID of this submission, used for checking for success
+            (string): Container ID of this submission, as returned from the Container Service
         """
+        # Get dlhub.json from github repo
+        try:
+            metadata = get_dlhub_file(repository)
+        except Exception as e:
+            help_err = HelpMessage(f"No dlhub.json file could be retrieved from repository: {e}")
+            raise help_err from e
 
-        # Publish to DLHub
-        metadata = {"repository": repository}
+        # Set repository location in metadata
+        metadata['repository'] = repository
+
+        self._prepare_metadata(metadata)
 
         # Wipe the fx cache so we don't keep reusing an old servable
         self.clear_funcx_cache()
 
-        response = self.post('publish_repo', json_body=metadata)
+        # Ingest Model to DLHub
+        task = self._ingest(metadata)
 
-        task_id = response.data['task_id']
-        return task_id
+        return task['container_id']
 
     def search(self, query, advanced=False, limit=None, only_latest=True):
         """Query the DLHub servable library
@@ -608,3 +660,85 @@ class DLHubClient(BaseClient):
             self.fx_cache = {}
 
         return self.fx_cache
+
+    def _prepare_metadata(self, metadata):
+        """Insert owner name, time-stamp, repository ID, and servable_uuid into metadata."""
+
+        # Insert owner name and time-stamp into metadata
+        # We get user name from the OIDC userinfo from Globus Auth
+        if "preferred_username" in self.userinfo:
+            user_name = self.userinfo['preferred_username']
+        else:
+            user_name = self.userinfo['sub']
+        if '@' in user_name:
+            short_name = "{name}_{org}".format(name=user_name.split(
+                "@")[0], org=user_name.split("@")[1].split(".")[0])
+        else:
+            short_name = user_name
+        metadata['dlhub']['owner'] = short_name
+        metadata['dlhub']['publication_date'] = int(round(time() * 1000))
+        metadata['dlhub']['user_id'] = self.userinfo['sub']
+
+        # Make name from repository ID
+        model_name = metadata['dlhub']['name']
+        shorthand_name = "{name}/{model}".format(name=short_name, model=model_name.replace(" ", "_"))
+        metadata['dlhub']['shorthand_name'] = shorthand_name
+
+        servable_uuid = str(uuid.uuid4())
+        metadata['dlhub']['id'] = servable_uuid
+
+    def _ingest(self, metadata):
+        """Ingest the model: build container using container service, and ingest metadata into search index.
+
+        Args:
+            Metadata: dict
+                The metadata of the model to build/ingest.
+        Returns:
+            dict: The metadata of the ingested model
+        """
+
+        logger.debug("Starting ingest")
+        if 'dlhub' not in metadata:
+            metadata['dlhub'] = {}
+        if 'test' not in metadata['dlhub']:
+            metadata['dlhub']['test'] = False
+
+        fxc = self._fx_client
+
+        container_spec = create_container_spec(metadata)
+
+        try:
+            container_uuid = fxc.build_container(container_spec)
+        except Exception as e:
+            help_err = HelpMessage(f"Container build failed with exception: {e}")
+            raise help_err from e
+
+        # Putting container_uuid in metadata instead of task_id, as we don't
+        # have a task to monitor, just a container
+        metadata['container_id'] = container_uuid
+
+        # check_container_build_status will block until container builds,
+        # or build fails, or timeout after 30 minutes (same timeout as the
+        # build itself)
+        status = check_container_build_status(fxc, container_uuid)
+
+        if status == "failed":
+            raise Exception("ContainerService build failed")
+        # print(f"Container uuid: {container_uuid} status: {status}")
+        # print(fxc.get_container(container_uuid, container_type="docker"))
+
+        funcx_id = register_funcx(metadata, container_uuid, fxc)
+        if 'funcx_token' in metadata['dlhub']:
+            del (metadata['dlhub']['funcx_token'])
+
+        metadata['dlhub']['funcx_id'] = funcx_id
+
+        # Ingest metadata to search
+        # Get header from the search lambda authorizer
+        header = self.sl_authorizer.get_authorization_header()
+        try:
+            search_ingest(metadata, header)
+        except Exception as e:
+            raise Exception("Failed to ingest to search. {}".format(e))
+
+        return metadata

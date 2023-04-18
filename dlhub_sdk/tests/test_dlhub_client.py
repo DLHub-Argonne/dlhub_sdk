@@ -1,6 +1,7 @@
 import os
 import pickle as pkl
 from typing import Dict
+import re
 
 import mdf_toolbox
 from pytest import fixture, raises, mark
@@ -11,19 +12,26 @@ from dlhub_sdk.utils.futures import DLHubFuture
 from dlhub_sdk.client import DLHubClient
 from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 
-
 # github specific declarations
 client_id = os.getenv('CLIENT_ID')
 client_secret = os.getenv('CLIENT_SECRET')
 fx_scope = "https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/all"
+gsl_scope = "https://auth.globus.org/scopes/d31d4f5d-be37-4adc-a761-2f716b7af105/action_all"
 is_gha = os.getenv('GITHUB_ACTIONS')
 _pickle_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "pickle.pkl"))
+
+
+# Have each test run in its own subdir
+@fixture(autouse=True)
+def change_test_dir(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
 
 
 # make dummy reply for mocker patch to return
 class DummyReply:
     def __init__(self) -> None:
         self.status_code = 200
+        self.text = "Exception that we shouldn't hit"
 
     def json(self) -> Dict[str, str]:
         return {"task_id": "bf06d72e-0478-11ed-97f9-4b1381555b22"}  # valid task id, status is known to be FAILED
@@ -33,7 +41,7 @@ class DummyReply:
 def dl():
     if is_gha:
         # Get the services via a confidential log in
-        services = ["search", "dlhub", fx_scope, "openid"]
+        services = ["search", "dlhub", fx_scope, "openid", "email", "profile", gsl_scope]
         auth_res = mdf_toolbox.confidential_login(client_id=client_id,
                                                   client_secret=client_secret,
                                                   services=services,
@@ -41,6 +49,7 @@ def dl():
         return DLHubClient(
             dlh_authorizer=auth_res["dlhub"], fx_authorizer=auth_res[fx_scope],
             openid_authorizer=auth_res['openid'], search_authorizer=auth_res['search'],
+            sl_authorizer=auth_res[gsl_scope],
             force_login=False, http_timeout=10
         )
     else:
@@ -93,20 +102,17 @@ def test_run(dl):
 
 
 def test_submit(dl, mocker):  # noqa: F811 (flake8 does not understand usage)
-    # Make an example function
-    model = PythonStaticMethodModel.create_model('numpy.linalg', 'norm')
-    model.dlhub.test = True
-    model.set_name('1d_norm')
-    model.set_title('Norm of a 1D Array')
-    model.set_inputs('ndarray', 'Array to be normed', shape=[None])
-    model.set_outputs('number', 'Norm of the array')
 
+    # patch build_container, register_funcx, and search_ingest
+    mocker.patch("funcx.sdk.client.FuncXClient.build_container", return_value="f53e2175-39c5-4522-bc6c-0e68625e3c20")
+    mocker.patch("dlhub_sdk.utils.publish.register_funcx", return_value="6af11a75-f751-4e6d-982f-9ae513c56d63")
+    mocker.patch("dlhub_sdk.utils.publish.search_ingest", return_value=None)
     # patch requests.post
     mocker.patch("requests.post", return_value=DummyReply())
 
-    # Submit the model
-    task_id = dl.publish_servable(model)
-    assert task_id == "bf06d72e-0478-11ed-97f9-4b1381555b22"
+    # Submit a test model
+    container_id = dl.publish_repository("https://github.com/ericblau/dlhub_noop_publish")
+    assert container_id == "f53e2175-39c5-4522-bc6c-0e68625e3c20"
 
     # pickle class method to test
     with open(_pickle_path, 'wb') as fp:
@@ -119,17 +125,17 @@ def test_submit(dl, mocker):  # noqa: F811 (flake8 does not understand usage)
     model.set_title("Dummy JSON")
 
     # Submit the model
-    task_id = dl.publish_servable(model)
-    assert task_id == "bf06d72e-0478-11ed-97f9-4b1381555b22"
+    container_id = dl.publish_servable(model)
+    assert container_id == "f53e2175-39c5-4522-bc6c-0e68625e3c20"
 
     # make sure invalid call raises proper error
     with raises(TypeError):
         model = PythonStaticMethodModel.create_model("dlhub_sdk.utils.validation")
 
     # Submit the model using easy publish
-    task_id = dl.easy_publish("Validate dl.run Calls", "Darling, Isaac", "validate_run", "static_method",
-                              {"module": "dlhub_sdk.utils.validation", "method": "validate"}, [["University of Chicago"]], "not-a-real-doi")
-    assert task_id == "bf06d72e-0478-11ed-97f9-4b1381555b22"
+    container_id = dl.easy_publish("Validate dl.run Calls", "Darling, Isaac", "validate_run", "static_method",
+                                   {"module": "dlhub_sdk.utils.validation", "method": "validate"}, [["University of Chicago"]], "not-a-real-doi")
+    assert container_id == "f53e2175-39c5-4522-bc6c-0e68625e3c20"
 
 
 def test_datacite_validation():
@@ -283,3 +289,49 @@ def test_status(dl):
     future = dl.run('aristana_uchicago/noop_v11', True, asynchronous=True)
     # Need spec for Fx status returns
     assert isinstance(dl.get_task_status(future.task_id), dict)
+
+
+@mark.timeout(600)
+def test_container_build_repo_end_to_end(dl):
+    containerid = dl.publish_repository("https://github.com/ericblau/dlhub_noop_publish")
+    assert isinstance(containerid, str)
+    container_desc = dl._fx_client.get_container(containerid, "docker")
+    assert isinstance(container_desc, dict)
+    assert container_desc['container_uuid'] == containerid
+    assert container_desc['build_status'] == 'ready'
+    assert re.match("docker.io/bengal1/funcx_.*:latest", container_desc['location'])
+    result = dl.run(container_desc['name'], True)
+    assert result == "Hello world!"
+
+
+@mark.timeout(600)
+def test_container_build_zip_end_to_end(dl):
+    from dlhub_sdk.models.servables.python import PythonStaticMethodModel
+    import sys
+
+    # We need to make the noop.py in the cwd()
+    cwd = os.getcwd()
+    with open("noop.py", "w") as f:
+        f.write('def run_noop(bool):\n    return "Hello world!"')
+    # Append cwd to sys.path so we can import the function
+    sys.path.append(cwd)
+    from noop import run_noop
+
+    model = PythonStaticMethodModel.from_function_pointer(run_noop)
+    model.set_title("DLHub No-op Publication Test zipfile")
+    model.set_name("noopz_v02")
+    model.set_inputs("boolean", "Any boolean value")
+    model.set_outputs("string", "'Hello world!'")
+    model.add_file("noop.py")
+
+    validate_against_dlhub_schema(model.to_dict(), 'servable')
+
+    containerid = dl.publish_servable(model)
+    assert isinstance(containerid, str)
+    container_desc = dl._fx_client.get_container(containerid, "docker")
+    assert isinstance(container_desc, dict)
+    assert container_desc['container_uuid'] == containerid
+    assert container_desc['build_status'] == 'ready'
+    assert re.match("docker.io/bengal1/funcx_.*:latest", container_desc['location'])
+    result = dl.run(container_desc['name'], True)
+    assert result == "Hello world!"
