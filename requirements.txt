@@ -2,7 +2,7 @@ globus-sdk>=3,<4
 requests>=2.24.0
 mdf_toolbox>=0.5.4
 jsonschema>=3.2.0
-funcx>=1.0.11
+funcx>=1.0.11,<2.0.0
 pydantic
 numpy
 PyGithub
