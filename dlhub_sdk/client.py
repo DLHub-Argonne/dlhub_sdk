@@ -11,7 +11,7 @@ from globus_sdk import BaseClient
 from globus_sdk.authorizers import GlobusAuthorizer
 from mdf_toolbox import login, logout
 from mdf_toolbox.globus_search.search_helper import SEARCH_LIMIT
-from funcx.sdk.client import FuncXClient
+from globus_compute_sdk import Client as FuncXClient
 from globus_sdk.scopes import AuthScopes, SearchScopes
 
 from dlhub_sdk.config import DLHUB_SERVICE_ADDRESS, CLIENT_ID, GLOBUS_SEARCH_LAMBDA_SCOPE

@@ -2,7 +2,7 @@ import logging
 import json
 import requests
 
-from funcx import ContainerSpec
+from globus_compute_sdk import ContainerSpec
 from time import sleep
 import github
 from dlhub_sdk.config import GLOBUS_SEARCH_WRITER_LAMBDA
