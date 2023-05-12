@@ -104,7 +104,7 @@ def test_run(dl):
 def test_submit(dl, mocker):  # noqa: F811 (flake8 does not understand usage)
 
     # patch build_container, register_funcx, and search_ingest
-    mocker.patch("funcx.sdk.client.FuncXClient.build_container", return_value="f53e2175-39c5-4522-bc6c-0e68625e3c20")
+    mocker.patch("globus_compute_sdk.Client.build_container", return_value="f53e2175-39c5-4522-bc6c-0e68625e3c20")
     mocker.patch("dlhub_sdk.utils.publish.register_funcx", return_value="6af11a75-f751-4e6d-982f-9ae513c56d63")
     mocker.patch("dlhub_sdk.utils.publish.search_ingest", return_value=None)
     # patch requests.post
