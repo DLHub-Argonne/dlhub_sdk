@@ -34,6 +34,16 @@ def create_container_spec(metadata):
         # There are no python dependencies
         pass
 
+    # If there's a requirements.txt in the payload, add it to the dependencies
+    fileslist = []
+    try:
+        fileslist = metadata['dlhub']['files']['other']
+    except KeyError:
+        pass
+
+    if 'requirements.txt' in fileslist:
+        dependencies.append("--requirement requirements.txt")
+
     model_location = None
     # If the model was uploaded using a signed URL, it will have a
     # transfer_method of S3 in its metadata.
