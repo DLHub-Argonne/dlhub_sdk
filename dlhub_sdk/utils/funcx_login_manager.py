@@ -3,8 +3,8 @@ from __future__ import annotations
 import logging
 import globus_sdk
 from globus_sdk.scopes import AuthScopes, SearchScopes
-from funcx.sdk.web_client import FuncxWebClient
-from funcx import FuncXClient
+from globus_compute_sdk.sdk.web_client import WebClient as FuncxWebClient
+from globus_compute_sdk import Client as FuncXClient
 
 log = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ class FuncXLoginManager:
             authorizer=self.authorizers[SearchScopes.all]
         )
 
-    def get_funcx_web_client(
+    def get_web_client(
         self, *, base_url: str | None = None, app_name: str | None = None
     ) -> FuncxWebClient:
         return FuncxWebClient(
