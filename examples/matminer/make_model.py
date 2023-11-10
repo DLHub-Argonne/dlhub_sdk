@@ -1,13 +1,13 @@
 from matminer.featurizers.base import MultipleFeaturizer
 from matminer.featurizers import composition as cf
-from matminer.datasets import dataframe_loader
-from sklearn.preprocessing import Imputer
+from matminer.datasets import load_dataset
+from sklearn.impute import SimpleImputer
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.pipeline import Pipeline
 import pickle as pkl
 
 # Load a test dataset from matminer
-data = dataframe_loader.load_flla()
+data = load_dataset('flla')
 print('Loaded {} rows with {} columns:'.format(len(data), len(data.columns)),
       data.columns.tolist())
 
@@ -35,7 +35,7 @@ X = featurizer.featurize_many(data['composition'])
 
 # Make the model
 model = Pipeline([
-    ('imputer', Imputer()),
+    ('imputer', SimpleImputer()),
     ('model', RandomForestRegressor())
 ])
 model.fit(X, data['formation_energy_per_atom'])
